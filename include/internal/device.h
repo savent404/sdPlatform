@@ -7,8 +7,6 @@
 
 __cbegin
 
-typedef void * device_data_t;
-
 // treat this as a json object
 typedef struct device_env
 {
@@ -69,6 +67,6 @@ static inline device_t dev_by_id(device_id_t devid) {
  * @return device_it_t
  */
 static inline device_id_t dev_id(device_t dev) {
-    return dev && dev->d_self ? dev->d_self : NULL;
+    return dev && dev->d_self ? dev->d_self : 0;
 }
 __cend

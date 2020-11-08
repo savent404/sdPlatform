@@ -37,7 +37,7 @@ static inline int dops_init(driver_ops_t ops, int argc, char **argv) {
  * @param ops[in] driver_ops_t
  * @return see enum eno
  */
-static inline dops_deinit(driver_ops_t ops) {
+static inline int dops_deinit(driver_ops_t ops) {
     return ops && ops->deinit ? ops->deinit() : EINVALIDE;
 }
 
@@ -48,7 +48,7 @@ static inline dops_deinit(driver_ops_t ops) {
  * @param dev_id[in] device_id_t
  * @return see enum eno
  */
-static inline dops_bind(driver_ops_t ops, device_id_t dev_id) {
+static inline int dops_bind(driver_ops_t ops, device_id_t dev_id) {
     return ops && ops->bind ? ops->bind(dev_id) : EINVALIDE;
 }
 
@@ -59,7 +59,7 @@ static inline dops_bind(driver_ops_t ops, device_id_t dev_id) {
  * @param dev_id[in] device_id_t
  * @return see enum eno
  */
-static inline dops_unbind(driver_ops_t ops, device_id_t dev_id) {
+static inline int dops_unbind(driver_ops_t ops, device_id_t dev_id) {
     return ops && ops->unbind ? ops->unbind(dev_id) : EINVALIDE;
 }
 
@@ -71,7 +71,7 @@ static inline dops_unbind(driver_ops_t ops, device_id_t dev_id) {
  * @param flags[in] open flags
  * @return see enum eno
  */
-static inline dops_open(driver_ops_t ops, device_id_t dev_id, int flags) {
+static inline int dops_open(driver_ops_t ops, device_id_t dev_id, int flags) {
     return ops && ops->open ? ops->open(dev_id, flags) : EINVALIDE;
 }
 
@@ -82,7 +82,7 @@ static inline dops_open(driver_ops_t ops, device_id_t dev_id, int flags) {
  * @param dev_id[in] device_id_t
  * @return see enum eno
  */
-static inline dops_close(driver_ops_t ops, device_id_t dev_id) {
+static inline int dops_close(driver_ops_t ops, device_id_t dev_id) {
     return ops && ops->close ? ops->close(dev_id) : EINVALIDE;
 }
 
@@ -95,7 +95,7 @@ static inline dops_close(driver_ops_t ops, device_id_t dev_id) {
  * @param size[in] size
  * @return see enum eno
  */
-static inline dops_write(driver_ops_t ops, device_id_t dev_id, const void *in, size_t size) {
+static inline int dops_write(driver_ops_t ops, device_id_t dev_id, const void *in, size_t size) {
     return ops && ops->write ? ops->write(dev_id, in, size) : EINVALIDE;
 }
 
@@ -108,7 +108,7 @@ static inline dops_write(driver_ops_t ops, device_id_t dev_id, const void *in, s
  * @param size[in]
  * @return see enum eno
  */
-static inline dops_read(driver_ops_t ops, device_id_t dev_id, void *out, size_t size) {
+static inline int dops_read(driver_ops_t ops, device_id_t dev_id, void *out, size_t size) {
     return ops && ops->read ? ops->read(dev_id, out, size) : EINVALIDE;
 }
 
@@ -125,7 +125,7 @@ static inline dops_read(driver_ops_t ops, device_id_t dev_id, void *out, size_t 
  * @note if out== nullptr or out_size == 0, no read
  * @return see enum eno
  */
-static inline dops_transfer(driver_ops_t ops, device_id_t dev_id, const void *in, size_t in_size, void *out, size_t out_size) {
+static inline int dops_transfer(driver_ops_t ops, device_id_t dev_id, const void *in, size_t in_size, void *out, size_t out_size) {
     return ops && ops->transfer ? ops->transfer(dev_id, in, in_size, out, out_size) : EINVALIDE;
 }
 
@@ -139,7 +139,7 @@ static inline dops_transfer(driver_ops_t ops, device_id_t dev_id, const void *in
  * @param size (in or out) buffer size
  * @return see enum eno
  */
-static inline dops_ioctl(driver_ops_t ops, device_id_t dev_id, uint32_t cmd, void *in_out, size_t *size) {
+static inline int dops_ioctl(driver_ops_t ops, device_id_t dev_id, uint32_t cmd, void *in_out, size_t *size) {
     return ops && ops->ioctl ? ops->ioctl(dev_id, cmd, in_out, size) : EINVALIDE;
 }
 
@@ -152,6 +152,6 @@ static inline dops_ioctl(driver_ops_t ops, device_id_t dev_id, uint32_t cmd, voi
  * @param timeout[in] 0 means no wait, (size_t)-1 means wait forever
  * @return see enum eno
  */
-static inline dops_select(driver_ops_t ops, device_id_t dev_id, uint32_t flags, size_t timeout) {
+static inline int dops_select(driver_ops_t ops, device_id_t dev_id, uint32_t flags, size_t timeout) {
     return ops && ops->select ? ops->select(dev_id, flags, timeout) : EINVALIDE;
 }

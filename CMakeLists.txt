@@ -4,3 +4,5 @@ project(driver_platform)
 include_directories(include)
 
 add_executable(foo foo.c)
+
+include(test.cmake)

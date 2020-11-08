@@ -19,7 +19,7 @@
 typedef void* reg_t;
 
 // CPU 32/64位
-typedef unsigned int cpu_t;
+// typedef unsigned int cpu_t;
 
 // 拒绝编译器优化执行顺序
 #define __IO(x) (x)
