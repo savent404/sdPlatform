@@ -10,9 +10,10 @@ struct foo
     struct dlist dlist;
 };
 
-int dlist_test(void)
+int
+dlist_test(void)
 {
-    struct foo a,b,c;
+    struct foo a, b, c;
     a.val = 1;
     b.val = 2;
     c.val = 3;
@@ -34,7 +35,8 @@ int dlist_test(void)
     return 0;
 }
 
-int main(void)
+int
+main(void)
 {
     dlist_test();
 

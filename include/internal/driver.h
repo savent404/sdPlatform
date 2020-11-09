@@ -11,11 +11,11 @@ __cbegin
 typedef struct driver_env
 {
 
-} *driver_env_t;
+} * driver_env_t;
 
 struct driver
 {
     driver_env_t d_env;
-} *driver_t;
+} * driver_t;
 
 __cend

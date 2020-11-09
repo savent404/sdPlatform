@@ -1,15 +1,17 @@
 #include <internal/dlist.h>
 
-#include <stdio.h>
 #include <stdbool.h>
+#include <stdio.h>
 #include <string.h>
 
-static void print_help(void)
+static void
+print_help(void)
 {
     printf("Usage dlist-test cmd\n");
 }
 
-static bool test_init(void)
+static bool
+test_init(void)
 {
     struct dlist root;
     bool res = true;
@@ -21,12 +23,13 @@ static bool test_init(void)
     return res;
 }
 
-static bool test_add(void)
+static bool
+test_add(void)
 {
     struct dlist first;
     struct dlist second;
     bool res = true;
-    
+
     dlist_init(&first);
     // dlist_init(&second);
     dlist_add_front(&first, &second);
@@ -48,7 +51,8 @@ static bool test_add(void)
     return res;
 }
 
-static bool test_remove(void)
+static bool
+test_remove(void)
 {
     struct dlist first;
     struct dlist third;
@@ -60,7 +64,7 @@ static bool test_remove(void)
     dlist_add_front(&first, &second);
     dlist_add_front(&first, &third);
     dlist_remove(&third);
-    
+
     res &= first.next == &second;
     res &= first.prev == &second;
     res &= second.next == &first;
@@ -69,7 +73,8 @@ static bool test_remove(void)
     return res;
 }
 
-static bool test_isalone(void)
+static bool
+test_isalone(void)
 {
     struct dlist root, second;
     bool res = true;
@@ -85,15 +90,17 @@ struct foo
     int val;
     struct dlist dlist;
 };
-static bool test_get_instance(void)
+static bool
+test_get_instance(void)
 {
     struct foo tmp;
     dlist_t list = &tmp.dlist;
 
-    return &tmp == DLIST_GET_NODE(list, struct foo *);
+    return &tmp == DLIST_GET_NODE(list, struct foo*);
 }
 
-int main(int argc, char *argv[])
+int
+main(int argc, char* argv[])
 {
     if (argc != 1) {
         printf("parameter error\n");
