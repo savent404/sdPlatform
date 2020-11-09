@@ -9,14 +9,16 @@
 
 __cbegin
 
-// typedef struct driver_env
-// {
-// 
-// } * driver_env_t;
+typedef __aligned struct driver_env
+{
+    const char *name;
+    const char *compat;
+    const char *_json;
+} * driver_env_t;
 
 typedef struct driver
 {
-    // driver_env_t d_env;
+    driver_env_t d_env;
     driver_id_t d_self;
     driver_ops_t d_ops;
 } * driver_t;
@@ -61,17 +63,20 @@ dri_is_registered(driver_t dri)
  * @param[in] dri driver_t
  * @param[in] argc param num
  * @param[in] argv param
+ * @note dops_init should register driver inside
  * @return see enum eno
  */
 static inline int
 dri_init(driver_t dri, int argc, char** argv)
 {
     int res = dri ? dops_init(dri->d_ops, argc, argv) : EINVALIDE;
-
-    // TODO(savent): register driver id
-    if (!res)
-        dri->d_self = 0x7FFFFF;
-    return res;
+    /*
+    if (!res) {
+        driver_id_t dri_id = register_driver(dri);
+        dri->d_self = dri_id;
+    }
+    */
+   return res;
 }
 
 /**
@@ -100,11 +105,13 @@ static inline int
 dri_bind(driver_t dri, device_id_t dev_id)
 {
     int res = dri ? dops_bind(dri->d_ops, dev_id) : EINVALIDE;
+    /*
     if (!res) {
         // bind driver & device
         device_t dev = dev_by_id(dev_id);
         dev->d_driver = dri_id(dri);
     }
+    */
     return res;
 }
 
