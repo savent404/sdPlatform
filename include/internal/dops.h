@@ -9,15 +9,15 @@ typedef struct driver_ops
 {
     int (*init)(int, char**);
     int (*deinit)();
-    int (*bind)(device_id_t);
-    int (*unbind)(device_id_t);
-    int (*open)(device_id_t, int);
-    int (*close)(device_id_t);
-    int (*write)(device_id_t, const void*, size_t);
-    int (*read)(device_id_t, void*, size_t);
-    int (*transfer)(device_id_t, const void*, size_t, void*, size_t);
-    int (*ioctl)(device_id_t, uint32_t cmd, void* in_out, size_t* size);
-    int (*select)(device_id_t, uint32_t flag, size_t timeout);
+    int (*bind)(device_t);
+    int (*unbind)(device_t);
+    int (*open)(device_t, int);
+    int (*close)(device_t);
+    int (*write)(device_t, const void*, size_t);
+    int (*read)(device_t, void*, size_t);
+    int (*transfer)(device_t, const void*, size_t, void*, size_t);
+    int (*ioctl)(device_t, uint32_t cmd, void* in_out, size_t* size);
+    int (*select)(device_t, uint32_t flag, size_t timeout);
 } * driver_ops_t;
 
 /**
@@ -50,90 +50,90 @@ dops_deinit(driver_ops_t ops)
  * drvier ops:: bind
  * @brief bind driver and device
  * @param[in] ops driver_ops_t
- * @param[in] dev_id device_id_t
+ * @param[in] dev device_t
  * @return see enum eno
  */
 static inline int
-dops_bind(driver_ops_t ops, device_id_t dev_id)
+dops_bind(driver_ops_t ops, device_t dev)
 {
-    return ops && ops->bind ? ops->bind(dev_id) : EINVALIDE;
+    return ops && ops->bind ? ops->bind(dev) : EINVALIDE;
 }
 
 /**
  * driver ops:: unbind
  * @brief unbind driver and device
  * @param[in] ops driver_ops_t
- * @param[in] dev_id device_id_t
+ * @param[in] dev device_t
  * @return see enum eno
  */
 static inline int
-dops_unbind(driver_ops_t ops, device_id_t dev_id)
+dops_unbind(driver_ops_t ops, device_t dev)
 {
-    return ops && ops->unbind ? ops->unbind(dev_id) : EINVALIDE;
+    return ops && ops->unbind ? ops->unbind(dev) : EINVALIDE;
 }
 
 /**
  * driver ops:: open
  * @brief open device
  * @param[in] ops driver_ops_t
- * @param[in] dev_id device_id_t
+ * @param[in] dev device_t
  * @param[in] flags open flags
  * @return see enum eno
  */
 static inline int
-dops_open(driver_ops_t ops, device_id_t dev_id, int flags)
+dops_open(driver_ops_t ops, device_t dev, int flags)
 {
-    return ops && ops->open ? ops->open(dev_id, flags) : EINVALIDE;
+    return ops && ops->open ? ops->open(dev, flags) : EINVALIDE;
 }
 
 /**
  * driver ops:: close
  * @brief close deivce
  * @param[in] ops driver_ops_t
- * @param[in] dev_id device_id_t
+ * @param[in] dev device_t
  * @return see enum eno
  */
 static inline int
-dops_close(driver_ops_t ops, device_id_t dev_id)
+dops_close(driver_ops_t ops, device_t dev)
 {
-    return ops && ops->close ? ops->close(dev_id) : EINVALIDE;
+    return ops && ops->close ? ops->close(dev) : EINVALIDE;
 }
 
 /**
  * driver ops:: write
  * @brief write to device
  * @param[in] ops driver_ops_t
- * @param[in] dev_id device_id_t
+ * @param[in] dev device_t
  * @param[in] in buffer align as Byte
  * @param[in] size size
  * @return see enum eno
  */
 static inline int
-dops_write(driver_ops_t ops, device_id_t dev_id, const void* in, size_t size)
+dops_write(driver_ops_t ops, device_t dev, const void* in, size_t size)
 {
-    return ops && ops->write ? ops->write(dev_id, in, size) : EINVALIDE;
+    return ops && ops->write ? ops->write(dev, in, size) : EINVALIDE;
 }
 
 /**
  * driver ops:: read
  * @brief read from device
  * @param[in] ops driver_ops_t
- * @param[in] dev_id device_id_t
+ * @param[in] dev device_t
  * @param[out] out output buffer, align as Byte
  * @param[in] size
  * @return see enum eno
  */
 static inline int
-dops_read(driver_ops_t ops, device_id_t dev_id, void* out, size_t size)
+dops_read(driver_ops_t ops, device_t dev, void* out, size_t size)
 {
-    return ops && ops->read ? ops->read(dev_id, out, size) : EINVALIDE;
+    return ops && ops->read ? ops->read(dev, out, size) : EINVALIDE;
 }
 
 /**
  * driver ops:: transfer(read/write)
  * @brief read/write some bytes
  * @param[in] ops driver_ops_t
- * @param[in] dev_id device_id_t
+ * @param[in] dev device_t
  * @param[in] in buffer to write
  * @param[in] in_size write bytes
  * @param[in] out buffer to read
@@ -144,14 +144,14 @@ dops_read(driver_ops_t ops, device_id_t dev_id, void* out, size_t size)
  */
 static inline int
 dops_transfer(driver_ops_t ops,
-              device_id_t dev_id,
+              device_t dev,
               const void* in,
               size_t in_size,
               void* out,
               size_t out_size)
 {
     return ops && ops->transfer
-             ? ops->transfer(dev_id, in, in_size, out, out_size)
+             ? ops->transfer(dev, in, in_size, out, out_size)
              : EINVALIDE;
 }
 
@@ -159,7 +159,7 @@ dops_transfer(driver_ops_t ops,
  * driver ops:: ioctl
  * @brief ioctl for device
  * @param[in] ops driver_ops_t
- * @param[in] dev_id device_id_t
+ * @param[in] dev device_t
  * @param[in] cmd function to cmd
  * @param in_out (in or out) buffer
  * @param size (in or out) buffer size
@@ -167,12 +167,12 @@ dops_transfer(driver_ops_t ops,
  */
 static inline int
 dops_ioctl(driver_ops_t ops,
-           device_id_t dev_id,
+           device_t dev,
            uint32_t cmd,
            void* in_out,
            size_t* size)
 {
-    return ops && ops->ioctl ? ops->ioctl(dev_id, cmd, in_out, size)
+    return ops && ops->ioctl ? ops->ioctl(dev, cmd, in_out, size)
                              : EINVALIDE;
 }
 
@@ -180,18 +180,18 @@ dops_ioctl(driver_ops_t ops,
  * driver ops:: select
  * @brief listen device event
  * @param[in] ops driver_ops_t
- * @param[in] dev_id device_id_t
+ * @param[in] dev device_t
  * @param[in] flags listen evnet list
  * @param[in] timeout 0 means no wait, (size_t)-1 means wait forever
  * @return see enum eno
  */
 static inline int
 dops_select(driver_ops_t ops,
-            device_id_t dev_id,
+            device_t dev,
             uint32_t flags,
             size_t timeout)
 {
-    return ops && ops->select ? ops->select(dev_id, flags, timeout) : EINVALIDE;
+    return ops && ops->select ? ops->select(dev, flags, timeout) : EINVALIDE;
 }
 
 __cend
