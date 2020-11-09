@@ -4,15 +4,16 @@
 #include <internal/dops.h>
 #include <internal/toolchain.h>
 #include <internal/type.h>
-
+#include <cJSON.h>
 __cbegin
 
- // treat this as a json object
- typedef struct device_env
+// treat this as a json object
+typedef struct device_env
 {
     const char *name;
     const char *compat;
-    void* _env;
+    char *_json_str;
+    void *_json_obj;
 } * device_env_t;
 
 typedef struct device_data
@@ -78,4 +79,78 @@ dev_id(device_t dev)
 {
     return dev && dev->d_self ? dev->d_self : 0;
 }
+
+/**
+ * @brief return cJSON obj from d_env
+ * @param[in] dev
+ * @return cJSON*, NULL means failed
+ */
+static inline cJSON*
+dev_env_json(device_t dev)
+{
+    if (!dev || !dev->d_env || !dev->d_env->_json_obj)
+        return NULL;
+    return dev->d_env->_json_obj;
+}
+
+/**
+ * @brief return json string from d_env
+ * @param[in] dev
+ * @return string, NULL means failed
+ */
+static inline const char *
+dev_env_string(device_t dev)
+{
+    if (!dev || !dev->d_env || !dev->d_env->_json_str)
+    return NULL;
+    return dev->d_env->_json_str;
+}
+
+/**
+ * @brief parse dev env's json string to cJSON obj
+ * @param[in] dev device_t
+ * @note output see 'dev->d_env->_json_obj' and method 'dev_env_json'
+ * @return true as success
+ */
+static inline bool
+dev_env_parse(device_t dev)
+{
+    cJSON *c = NULL;
+    if (!dev || !dev->d_env || !dev->d_env->_json_str)
+        return false;
+    c = cJSON_Parse(dev->d_env->_json_str);
+    if (c == NULL)
+        return false;
+    if (dev_env_json(dev)) {
+        cJSON *obj = dev_env_json(dev);
+        dev->d_env->_json_obj = NULL;
+        cJSON_Delete(obj);
+    }
+    dev->d_env->_json_obj = c;
+    return true;
+}
+
+/**
+ * @brief dump dev env's cJSON obj to json string
+ * @param[in] dev device_t
+ * @note output see 'dev->d_env->_json_str' and method 'dev_env_string'
+ * @return true as success
+ */
+static inline bool
+dev_env_dump(device_t dev)
+{
+    if (!dev || !dev->d_env || !dev->d_env->_json_obj)
+        return false;
+    const char *c = cJSON_Print(dev->d_env->_json_obj);
+    if (c == NULL)
+        return false;
+    if (dev_env_string(dev)) {
+        void *str = dev_env_string(dev);
+        dev->d_env->_json_str;
+        cJSON_free(str);
+    }
+    dev->d_env->_json_str = c;
+    return c != NULL;
+}
+
 __cend
