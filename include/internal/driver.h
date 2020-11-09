@@ -9,14 +9,14 @@
 
 __cbegin
 
-typedef struct driver_env
-{
-
-} * driver_env_t;
+// typedef struct driver_env
+// {
+// 
+// } * driver_env_t;
 
 typedef struct driver
 {
-    driver_env_t d_env;
+    // driver_env_t d_env;
     driver_id_t d_self;
     driver_ops_t d_ops;
 } * driver_t;
