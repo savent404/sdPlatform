@@ -2,12 +2,6 @@
 
 #include <stddef.h>
 
-// C/C++的C内容声明开头
-#define __cbegin
-
-// C/C++的C内容声明结尾
-#define __cend
-
 // 暴露的C API
 #define EXTERN_C_API
 

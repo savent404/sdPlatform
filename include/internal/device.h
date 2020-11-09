@@ -4,7 +4,7 @@
 #include <internal/toolchain.h>
 #include <internal/type.h>
 #include <cJSON.h>
-__cbegin
+
 
 // treat this as a json object
 typedef struct device_env
@@ -149,4 +149,4 @@ dev_env_dump(device_t dev)
     return c != NULL;
 }
 
-__cend
+

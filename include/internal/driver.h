@@ -8,7 +8,7 @@
 #include <internal/dops.h>
 #include <internal/toolchain.h>
 
-__cbegin
+
 
 typedef __aligned struct driver_env
 {
@@ -273,4 +273,4 @@ dri_select(driver_t dri, device_t dev, uint32_t flags, size_t timeout)
     return dri ? dops_select(dri->d_ops, dev, flags, timeout) : EINVALIDE;
 }
 
-__cend
+

@@ -2,7 +2,7 @@
 
 #include <internal/dlist.h>
 
-__cbegin
+
 
 typedef struct btree
 {
@@ -86,4 +86,4 @@ btree_next(btree_t _node)
 #define BTREE_GET_NODE(instance, node_ptr_type)                                \
     _BTREE_GET_NODE(instance, btree, node_ptr_type)
 
-__cend
+

@@ -7,7 +7,7 @@
 #include <internal/type.h>
 #include <cJSON.h>
 
-__cbegin
+
 
 
 /**
@@ -156,4 +156,4 @@ update_driver(driver_t dri)
     return devmgr_update_driver(dri_id(dri), str);
 }
 
-__cend
+

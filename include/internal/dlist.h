@@ -3,7 +3,7 @@
 #include <internal/toolchain.h>
 #include <internal/type.h>
 
-__cbegin
+
 
   typedef struct dlist
 {
@@ -95,4 +95,4 @@ dlist_has_item(dlist_t _head, dlist_t _node)
 #define DLIST_GET_NODE(instance, node_ptr_type)                                \
     _DLIST_GET_NODE(instance, dlist, node_ptr_type)
 
-__cend
+

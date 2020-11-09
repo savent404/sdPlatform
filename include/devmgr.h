@@ -3,7 +3,10 @@
 #include <internal/toolchain.h>
 #include <internal/type.h>
 
-__cbegin
+/**
+ * @brief device manager api
+ * @{
+ */
 
 /**
  * devmgr:: register device
@@ -95,4 +98,6 @@ devmgr_update_driver(driver_id_t id, const char* str)
     return 0;
 }
 
-__cend
+/**
+ * @}
+ */

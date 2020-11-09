@@ -4,7 +4,7 @@
 #include <internal/type.h>
 #include <internal/device.h>
 
-__cbegin
+
 
 typedef struct driver_ops
 {
@@ -195,4 +195,4 @@ dops_select(driver_ops_t ops,
     return ops && ops->select ? ops->select(dev, flags, timeout) : EINVALIDE;
 }
 
-__cend
+
