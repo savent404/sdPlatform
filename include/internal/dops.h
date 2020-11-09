@@ -2,13 +2,14 @@
 
 #include <internal/toolchain.h>
 #include <internal/type.h>
+#include <internal/device.h>
 
 __cbegin
 
 typedef struct driver_ops
 {
     int (*init)(int, char**);
-    int (*deinit)();
+    int (*deinit)(void);
     int (*bind)(device_t);
     int (*unbind)(device_t);
     int (*open)(device_t, int);

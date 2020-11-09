@@ -1,7 +1,6 @@
 #pragma once
 
 #include <internal/btree.h>
-#include <internal/dops.h>
 #include <internal/toolchain.h>
 #include <internal/type.h>
 #include <cJSON.h>
@@ -12,14 +11,11 @@ typedef struct device_env
 {
     const char *name;
     const char *compat;
-    char *_json_str;
+    const char *_json_str;
     void *_json_obj;
 } * device_env_t;
 
-typedef struct device_data
-{
-    void* _data;
-} * device_data_t;
+typedef void* device_data_t;
 
 typedef struct device
 {
@@ -145,9 +141,9 @@ dev_env_dump(device_t dev)
     if (c == NULL)
         return false;
     if (dev_env_string(dev)) {
-        void *str = dev_env_string(dev);
+        const void *str = dev_env_string(dev);
         dev->d_env->_json_str;
-        cJSON_free(str);
+        cJSON_free((void*)str);
     }
     dev->d_env->_json_str = c;
     return c != NULL;

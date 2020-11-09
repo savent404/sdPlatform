@@ -2,23 +2,27 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <string.h>
 
-#include <internal/toolchain.h>
-#include <internal/dops.h>
 #include <internal/device.h>
+#include <internal/dops.h>
+#include <internal/toolchain.h>
 
 __cbegin
 
 typedef __aligned struct driver_env
 {
-    const char *name;
-    const char *compat;
-    const char *_json;
+    const char* name;
+    const char* compat;
+    const char* _json;
 } * driver_env_t;
+
+typedef void * driver_data_t;
 
 typedef struct driver
 {
     driver_env_t d_env;
+    driver_data_t d_data;
     driver_id_t d_self;
     driver_ops_t d_ops;
 } * driver_t;
@@ -66,15 +70,17 @@ dri_is_registered(driver_t dri)
 static inline bool
 dri_match_device(driver_t dri, device_t dev)
 {
-    char *now = NULL, *next = NULL, *compat = NULL;
-    if (!dri || !dri->d_env || !dri->d_env->compat || !dev || !dev->d_env || !dev->d_env->compat)
+    const char *now = NULL, *next = NULL, *compat = NULL;
+    if (!dri || !dri->d_env || !dri->d_env->compat || !dev || !dev->d_env ||
+        !dev->d_env->compat)
         return false;
-    
+
     compat = dev->d_env->compat;
-    now = dri->d_env->compat;
-    next = strchr(now, '|');
+    next = dri->d_env->compat - 1;
     do {
-        int letter = next ? now - next : strlen(now);
+        now = next + 1;
+        next = strchr(now, '|');
+        int letter = next ? next - now : strlen(now);
         if (!strncmp(now, compat, letter))
             return true;
     } while (next);
@@ -100,7 +106,7 @@ dri_init(driver_t dri, int argc, char** argv)
         dri->d_self = dri_id;
     }
     */
-   return res;
+    return res;
 }
 
 /**
@@ -128,16 +134,12 @@ dri_deinit(driver_t dri)
 static inline int
 dri_bind(driver_t dri, device_t dev)
 {
-    if (dri_match_device(dri, dev))
-        return  EDENY;
+    if (!dri_match_device(dri, dev) && dev_is_binded(dev))
+        return EDENY;
     int res = dri ? dops_bind(dri->d_ops, dev) : EINVALIDE;
-    /*
     if (!res) {
-        // bind driver & device
-        device_t dev = dev_by_id(dev);
         dev->d_driver = dri_id(dri);
     }
-    */
     return res;
 }
 
@@ -251,11 +253,7 @@ dri_transfer(driver_t dri,
  * @return see enum eno
  */
 static inline int
-dri_ioctl(driver_t dri,
-          device_t dev,
-          uint32_t cmd,
-          void* in_out,
-          size_t* size)
+dri_ioctl(driver_t dri, device_t dev, uint32_t cmd, void* in_out, size_t* size)
 {
     return dri ? dops_ioctl(dri->d_ops, dev, cmd, in_out, size) : EINVALIDE;
 }
@@ -274,6 +272,5 @@ dri_select(driver_t dri, device_t dev, uint32_t flags, size_t timeout)
 {
     return dri ? dops_select(dri->d_ops, dev, flags, timeout) : EINVALIDE;
 }
-
 
 __cend

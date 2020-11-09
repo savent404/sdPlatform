@@ -9,7 +9,7 @@
 __cbegin
 
 static inline const char*
-parse_devcie_to_json(device_t dev)
+parse_device_to_json(device_t dev)
 {
     return "{}";
 }
@@ -19,12 +19,12 @@ parse_driver_to_json(driver_t dri)
     return "{}";
 }
 
-static inline device_t*
+static inline device_t
 parse_device_from_json(const char* p)
 {
     return NULL;
 }
-static inline driver_t*
+static inline driver_t
 parse_driver_from_json(const char* p)
 {
     return NULL;
@@ -42,6 +42,18 @@ register_driver(driver_t dri)
 {
     const char* str = parse_driver_to_json(dri);
     return devmgr_register_device(str);
+}
+
+static inline int
+unregister_device(device_t dev)
+{
+    return devmgr_unregister_device(dev_id(dev));
+}
+
+static inline int
+unregister_driver(driver_t dri)
+{
+    return devmgr_unregister_driver(dev_id(dri));
 }
 
 static inline device_t
@@ -67,11 +79,13 @@ update_device(device_t dev)
     return devmgr_update_device(dev_id(dev), str);
 }
 
+/*
 static inline int
 update_driver(driver_t dri)
 {
     const char* str = parse_driver_to_json(dri);
     return devmgr_update_driver(dri_id(dri), str);
 }
+*/
 
 __cend

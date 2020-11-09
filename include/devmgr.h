@@ -13,8 +13,20 @@ devmgr_register_device(const char* str)
     return 0;
 }
 
+static inline int
+devmgr_unregister_device(device_id_t dev_id)
+{
+    return 0;
+}
+
 static inline driver_id_t
 devmgr_register_driver(const char* str)
+{
+    return 0;
+}
+
+static inline int
+devmgr_unregister_driver(driver_id_t dri_id)
 {
     return 0;
 }
@@ -37,10 +49,12 @@ devmgr_update_device(device_id_t id, const char* str)
     return 0;
 }
 
+/*
 static inline int
 devmgr_update_driver(driver_id_t id, const char* str)
 {
     return 0;
 }
+*/
 
 __cend
