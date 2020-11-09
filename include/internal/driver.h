@@ -58,6 +58,30 @@ dri_is_registered(driver_t dri)
 }
 
 /**
+ * checkout if device and driver matched
+ * @param[in] dri driver_t
+ * @param[in] dev device_t
+ * @return true as matched
+ */
+static inline bool
+dri_match_device(driver_t dri, device_t dev)
+{
+    char *now = NULL, *next = NULL, *compat = NULL;
+    if (!dri || !dri->d_env || !dri->d_env->compat || !dev || !dev->d_env || !dev->d_env->compat)
+        return false;
+    
+    compat = dev->d_env->compat;
+    now = dri->d_env->compat;
+    next = strchr(now, '|');
+    do {
+        int letter = next ? now - next : strlen(now);
+        if (!strncmp(now, compat, letter))
+            return true;
+    } while (next);
+    return false;
+}
+
+/**
  * driver ops:: init
  * @brief initial driver
  * @param[in] dri driver_t

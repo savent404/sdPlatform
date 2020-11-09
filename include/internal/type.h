@@ -13,4 +13,5 @@ enum eno
 {
     EOK = 0,
     EINVALIDE = -1,
+    EDENY = -2,
 };

@@ -10,6 +10,8 @@ __cbegin
  // treat this as a json object
  typedef struct device_env
 {
+    const char *name;
+    const char *compat;
     void* _env;
 } * device_env_t;
 
