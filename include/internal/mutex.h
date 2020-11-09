@@ -12,10 +12,7 @@ static inline mutex_t mutex_new(void) { return 0; }
 
 /**
  * delete a mutex instance
-<<<<<<< HEAD
  * @note if mutex is locked, alse unlock & delete it.
-=======
->>>>>>> 9be7c1296960c3194a5e7d9783262dc717ec1ae1
  * @param[in] mutex mutex_t
  * @return true as success
  */
