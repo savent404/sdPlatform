@@ -29,7 +29,7 @@ dlist_test(void)
 
     do {
         struct foo* tmp = _DLIST_GET_NODE(item, dlist, struct foo*);
-        printf("intance: 0x%08x Val: %d\n", (size_t)tmp, tmp->val);
+        printf("intance: 0x%lx Val: %d\n", (size_t)tmp, tmp->val);
         item = item->next;
     } while (root != item);
     return 0;
