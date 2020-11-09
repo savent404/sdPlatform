@@ -10,9 +10,10 @@ struct foo
     struct dlist dlist;
 };
 
-int dlist_test(void)
+int
+dlist_test(void)
 {
-    struct foo a,b,c;
+    struct foo a, b, c;
     a.val = 1;
     b.val = 2;
     c.val = 3;
@@ -28,13 +29,14 @@ int dlist_test(void)
 
     do {
         struct foo* tmp = _DLIST_GET_NODE(item, dlist, struct foo*);
-        printf("intance: 0x%08x Val: %d\n", (size_t)tmp, tmp->val);
+        printf("intance: 0x%lx Val: %d\n", (size_t)tmp, tmp->val);
         item = item->next;
     } while (root != item);
     return 0;
 }
 
-int main(void)
+int
+main(void)
 {
     dlist_test();
 
