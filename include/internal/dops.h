@@ -22,9 +22,9 @@ typedef struct driver_ops
 /**
  * driver ops:: init
  * @brief initial driver
- * @param ops[in] driver_ops_t
- * @param argc[in] param num
- * @param argv[in] param
+ * @param[in] ops driver_ops_t
+ * @param[in] argc param num
+ * @param[in] argv param
  * @return see enum eno
  */
 static inline int dops_init(driver_ops_t ops, int argc, char **argv) {
@@ -34,7 +34,7 @@ static inline int dops_init(driver_ops_t ops, int argc, char **argv) {
 /**
  * driver ops:: deinit
  * @brief deinit driver
- * @param ops[in] driver_ops_t
+ * @param[in] ops driver_ops_t
  * @return see enum eno
  */
 static inline int dops_deinit(driver_ops_t ops) {
@@ -44,8 +44,8 @@ static inline int dops_deinit(driver_ops_t ops) {
 /**
  * drvier ops:: bind
  * @brief bind driver and device
- * @param ops[in] driver_ops_t
- * @param dev_id[in] device_id_t
+ * @param[in] ops driver_ops_t
+ * @param[in] dev_id device_id_t
  * @return see enum eno
  */
 static inline int dops_bind(driver_ops_t ops, device_id_t dev_id) {
@@ -55,8 +55,8 @@ static inline int dops_bind(driver_ops_t ops, device_id_t dev_id) {
 /**
  * driver ops:: unbind
  * @brief unbind driver and device
- * @param ops[in] driver_ops_t
- * @param dev_id[in] device_id_t
+ * @param[in] ops driver_ops_t
+ * @param[in] dev_id device_id_t
  * @return see enum eno
  */
 static inline int dops_unbind(driver_ops_t ops, device_id_t dev_id) {
@@ -66,9 +66,9 @@ static inline int dops_unbind(driver_ops_t ops, device_id_t dev_id) {
 /**
  * driver ops:: open
  * @brief open device
- * @param ops[in] driver_ops_t
- * @param dev_id[in] device_id_t
- * @param flags[in] open flags
+ * @param[in] ops driver_ops_t
+ * @param[in] dev_id device_id_t
+ * @param[in] flags open flags
  * @return see enum eno
  */
 static inline int dops_open(driver_ops_t ops, device_id_t dev_id, int flags) {
@@ -78,8 +78,8 @@ static inline int dops_open(driver_ops_t ops, device_id_t dev_id, int flags) {
 /**
  * driver ops:: close
  * @brief close deivce
- * @param ops[in] driver_ops_t
- * @param dev_id[in] device_id_t
+ * @param[in] ops driver_ops_t
+ * @param[in] dev_id device_id_t
  * @return see enum eno
  */
 static inline int dops_close(driver_ops_t ops, device_id_t dev_id) {
@@ -89,10 +89,10 @@ static inline int dops_close(driver_ops_t ops, device_id_t dev_id) {
 /**
  * driver ops:: write
  * @brief write to device
- * @param ops[in] driver_ops_t
- * @param dev_id[in] device_id_t
- * @param in[in] buffer align as Byte
- * @param size[in] size
+ * @param[in] ops driver_ops_t
+ * @param[in] dev_id device_id_t
+ * @param[in] in buffer align as Byte
+ * @param[in] size size
  * @return see enum eno
  */
 static inline int dops_write(driver_ops_t ops, device_id_t dev_id, const void *in, size_t size) {
@@ -102,10 +102,10 @@ static inline int dops_write(driver_ops_t ops, device_id_t dev_id, const void *i
 /**
  * driver ops:: read
  * @brief read from device
- * @param ops[in] driver_ops_t
- * @param dev_id[in] device_id_t
- * @param out[out] output buffer, align as Byte
- * @param size[in]
+ * @param[in] ops driver_ops_t
+ * @param[in] dev_id device_id_t
+ * @param[out] out output buffer, align as Byte
+ * @param[in] size
  * @return see enum eno
  */
 static inline int dops_read(driver_ops_t ops, device_id_t dev_id, void *out, size_t size) {
@@ -115,12 +115,12 @@ static inline int dops_read(driver_ops_t ops, device_id_t dev_id, void *out, siz
 /**
  * driver ops:: transfer(read/write)
  * @brief read/write some bytes
- * @param ops[in] driver_ops_t
- * @param dev_id[in] device_id_t
- * @param in[in] buffer to write
- * @param in_size[in] write bytes
- * @param out[in] buffer to read
- * @param out_size[in] read bytes
+ * @param[in] ops driver_ops_t
+ * @param[in] dev_id device_id_t
+ * @param[in] in buffer to write
+ * @param[in] in_size write bytes
+ * @param[in] out buffer to read
+ * @param[in] out_size read bytes
  * @note if in == nullptr or in_size == 0, no write
  * @note if out== nullptr or out_size == 0, no read
  * @return see enum eno
@@ -132,9 +132,9 @@ static inline int dops_transfer(driver_ops_t ops, device_id_t dev_id, const void
 /**
  * driver ops:: ioctl
  * @brief ioctl for device
- * @param ops[in] driver_ops_t
- * @param dev_id[in] device_id_t
- * @param cmd[in] function to cmd
+ * @param[in] ops driver_ops_t
+ * @param[in] dev_id device_id_t
+ * @param[in] cmd function to cmd
  * @param in_out (in or out) buffer
  * @param size (in or out) buffer size
  * @return see enum eno
@@ -146,10 +146,10 @@ static inline int dops_ioctl(driver_ops_t ops, device_id_t dev_id, uint32_t cmd,
 /**
  * driver ops:: select
  * @brief listen device event
- * @param ops[in] driver_ops_t
- * @param dev_id[in] device_id_t
- * @param flags[in] listen evnet list
- * @param timeout[in] 0 means no wait, (size_t)-1 means wait forever
+ * @param[in] ops driver_ops_t
+ * @param[in] dev_id device_id_t
+ * @param[in] flags listen evnet list
+ * @param[in] timeout 0 means no wait, (size_t)-1 means wait forever
  * @return see enum eno
  */
 static inline int dops_select(driver_ops_t ops, device_id_t dev_id, uint32_t flags, size_t timeout) {
