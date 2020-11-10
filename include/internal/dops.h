@@ -1,7 +1,7 @@
 #pragma once
 
 #include <internal/toolchain.h>
-#include <internal/type.h>
+#include <type.h>
 #include <internal/device.h>
 
 

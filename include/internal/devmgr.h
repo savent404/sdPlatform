@@ -4,7 +4,7 @@
 #include <internal/device.h>
 #include <internal/driver.h>
 #include <internal/toolchain.h>
-#include <internal/type.h>
+#include <type.h>
 #include <cJSON.h>
 
 

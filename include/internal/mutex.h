@@ -1,6 +1,6 @@
 #pragma once
 
-#include <internal/type.h>
+#include <type.h>
 
 #include <pthread.h>
 #include <stdlib.h>

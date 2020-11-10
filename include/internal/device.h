@@ -2,7 +2,7 @@
 
 #include <internal/btree.h>
 #include <internal/toolchain.h>
-#include <internal/type.h>
+#include <type.h>
 #include <cJSON.h>
 
 
