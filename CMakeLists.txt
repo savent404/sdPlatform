@@ -1,7 +1,8 @@
 cmake_minimum_required(VERSION 3.10)
 project(driver_platform)
 
-include_directories(include extern/cJSON)
+include_directories(include extern/cJSON ${CMAKE_INCLUDE_PATH})
+link_directories(${CMAKE_LIBRARY_PATH})
 
 add_library(cJSON extern/cJSON/cJSON.c extern/cJSON/cJSON_Utils.c)
 link_libraries(cJSON)
