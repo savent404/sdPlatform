@@ -1,34 +1,11 @@
 #pragma once
 
+#include <internal/device-type.h>
 #include <cJSON.h>
-#include <internal/btree.h>
-#include <internal/toolchain.h>
-#include <type.h>
 
-// treat this as a json object
-typedef struct device_env
-{
-    const char* name;
-    const char* compat;
-    const char* _json_str;
-    void* _json_obj;
-} * device_env_t;
-
-typedef void* device_data_t;
-
-typedef struct device
-{
-    device_env_t d_env;   // device init info
-    device_data_t d_data; // device runtime info
-    driver_id_t d_driver; // id to driver
-    driver_t _d_driver;   // opinter to driver
-
-    device_id_t d_self;
-    device_id_t d_parent;
-    device_id_t d_child;
-    device_id_t d_prev;
-    device_id_t d_next;
-} * device_t;
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /**
  * @brief checkout if device is binded
@@ -36,11 +13,8 @@ typedef struct device
  * @return true as binded
  * @note if device is not binded, dev->d_data must be NULL
  */
-static inline bool
-dev_is_binded(device_t dev)
-{
-    return dev && dev->d_data;
-}
+bool
+dev_is_binded(device_t dev);
 
 /**
  * @brief checkout if device id registered
@@ -48,11 +22,8 @@ dev_is_binded(device_t dev)
  * @return true as registered
  * @note if device is not registered, dev->d_self must be 0
  */
-static inline bool
-dev_is_registered(device_t dev)
-{
-    return dev->d_self == 0;
-}
+bool
+dev_is_registered(device_t dev);
 
 /**
  * @brief get device structure from device_id
@@ -60,47 +31,31 @@ dev_is_registered(device_t dev)
  * @return device_t
  * @note TODO(savent): implement a method to get device struct
  */
-static inline device_t
-dev_by_id(device_id_t devid)
-{
-    return NULL;
-}
+device_t
+dev_by_id(device_id_t devid);
 
 /**
  * @brief get device's id
  * @return device_it_t
  */
-static inline device_id_t
-dev_id(device_t dev)
-{
-    return dev && dev->d_self ? dev->d_self : 0;
-}
+device_id_t
+dev_id(device_t dev);
 
 /**
  * @brief return cJSON obj from d_env
  * @param[in] dev
  * @return cJSON*, NULL means failed
  */
-static inline cJSON*
-dev_env_json(device_t dev)
-{
-    if (!dev || !dev->d_env || !dev->d_env->_json_obj)
-        return NULL;
-    return dev->d_env->_json_obj;
-}
+cJSON*
+dev_env_json(device_t dev);
 
 /**
  * @brief return json string from d_env
  * @param[in] dev
  * @return string, NULL means failed
  */
-static inline const char*
-dev_env_string(device_t dev)
-{
-    if (!dev || !dev->d_env || !dev->d_env->_json_str)
-        return NULL;
-    return dev->d_env->_json_str;
-}
+const char*
+dev_env_string(device_t dev);
 
 /**
  * @brief parse dev env's json string to cJSON obj
@@ -108,23 +63,8 @@ dev_env_string(device_t dev)
  * @note output see 'dev->d_env->_json_obj' and method 'dev_env_json'
  * @return true as success
  */
-static inline bool
-dev_env_parse(device_t dev)
-{
-    cJSON* c = NULL;
-    if (!dev || !dev->d_env || !dev->d_env->_json_str)
-        return false;
-    c = cJSON_Parse(dev->d_env->_json_str);
-    if (c == NULL)
-        return false;
-    if (dev_env_json(dev)) {
-        cJSON* obj = dev_env_json(dev);
-        dev->d_env->_json_obj = NULL;
-        cJSON_Delete(obj);
-    }
-    dev->d_env->_json_obj = c;
-    return true;
-}
+bool
+dev_env_parse(device_t dev);
 
 /**
  * @brief dump dev env's cJSON obj to json string
@@ -132,33 +72,16 @@ dev_env_parse(device_t dev)
  * @note output see 'dev->d_env->_json_str' and method 'dev_env_string'
  * @return true as success
  */
-static inline bool
-dev_env_dump(device_t dev)
-{
-    if (!dev || !dev->d_env || !dev->d_env->_json_obj)
-        return false;
-    const char* c = cJSON_Print(dev->d_env->_json_obj);
-    if (c == NULL)
-        return false;
-    if (dev_env_string(dev)) {
-        const void* str = dev_env_string(dev);
-        dev->d_env->_json_str;
-        cJSON_free((void*)str);
-    }
-    dev->d_env->_json_str = c;
-    return c != NULL;
-}
+bool
+dev_env_dump(device_t dev);
 
 /**
  * @brief get driver id of this device
  * @param dev device_t
  * @return driver_id_t
  */
-static inline driver_id_t
-dev_get_driver_id(device_t dev)
-{
-    return dev->d_driver;
-}
+ driver_id_t
+dev_get_driver_id(device_t dev);
 
 /**
  * @brief set driver id of this device
@@ -166,13 +89,8 @@ dev_get_driver_id(device_t dev)
  * @param dri_id driver_id_t
  * @return none
  */
-static inline driver_id_t
-dev_set_driver_id(device_t dev, driver_id_t dri_id)
-{
-    if (!dev)
-        return;
-    dev->d_driver = dri_id;
-}
+ driver_id_t
+dev_set_driver_id(device_t dev, driver_id_t dri_id);
 
 /**
  * @brief get driver's instance of this device
@@ -180,11 +98,8 @@ dev_set_driver_id(device_t dev, driver_id_t dri_id)
  * @warning only works in the same driver process.
  * @return device_t
  */
-static inline driver_t
-dev_get_driver(device_t dev)
-{
-    return dev ? dev->_d_driver : NULL;
-}
+void*
+dev_get_driver(device_t dev);
 
 /**
  * @brief get driver's instance of this device
@@ -193,13 +108,8 @@ dev_get_driver(device_t dev)
  * @warning only works in the same driver process.
  * @return none
  */
-static inline void
-dev_set_driver(device_t dev, driver_t dri)
-{
-    if (!dev)
-        return;
-    dev->_d_driver = dri;
-}
+void
+dev_set_driver(device_t dev,void* dri);
 
 /**
  * @brief get driver's member 'data'
@@ -207,11 +117,8 @@ dev_set_driver(device_t dev, driver_t dri)
  * @warning only works in the same driver process.
  * @return none
  */
-static inline void*
-dev_get_data(device_t dev)
-{
-    return dev ? dev->d_data : NULL;
-}
+void*
+dev_get_data(device_t dev);
 
 /**
  * @brief set driver's member 'data'
@@ -219,10 +126,9 @@ dev_get_data(device_t dev)
  * @warning only works in the same driver process.
  * @return device_t
  */
-static inline void
-dev_set_data(device_t dev, device_data_t data)
-{
-    if (!dev)
-        return;
-    dev->d_data = data;
+void
+dev_set_data(device_t dev, device_data_t data);
+
+#ifdef __cplusplus
 }
+#endif

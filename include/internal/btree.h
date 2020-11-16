@@ -2,7 +2,10 @@
 
 #include <internal/dlist.h>
 
-
+#ifdef __cplusplus
+extern "C"
+{
+#endif
 
 typedef struct btree
 {
@@ -11,16 +14,14 @@ typedef struct btree
     struct btree* parent;
 } * btree_t;
 
-static inline void
-btree_init(btree_t tree)
+static inline void btree_init(btree_t tree)
 {
     dlist_init(&tree->dlist);
     tree->child = NULL;
     tree->parent = NULL;
 }
 
-static inline void
-btree_add_child(btree_t _node, btree_t _new)
+static inline void btree_add_child(btree_t _node, btree_t _new)
 {
     // make sure '_new' is alone
     dlist_init(&_new->dlist);
@@ -34,8 +35,7 @@ btree_add_child(btree_t _node, btree_t _new)
     }
 }
 
-static inline void
-btree_del_child(btree_t _parent, btree_t _node)
+static inline void btree_del_child(btree_t _parent, btree_t _node)
 {
     if (!_parent || !_parent->child ||
         !dlist_has_item(&_parent->child->dlist, &_node->dlist))
@@ -53,28 +53,18 @@ btree_del_child(btree_t _parent, btree_t _node)
     }
 }
 
-static inline void
-btree_remove(btree_t _node)
+static inline void btree_remove(btree_t _node)
 {
     if (_node->parent) {
         btree_del_child(_node->parent, _node);
     }
 }
 
-static inline btree_t
-btree_child(btree_t _node)
-{
-    return _node->child;
-}
+static inline btree_t btree_child(btree_t _node) { return _node->child; }
 
-static inline btree_t
-btree_parent(btree_t _node)
-{
-    return _node->parent;
-}
+static inline btree_t btree_parent(btree_t _node) { return _node->parent; }
 
-static inline btree_t
-btree_next(btree_t _node)
+static inline btree_t btree_next(btree_t _node)
 {
     dlist_t next = dlist_next(&_node->dlist);
 
@@ -84,6 +74,8 @@ btree_next(btree_t _node)
 #define _BTREE_GET_NODE _DLIST_GET_NODE
 
 #define BTREE_GET_NODE(instance, node_ptr_type)                                \
-    _BTREE_GET_NODE(instance, btree, node_ptr_type)
+_BTREE_GET_NODE(instance, btree, node_ptr_type)
 
-
+#ifdef __cplusplus
+}
+#endif

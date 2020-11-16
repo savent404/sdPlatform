@@ -1,33 +1,14 @@
 #pragma once
 
-#include <stddef.h>
-#include <stdint.h>
-#include <string.h>
-
-#include <internal/device.h>
-#include <internal/devmgr.h>
+#include <internal/device-type.h>
 #include <internal/dops.h>
+#include <internal/driver-type.h>
 #include <internal/toolchain.h>
 
-
-
-
-typedef __aligned struct driver_env
+#ifdef __cplusplus
+extern "C"
 {
-    const char* name;
-    const char* compat;
-    const char* _json;
-} * driver_env_t;
-
-typedef void * driver_data_t;
-
-typedef struct driver
-{
-    driver_env_t d_env;
-    driver_data_t d_data;
-    driver_id_t d_self;
-    driver_ops_t d_ops;
-} * driver_t;
+#endif
 
 /**
  * get driver structure from driver_id_t
@@ -35,33 +16,21 @@ typedef struct driver
  * @return driver_t
  * @note TODO(savent): need implement
  */
-static inline driver_t
-dri_by_id(driver_id_t id)
-{
-    return 0;
-}
+driver_t dri_by_id(driver_id_t id);
 
 /**
  * get driver's driver_id_t
  * @param[in] dri driver_t
  * @return driver_id_t
  */
-static inline driver_id_t
-dri_id(driver_t dri)
-{
-    return dri ? dri->d_self : 0;
-}
+driver_id_t dri_id(driver_t dri);
 
 /**
  * check if driver is registered
  * @note if driver already registered, driver_id_t must not be 0
  * @return true as registered
  */
-static inline bool
-dri_is_registered(driver_t dri)
-{
-    return dri_id(dri) == 0;
-}
+static inline bool dri_is_registered(driver_t dri);
 
 /**
  * checkout if device and driver matched
@@ -69,25 +38,7 @@ dri_is_registered(driver_t dri)
  * @param[in] dev device_t
  * @return true as matched
  */
-static inline bool
-dri_match_device(driver_t dri, device_t dev)
-{
-    const char *now = NULL, *next = NULL, *compat = NULL;
-    if (!dri || !dri->d_env || !dri->d_env->compat || !dev || !dev->d_env ||
-        !dev->d_env->compat)
-        return false;
-
-    compat = dev->d_env->compat;
-    next = dri->d_env->compat - 1;
-    do {
-        now = next + 1;
-        next = strchr(now, '|');
-        int letter = next ? next - now : strlen(now);
-        if (!strncmp(now, compat, letter))
-            return true;
-    } while (next);
-    return false;
-}
+static inline bool dri_match_device(driver_t dri, device_t dev);
 
 /**
  * driver ops:: init
@@ -98,16 +49,7 @@ dri_match_device(driver_t dri, device_t dev)
  * @note dops_init should register driver inside
  * @return see enum eno
  */
-static inline int
-dri_init(driver_t dri, int argc, char** argv)
-{
-    int res = dri ? dops_init(dri->d_ops, argc, argv) : EINVALIDE;
-    if (!res) {
-        driver_id_t dri_id = register_driver(dri);
-        dri->d_self = dri_id;
-    }
-    return res;
-}
+int dri_init(driver_t dri, int argc, char** argv);
 
 /**
  * driver ops:: deinit
@@ -115,16 +57,7 @@ dri_init(driver_t dri, int argc, char** argv)
  * @param[in] dri driver_t
  * @return see enum eno
  */
-static inline int
-dri_deinit(driver_t dri)
-{
-    int res = dri ? dops_deinit(dri->d_ops) : EINVALIDE;
-    if (!res) {
-        unregister_driver(dri->d_self);
-        dri->d_self = 0;
-    }
-    return res;
-}
+int dri_deinit(driver_t dri);
 
 /**
  * drvier ops:: bind
@@ -133,18 +66,7 @@ dri_deinit(driver_t dri)
  * @param[in] dev device_id_t
  * @return see enum eno
  */
-static inline int
-dri_bind(driver_t dri, device_t dev)
-{
-    if (!dri_match_device(dri, dev) && dev_is_binded(dev))
-        return EDENY;
-    int res = dri ? dops_bind(dri->d_ops, dev) : EINVALIDE;
-    if (!res) {
-        dev->d_driver = dri_id(dri);
-        dev->_d_driver = dri;
-    }
-    return res;
-}
+int dri_bind(driver_t dri, device_t dev);
 
 /**
  * driver ops:: unbind
@@ -153,15 +75,7 @@ dri_bind(driver_t dri, device_t dev)
  * @param[in] dev device_id_t
  * @return see enum eno
  */
-static inline int
-dri_unbind(driver_t dri, device_t dev)
-{
-    int res = dri ? dops_unbind(dri->d_ops, dev) : EINVALIDE;
-    if (!res) {
-        dri->d_self = 0;
-    }
-    return 0;
-}
+int dri_unbind(driver_t dri, device_t dev);
 
 /**
  * driver ops:: open
@@ -171,11 +85,7 @@ dri_unbind(driver_t dri, device_t dev)
  * @param[in] flags open flags
  * @return see enum eno
  */
-static inline int
-dri_open(driver_t dri, device_t dev, int flags)
-{
-    return dri ? dops_open(dri->d_ops, dev, flags) : EINVALIDE;
-}
+int dri_open(driver_t dri, device_t dev, int flags);
 
 /**
  * driver ops:: close
@@ -184,11 +94,7 @@ dri_open(driver_t dri, device_t dev, int flags)
  * @param[in] dev device_id_t
  * @return see enum eno
  */
-static inline int
-dri_close(driver_t dri, device_t dev)
-{
-    return dri ? dops_close(dri->d_ops, dev) : EINVALIDE;
-}
+int dri_close(driver_t dri, device_t dev);
 
 /**
  * driver ops:: write
@@ -199,11 +105,7 @@ dri_close(driver_t dri, device_t dev)
  * @param[in] size size
  * @return see enum eno
  */
-static inline int
-dri_write(driver_t dri, device_t dev, const void* in, size_t size)
-{
-    return dri ? dops_write(dri->d_ops, dev, in, size) : EINVALIDE;
-}
+int dri_write(driver_t dri, device_t dev, const void* in, size_t size);
 
 /**
  * driver ops:: read
@@ -214,11 +116,7 @@ dri_write(driver_t dri, device_t dev, const void* in, size_t size)
  * @param[in] size
  * @return see enum eno
  */
-static inline int
-dri_read(driver_t dri, device_t dev, void* out, size_t size)
-{
-    return dri ? dops_read(dri->d_ops, dev, out, size) : EINVALIDE;
-}
+int dri_read(driver_t dri, device_t dev, void* out, size_t size);
 
 /**
  * driver ops:: transfer(read/write)
@@ -233,17 +131,12 @@ dri_read(driver_t dri, device_t dev, void* out, size_t size)
  * @note if out== nullptr or out_size == 0, no read
  * @return see enum eno
  */
-static inline int
-dri_transfer(driver_t dri,
-             device_t dev,
-             const void* in,
-             size_t in_size,
-             void* out,
-             size_t out_size)
-{
-    return dri ? dops_transfer(dri->d_ops, dev, in, in_size, out, out_size)
-               : EINVALIDE;
-}
+int dri_transfer(driver_t dri,
+                    device_t dev,
+                    const void* in,
+                    size_t in_size,
+                    void* out,
+                    size_t out_size);
 
 /**
  * driver ops:: ioctl
@@ -255,11 +148,11 @@ dri_transfer(driver_t dri,
  * @param size (in or out) buffer size
  * @return see enum eno
  */
-static inline int
-dri_ioctl(driver_t dri, device_t dev, uint32_t cmd, void* in_out, size_t* size)
-{
-    return dri ? dops_ioctl(dri->d_ops, dev, cmd, in_out, size) : EINVALIDE;
-}
+int dri_ioctl(driver_t dri,
+                device_t dev,
+                uint32_t cmd,
+                void* in_out,
+                size_t* size);
 
 /**
  * driver ops:: select
@@ -270,10 +163,8 @@ dri_ioctl(driver_t dri, device_t dev, uint32_t cmd, void* in_out, size_t* size)
  * @param[in] timeout 0 means no wait, (size_t)-1 means wait forever
  * @return see enum eno
  */
-static inline int
-dri_select(driver_t dri, device_t dev, uint32_t flags, size_t timeout)
-{
-    return dri ? dops_select(dri->d_ops, dev, flags, timeout) : EINVALIDE;
+int dri_select(driver_t dri, device_t dev, uint32_t flags, size_t timeout);
+
+#ifdef __cplusplus
 }
-
-
+#endif

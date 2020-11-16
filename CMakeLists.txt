@@ -7,12 +7,13 @@ link_directories(${CMAKE_LIBRARY_PATH})
 add_library(cJSON extern/cJSON/cJSON.c extern/cJSON/cJSON_Utils.c)
 link_libraries(cJSON)
 
-add_library(sdPlatform-int SHARED source/driver-int.c)
+aux_source_directory(source/internal drivers_source)
+add_library(sdPlatform-int STATIC source/driver-int.c ${drivers_source})
 target_link_libraries(sdPlatform-int cJSON)
 install(TARGETS sdPlatform-int LIBRARY DESTINATION lib)
 
 add_library(sdPlatform-ext source/driver-ext.c)
-target_link_libraries(sdPlatform-ext cJSON)
+target_link_libraries(sdPlatform-ext SHARED cJSON)
 install(TARGETS sdPlatform-ext LIBRARY DESTINATION lib)
 
 file(GLOB SD_PLATFORM_PUB_INC "include/*.h")

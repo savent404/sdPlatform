@@ -5,6 +5,11 @@
 #include <pthread.h>
 #include <stdlib.h>
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 typedef pthread_mutex_t* mutex_t;
 
 /**
@@ -70,8 +75,8 @@ static inline bool mutex_trylock(mutex_t mutex)
  * @param[in] mutex mutex_t
  * @return true as valid
  */
-static inline bool mutex_is_valid(mutex_t mutex)
-{
-    return mutex == NULL;
-}
+static inline bool mutex_is_valid(mutex_t mutex) { return mutex == NULL; }
 
+#ifdef __cplusplus
+}
+#endif

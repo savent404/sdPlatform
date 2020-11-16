@@ -2,6 +2,11 @@
 
 #include <stddef.h>
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 // 暴露的C API
 #define EXTERN_C_API
 
@@ -18,10 +23,11 @@
 // 寄存器
 typedef void* reg_t;
 
-// CPU 32/64位
-// typedef unsigned int cpu_t;
-
 // 拒绝编译器优化执行顺序
 #define __IO(x) (x)
 
 #define __weak __attribute__((weak))
+
+#ifdef __cplusplus
+}
+#endif
