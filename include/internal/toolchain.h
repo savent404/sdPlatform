@@ -28,6 +28,8 @@ typedef void* reg_t;
 
 #define __weak __attribute__((weak))
 
+#define BIT(x)  (1 << x)
+
 #ifdef __cplusplus
 }
 #endif
