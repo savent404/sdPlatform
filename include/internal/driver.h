@@ -33,6 +33,13 @@ driver_id_t dri_id(driver_t dri);
 driver_data_t dri_get_data(driver_t dri);
 
 /**
+ * get driver's internal api
+ * @param[in] dri driver_t
+ * @return driver_internal_api_t
+ */
+driver_internal_api_t dri_get_intapi(driver_t dri);
+
+/**
  * set driver's driver data
  * @param[in] dri driver_t
  * @param[in] data driver_data_t

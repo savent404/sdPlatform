@@ -28,6 +28,12 @@ dri_set_data(driver_t dri, driver_data_t data)
     dri->d_data = data;
 }
 
+driver_internal_api_t
+dri_get_intapi(driver_t dri)
+{
+    return dri ? dri->int_api : NULL;
+}
+
 bool
 dri_is_registered(driver_t dri)
 {
