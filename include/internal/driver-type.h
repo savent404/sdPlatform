@@ -30,6 +30,30 @@ typedef struct driver
     driver_internal_api_t d_intapi;
 } * driver_t;
 
+/**
+ * @brief  delcear driver
+ * @param[in][optional] name driver's name
+ * @param[in]           compat driver's compat string
+ * @param[in]           file_ops driver_ops_t
+ * @param[in][optional] internal_api driver_internal_api_t
+ */
+/*
+#define DECLEAR_DRIVER(name, compat, file_ops, internal_api)                   \
+    {                                                                          \
+        satic struct driver_env env = { \
+            .name = name, \
+            .compat = compat, \
+        }; \
+        static struct driver_##name = {                                        \
+            .d_env = NULL,                                                     \
+            .d_data = NULL,                                                    \
+            .d_self = 0,                                                       \
+            .d_ops = file_ops,                                                 \
+            .d_intapi = internal_api,                                          \
+        }; \
+}
+*/
+
 #ifdef __cplusplus
 }
 #endif
