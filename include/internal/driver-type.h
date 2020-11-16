@@ -27,7 +27,7 @@ typedef struct driver
     driver_data_t d_data;
     driver_id_t d_self;
     driver_ops_t d_ops;
-    driver_internal_api_t int_api;
+    driver_internal_api_t d_intapi;
 } * driver_t;
 
 #ifdef __cplusplus

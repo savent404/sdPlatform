@@ -31,7 +31,7 @@ dri_set_data(driver_t dri, driver_data_t data)
 driver_internal_api_t
 dri_get_intapi(driver_t dri)
 {
-    return dri ? dri->int_api : NULL;
+    return dri ? dri->d_intapi : NULL;
 }
 
 driver_env_t
