@@ -23,3 +23,5 @@ typedef void* reg_t;
 
 // 拒绝编译器优化执行顺序
 #define __IO(x) (x)
+
+#define __weak __attribute__((weak))
