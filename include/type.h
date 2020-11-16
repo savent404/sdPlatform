@@ -15,6 +15,8 @@ enum eno
     EINVALIDE = -1,
     EDENY = -2,
     EBUSY = -3,
+    ENOMEM = -4,
+    ENOPERMIT = -5,
 };
 
 enum fflag
