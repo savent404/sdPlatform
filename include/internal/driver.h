@@ -26,6 +26,21 @@ driver_t dri_by_id(driver_id_t id);
 driver_id_t dri_id(driver_t dri);
 
 /**
+ * get driver's driver data
+ * @param[in] dri driver_t
+ * @return void*
+ */
+driver_data_t dri_get_data(driver_t dri);
+
+/**
+ * set driver's driver data
+ * @param[in] dri driver_t
+ * @param[in] data driver_data_t
+ * @return none
+ */
+void dri_set_data(driver_t dri, driver_data_t data);
+
+/**
  * check if driver is registered
  * @note if driver already registered, driver_id_t must not be 0
  * @return true as registered

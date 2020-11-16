@@ -14,6 +14,20 @@ dri_id(driver_t dri)
     return dri ? dri->d_self : 0;
 }
 
+driver_data_t
+dri_get_data(driver_t dri)
+{
+    return dri ? dri->d_data : NULL;
+}
+
+void
+dri_set_data(driver_t dri, driver_data_t data)
+{
+    if (!dri)
+        return;
+    dri->d_data = data;
+}
+
 bool
 dri_is_registered(driver_t dri)
 {
