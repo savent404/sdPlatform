@@ -5,8 +5,10 @@
 #include <string.h>
 
 #include <internal/device.h>
+#include <internal/devmgr.h>
 #include <internal/dops.h>
 #include <internal/toolchain.h>
+
 
 
 
@@ -100,12 +102,10 @@ static inline int
 dri_init(driver_t dri, int argc, char** argv)
 {
     int res = dri ? dops_init(dri->d_ops, argc, argv) : EINVALIDE;
-    /*
     if (!res) {
         driver_id_t dri_id = register_driver(dri);
         dri->d_self = dri_id;
     }
-    */
     return res;
 }
 
@@ -119,8 +119,10 @@ static inline int
 dri_deinit(driver_t dri)
 {
     int res = dri ? dops_deinit(dri->d_ops) : EINVALIDE;
-    if (!res)
+    if (!res) {
+        unregister_driver(dri->d_self);
         dri->d_self = 0;
+    }
     return res;
 }
 
@@ -139,6 +141,7 @@ dri_bind(driver_t dri, device_t dev)
     int res = dri ? dops_bind(dri->d_ops, dev) : EINVALIDE;
     if (!res) {
         dev->d_driver = dri_id(dri);
+        dev->_d_driver = dri;
     }
     return res;
 }
