@@ -1,18 +1,17 @@
 #pragma once
 
+#include <cJSON.h>
 #include <internal/btree.h>
 #include <internal/toolchain.h>
 #include <type.h>
-#include <cJSON.h>
-
 
 // treat this as a json object
 typedef struct device_env
 {
-    const char *name;
-    const char *compat;
-    const char *_json_str;
-    void *_json_obj;
+    const char* name;
+    const char* compat;
+    const char* _json_str;
+    void* _json_obj;
 } * device_env_t;
 
 typedef void* device_data_t;
@@ -21,7 +20,8 @@ typedef struct device
 {
     device_env_t d_env;   // device init info
     device_data_t d_data; // device runtime info
-    driver_id_t d_driver; // opinter to driver
+    driver_id_t d_driver; // id to driver
+    driver_t _d_driver;   // opinter to driver
 
     device_id_t d_self;
     device_id_t d_parent;
@@ -94,11 +94,11 @@ dev_env_json(device_t dev)
  * @param[in] dev
  * @return string, NULL means failed
  */
-static inline const char *
+static inline const char*
 dev_env_string(device_t dev)
 {
     if (!dev || !dev->d_env || !dev->d_env->_json_str)
-    return NULL;
+        return NULL;
     return dev->d_env->_json_str;
 }
 
@@ -111,14 +111,14 @@ dev_env_string(device_t dev)
 static inline bool
 dev_env_parse(device_t dev)
 {
-    cJSON *c = NULL;
+    cJSON* c = NULL;
     if (!dev || !dev->d_env || !dev->d_env->_json_str)
         return false;
     c = cJSON_Parse(dev->d_env->_json_str);
     if (c == NULL)
         return false;
     if (dev_env_json(dev)) {
-        cJSON *obj = dev_env_json(dev);
+        cJSON* obj = dev_env_json(dev);
         dev->d_env->_json_obj = NULL;
         cJSON_Delete(obj);
     }
@@ -137,11 +137,11 @@ dev_env_dump(device_t dev)
 {
     if (!dev || !dev->d_env || !dev->d_env->_json_obj)
         return false;
-    const char *c = cJSON_Print(dev->d_env->_json_obj);
+    const char* c = cJSON_Print(dev->d_env->_json_obj);
     if (c == NULL)
         return false;
     if (dev_env_string(dev)) {
-        const void *str = dev_env_string(dev);
+        const void* str = dev_env_string(dev);
         dev->d_env->_json_str;
         cJSON_free((void*)str);
     }
@@ -149,4 +149,80 @@ dev_env_dump(device_t dev)
     return c != NULL;
 }
 
+/**
+ * @brief get driver id of this device
+ * @param dev device_t
+ * @return driver_id_t
+ */
+static inline driver_id_t
+dev_get_driver_id(device_t dev)
+{
+    return dev->d_driver;
+}
 
+/**
+ * @brief set driver id of this device
+ * @param dev device_t
+ * @param dri_id driver_id_t
+ * @return none
+ */
+static inline driver_id_t
+dev_set_driver_id(device_t dev, driver_id_t dri_id)
+{
+    if (!dev)
+        return;
+    dev->d_driver = dri_id;
+}
+
+/**
+ * @brief get driver's instance of this device
+ * @param dev device_t
+ * @warning only works in the same driver process.
+ * @return device_t
+ */
+static inline driver_t
+dev_get_driver(device_t dev)
+{
+    return dev ? dev->_d_driver : NULL;
+}
+
+/**
+ * @brief get driver's instance of this device
+ * @param dev device_t
+ * @param dri driver_t
+ * @warning only works in the same driver process.
+ * @return none
+ */
+static inline void
+dev_set_driver(device_t dev, driver_t dri)
+{
+    if (!dev)
+        return;
+    dev->_d_driver = dri;
+}
+
+/**
+ * @brief get driver's member 'data'
+ * @param dev device_t
+ * @warning only works in the same driver process.
+ * @return none
+ */
+static inline void*
+dev_get_data(device_t dev)
+{
+    return dev ? dev->d_data : NULL;
+}
+
+/**
+ * @brief set driver's member 'data'
+ * @param dev device_t
+ * @warning only works in the same driver process.
+ * @return device_t
+ */
+static inline void
+dev_set_data(device_t dev, device_data_t data)
+{
+    if (!dev)
+        return;
+    dev->d_data = data;
+}
