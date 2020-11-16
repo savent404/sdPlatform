@@ -34,6 +34,20 @@ dri_get_intapi(driver_t dri)
     return dri ? dri->int_api : NULL;
 }
 
+driver_env_t
+dri_get_env(driver_t dri)
+{
+    return dri ? dri->d_env : NULL;
+}
+
+void
+dri_set_env(driver_t dri, driver_env_t env)
+{
+    if (!dri)
+        return;
+    dri->d_env = env;
+}
+
 bool
 dri_is_registered(driver_t dri)
 {
