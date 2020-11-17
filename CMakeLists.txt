@@ -10,7 +10,8 @@ add_library(cJSON extern/cJSON/cJSON.c extern/cJSON/cJSON_Utils.c)
 link_libraries(cJSON)
 
 aux_source_directory(source user_source)
-add_library(platform-user ${user_source})
+aux_source_directory(source/internal platform_source)
+add_library(platform-user ${user_source} ${platform_source})
 target_link_libraries(platform-user)
 
 add_executable(cxx-test tests/cxx-test.cc)
