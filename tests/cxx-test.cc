@@ -2,10 +2,7 @@
 #include <platform-types.h>
 #include <platform.h>
 
-#include <iostream>
-
 #include <internal/driver.hxx>
-
 
 namespace platform {
 struct driver_demo : public driver {
