@@ -26,7 +26,8 @@ struct runtime {
    * @brief convert this instance to cJSON obj
    * @return cJSON*
    */
-  virtual cJSON *toJson() const { return nullptr; }
+  virtual cJSON *to_json() const { return nullptr; }
+  virtual void from_json(cJSON* obj) const {}
 };
 
 }  // namespace platform

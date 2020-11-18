@@ -6,28 +6,11 @@
 
 #include <internal/driver.hxx>
 
-int foo1(void) {
-  platform::parameters::initial_list list = {
-      {"name", "foo"},
-      {"compat", "x86,foo"},
-      {"config/var1", true},
-      {"config/var2", 12.0f},
-  };
-  platform::parameters data(list);
-
-  std::cout << "name:" << data.has("name") << std::endl;
-  std::cout << "compat:" << data.has("compat") << std::endl;
-  std::cout << "config/var1: " << data.has("config/var1") << std::endl;
-  std::cout << "config/var2: " << data.has("config/var2") << std::endl;
-  std::cout << "config/var3: " << data.has("config/var3") << std::endl;
-
-  return 0;
-}
 
 namespace platform {
 struct driver_demo : public driver {
  public:
-  driver_demo() : driver({{"name", "demo"}, {"compat", "x86,demo"}}, nullptr) {}
+  driver_demo() : driver({{"name", "demo"}, {"compat", "x86,demo|arm,demo"}}, nullptr) {}
 
  protected:
   virtual int init_(int argc, char** argv) { return eno::EINVALID; }
@@ -44,16 +27,16 @@ struct driver_demo : public driver {
   virtual int ioctl_(device_ref dev, int cmds, void* in_out, size_t* in_out_len, size_t buffer_max) {
     return eno::EINVALID;
   }
-
-  virtual cJSON* toJson_() { return nullptr; }
 };
 
 }  // namespace platform
 
 int main(void) {
-  foo1();
+  platform::driver_demo demo_driver;
+  platform::device demo_device({{"name", "demo"}, {"compat", "arm,demo|none"}});
 
-  platform::driver_demo demo;
-  demo.bind(0);
-  return 0;
+  int dev_id = demo_device.devmgr_register();
+  int dri_id = demo_driver.devmgr_register();
+
+  return dev_bind(dev_id, dri_id);
 }

@@ -11,6 +11,7 @@
 #pragma once
 
 #include <cJSON.h>
+#include <platform-types.h>
 #include <stddef.h>
 
 #include <list>
@@ -44,7 +45,8 @@ struct driver {
   using runtime_ref = runtime::value_ref;
 
   explicit driver(parameters::initial_list config_list, runtime_ptr runtime);
-  virtual ~driver() = default;
+  explicit driver(const char* json);
+  virtual ~driver();
 
   int init(int argc, char** argv);
   int deinit();
@@ -56,26 +58,44 @@ struct driver {
   int write(device_id dev, const void* in, size_t len);
   int read(device_id dev, void* out, size_t len);
   int ioctl(device_id dev, int cmds, void* in_out, size_t* in_out_len, size_t buffer_max);
-  cJSON* toJson();
+  cJSON* to_json();
+  void from_json(cJSON* obj);
+  driver_id get_id();
   // const char* serialize();
 
+  /**
+   * @brief devmanager's api
+   * @defgroup driver_devmgr_api
+   * @{
+   */
+  driver_id devmgr_register();
+  void devmgr_update();
+  void devmgr_query();
+  void devmgr_delete();
+  /**
+   * @}
+   */
+
  protected:
-  virtual int init_(int argc, char** argv) = 0;
-  virtual int deinit_() = 0;
-  virtual int bind_(device_ref dev) = 0;
-  virtual int unbind_(device_ref dev) = 0;
-  virtual int open_(device_ref dev, int flags) = 0;
-  virtual int close_(device_ref dev) = 0;
-  virtual int transfer_(device_ref dev, const void* in, size_t in_len, void* out, size_t out_len) = 0;
-  virtual int write_(device_ref dev, const void* in, size_t len) = 0;
-  virtual int read_(device_ref dev, void* out, size_t len) = 0;
-  virtual int ioctl_(device_ref dev, int cmds, void* in_out, size_t* in_out_len, size_t buffer_max) = 0;
-  virtual cJSON* toJson_() = 0;
+  virtual int init_(int argc, char** argv) { return eno::ENOTEXIST; }
+  virtual int deinit_() { return eno::ENOTEXIST; }
+  virtual int bind_(device_ref dev) { return eno::ENOTEXIST; }
+  virtual int unbind_(device_ref dev) { return eno::ENOTEXIST; }
+  virtual int open_(device_ref dev, int flags) { return eno::ENOTEXIST; }
+  virtual int close_(device_ref dev) { return eno::ENOTEXIST; }
+  virtual int transfer_(device_ref dev, const void* in, size_t in_len, void* out, size_t out_len) {
+    return eno::ENOTEXIST;
+  }
+  virtual int write_(device_ref dev, const void* in, size_t len) { return eno::ENOTEXIST; }
+  virtual int read_(device_ref dev, void* out, size_t len) { return eno::ENOTEXIST; }
+  virtual int ioctl_(device_ref dev, int cmds, void* in_out, size_t* in_out_len, size_t buffer_max) {
+    return eno::ENOTEXIST;
+  }
+  virtual cJSON* to_json_() { return nullptr; }
+  virtual void from_json_(cJSON* obj) {}
 
   parameters_ref get_config();
   runtime_ref get_runtime();
-  device_ptr query_device(device_id id);
-  bool update_device(device_id id, device_ref dev);
 
  protected:
   parameters config_;
@@ -88,8 +108,11 @@ struct driver {
   device_ptr get_device(device_id id);
   bool put_device(device_id, device_ptr ptr);
 
+  device_ptr query_device(device_id id);
+  bool update_device(device_id id, device_ref dev);
 
  private:
+  driver_id id_;
   device_kv_list device_list_;
 };
 }  // namespace platform

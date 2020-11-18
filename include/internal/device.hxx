@@ -42,14 +42,29 @@ struct device {
 
   virtual cJSON* to_json();
   virtual void from_json(cJSON* obj);
-  cJSON* gen_patch(cJSON* from);
-  cJSON* apply_patch(cJSON* from);
 
- protected:
+  /**
+   * @brief devmanager's api
+   * @defgroup device_devmgr_api
+   * @{
+   */
+  device_id devmgr_register();
+  void devmgr_update();
+  void devmgr_query();
+  void devmgr_delete();
+  /**
+   * @}
+   */
+
   runtime_ref get_runtime();
   parameters_ref get_config();
+  // cJSON* gen_patch(cJSON* from);
+  // cJSON* apply_patch(cJSON* from);
+
+ protected:
 
  private:
+  device_id id_;
   runtime_ptr runtime_;
   parameters config_;
 };
