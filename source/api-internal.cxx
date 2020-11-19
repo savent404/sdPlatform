@@ -67,10 +67,7 @@ __weak int dev_ioctl(int device_id, void *in_out, size_t *in_out_len, size_t buf
 
 __weak int devmgr_create_device(const char *json_str) {
   auto dev = new platform::device;
-  cJSON *obj = cJSON_Parse(json_str);
-  dev->from_json(obj);
-  cJSON_Delete(obj);
-
+  dev->from_json_str(json_str);
   int id = rand();  // NOLINT
   device_queue[id] = dev;
   return id;
@@ -78,9 +75,7 @@ __weak int devmgr_create_device(const char *json_str) {
 __weak int devmgr_update_device(int device_id, const char *json_str) {
   auto dev_iter = device_queue.find(device_id);
   if (dev_iter == device_queue.end()) return eno::ENOTEXIST;
-  cJSON *obj = cJSON_Parse(json_str);
-  dev_iter->second->from_json(obj);
-  cJSON_Delete(obj);
+  dev_iter->second->from_json_str(json_str);
   return 0;
 }
 __weak int devmgr_remove_device(int device_id) {
@@ -92,7 +87,7 @@ __weak int devmgr_remove_device(int device_id) {
 __weak const char *devmgr_query_device(int device_id) {
   auto dev_iter = device_queue.find(device_id);
   if (dev_iter == device_queue.end()) return nullptr;
-  return cJSON_Print(device_queue[device_id]->to_json());
+  return device_queue[device_id]->to_json_str();
 }
 
 __weak int devmgr_create_driver(const char *json_str) {

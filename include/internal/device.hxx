@@ -43,6 +43,9 @@ struct device {
   virtual cJSON* to_json();
   virtual void from_json(cJSON* obj);
 
+  const char* to_json_str();
+  void from_json_str(const char*);
+
   /**
    * @brief devmanager's api
    * @defgroup device_devmgr_api
@@ -60,8 +63,6 @@ struct device {
   parameters_ref get_config();
   // cJSON* gen_patch(cJSON* from);
   // cJSON* apply_patch(cJSON* from);
-
- protected:
 
  private:
   device_id id_;

@@ -51,25 +51,24 @@ void device::from_json(cJSON* root) {
   }
 }
 
-// cJSON* device::gen_patch(cJSON* from) {
-//   cJSON* obj = to_json();
-//   cJSON* f = cJSON_Duplicate(from, true);
-//   cJSON* patch = cJSONUtils_GeneratePatches(f, obj);
-//   cJSON_Delete(f);
-//   cJSON_Delete(obj);
-//   return patch;
-// }
+const char* device::to_json_str() {
+  cJSON* obj = this->to_json();
+  const char* out = cJSON_Print(obj);
+  cJSON_Delete(obj);
+  return out;
+}
 
-// cJSON* device::apply_patch(cJSON* from) { return nullptr; }
+void device::from_json_str(const char* ptr) {
+  cJSON* obj = cJSON_Parse(ptr);
+  this->from_json(obj);
+}
 
 device::runtime_ref device::get_runtime() { return *runtime_; }
 device::parameters_ref device::get_config() { return config_; }
 
 device::device_id device::devmgr_register() {
-  cJSON* obj = to_json();
-  const char* str = cJSON_Print(obj);
+  const char* str = to_json_str();
   int id = devmgr_create_device(str);
-  cJSON_Delete(obj);
   cJSON_free((void*)str);  // NOLINT
   if (id != 0) {
     id_ = id;
@@ -79,19 +78,15 @@ device::device_id device::devmgr_register() {
 }
 
 void device::devmgr_update() {
-  cJSON* obj = to_json();
-  const char* str = cJSON_Print(obj);
+  const char* str = to_json_str();
   devmgr_update_device(id_, str);
-  cJSON_Delete(obj);
   cJSON_free((void*)str);  // NOLINT
 }
 
 void device::devmgr_query() {
   const char* json_str = devmgr_query_device(id_);
-  cJSON* obj = cJSON_Parse(json_str);
+  from_json_str(json_str);
   cJSON_free((void*)json_str);  // NOLINT
-  from_json(obj);
-  cJSON_Delete(obj);
 }
 
 void device::devmgr_delete() { devmgr_remove_device(id_); }
