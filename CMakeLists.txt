@@ -9,9 +9,17 @@ link_directories(${CMAKE_LIBRARY_PATH})
 add_library(cJSON extern/cJSON/cJSON.c extern/cJSON/cJSON_Utils.c)
 link_libraries(cJSON)
 
+if (${CMAKE_SYSTEM_PROCESSOR} STREQUAL arm)
+    set(sys_source "source/arm32-embedded-sys.cxx")
+    add_definitions("-D__PLATFORM_EMBEDDED__=1")
+else()
+    add_definitions("-D__PLATFORM_EMBEDDED__=0")
+endif()
+
 aux_source_directory(source user_source)
+set(user_source "source/api-internal.cxx")
 aux_source_directory(source/internal platform_source)
-add_library(platform-user ${user_source} ${platform_source})
+add_library(platform-user ${sys_source} ${user_source} ${platform_source})
 target_link_libraries(platform-user)
 
 add_executable(cxx-test tests/cxx-test.cc)
