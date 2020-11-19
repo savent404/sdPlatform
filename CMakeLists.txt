@@ -27,3 +27,9 @@ add_library(stl_alter ${stl_alter_source})
 
 add_executable(cxx-test tests/cxx-test.cc)
 target_link_libraries(cxx-test cJSON platform-user)
+
+add_custom_target(doxygen
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    COMMAND doxygen
+    COMMENT "building api reference"
+)
