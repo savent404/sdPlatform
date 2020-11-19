@@ -10,6 +10,7 @@
  */
 #pragma once
 
+#include <internal/alter/exception.hxx>
 #include <cstddef>
 #include <cstdlib>
 #include <limits>
