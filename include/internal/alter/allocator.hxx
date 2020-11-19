@@ -10,13 +10,14 @@
  */
 #pragma once
 
-#include <internal/alter/exception.hxx>
 #include <cstddef>
 #include <cstdlib>
 #include <limits>
 // #include <boost/limits.hpp>
 #include <memory>
 #include <new>
+
+#include <internal/alter/exception.hxx>
 
 namespace platform {
 namespace internal {

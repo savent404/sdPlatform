@@ -12,7 +12,7 @@
 
 #include <exception>
 
-#if __PLATFORM_EMBEDDED__ == 0
+#if __PLATFORM_EMBEDDED__ == 1
 
 #ifndef __PLATFORM_THROW_OR_ABORT
 #define __PLATFORM_THROW_OR_ABORT
@@ -93,6 +93,7 @@ void __throw_underflow_error(const char* __s __attribute__((unused))) { platform
 //     _GLIBCXX_THROW_OR_ABORT(underflow_error(_(__s)));
 //   }
 
+// __attribute__((weak)) void __throw_bad_variant_access(char const *) { platform::internal::alter::do_nothing(); }
 }  // namespace std
 
 #endif
