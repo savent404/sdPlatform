@@ -14,7 +14,9 @@
 #include <utility>
 
 #include <internal/alter/allocator.hxx>
+#include <internal/alter/exception.hxx>
 
+#if __PLATFORM_EMBEDDED__ == 0
 namespace std {
 namespace __detail {
 void _List_node_base::swap(_List_node_base& __x, _List_node_base& __y) _GLIBCXX_USE_NOEXCEPT {
@@ -81,6 +83,7 @@ void _List_node_base::_M_unhook() _GLIBCXX_USE_NOEXCEPT {
 }
 }  // namespace __detail
 }  // namespace std
+#endif
 
 namespace platform {
 namespace internal {
