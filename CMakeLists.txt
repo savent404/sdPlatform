@@ -22,5 +22,8 @@ aux_source_directory(source/internal platform_source)
 add_library(platform-user ${sys_source} ${user_source} ${platform_source})
 target_link_libraries(platform-user)
 
+aux_source_directory(source/internal/alter stl_alter_source)
+add_library(stl_alter ${stl_alter_source})
+
 add_executable(cxx-test tests/cxx-test.cc)
 target_link_libraries(cxx-test cJSON platform-user)

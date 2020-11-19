@@ -11,7 +11,7 @@
 #pragma once
 
 #include <string>
-#include <bits/basic_string.tcc>
+#include <bits/basic_string.tcc> // NOLINT
 
 #include <internal/alter/exception.hxx>
 #include <internal/alter/allocator.hxx>
