@@ -60,8 +60,9 @@ struct driver {
   int ioctl(device_id dev, int cmds, void* in_out, size_t* in_out_len, size_t buffer_max);
   cJSON* to_json();
   void from_json(cJSON* obj);
+  const char *to_json_str();
+  void from_json_str(const char *);
   driver_id get_id();
-  // const char* serialize();
 
   /**
    * @brief devmanager's api

@@ -17,11 +17,7 @@ namespace platform {
 driver::driver(parameters::initial_list config_list, runtime_ptr runtime)
     : id_(0), config_(config_list), runtime_p_(std::move(runtime)), device_list_() {}
 
-driver::driver(const char *json) : id_(0), config_({}), runtime_p_(), device_list_() {
-  cJSON *obj = cJSON_Parse(json);
-  from_json(obj);
-  cJSON_Delete(obj);
-}
+driver::driver(const char *json) : id_(0), config_({}), runtime_p_(), device_list_() { from_json_str(json); }
 
 driver::~driver() {}
 
@@ -141,19 +137,24 @@ void driver::from_json(cJSON *obj) {
   }
 }
 
+const char *driver::to_json_str() {
+  cJSON *obj = to_json();
+  const char *out = cJSON_Print(obj);
+  cJSON_Delete(obj);
+  return out;
+}
+
+void driver::from_json_str(const char *json) {
+  cJSON *obj = cJSON_Parse(json);
+  from_json(obj);
+  cJSON_Delete(obj);
+}
+
 driver::driver_id driver::get_id() { return id_; }
 
 driver::driver_id driver::devmgr_register() {
-  cJSON *root = cJSON_CreateObject();
-  if (id_) {
-    cJSON_AddNumberToObject(root, "id", get_id());
-  }
-  cJSON_AddItemToObject(root, "config", get_config().to_json());
-  cJSON_AddItemToObject(root, "subdev", to_json_());
-
-  const char *str = cJSON_Print(root);
+  const char *str = to_json_str();
   driver_id id = devmgr_create_driver(str);
-  cJSON_Delete(root);
   cJSON_free((void *)str);  // NOLINT
   if (id) {
     id_ = id;
@@ -163,18 +164,15 @@ driver::driver_id driver::devmgr_register() {
 }
 
 void driver::devmgr_update() {
-  cJSON *root = to_json();
-  const char *str = cJSON_Print(root);
+  const char *str = to_json_str();
   devmgr_update_driver(id_, str);
-  cJSON_Delete(root);
   cJSON_free((void *)str);  // NOLINT
 }
 
 void driver::devmgr_query() {
   const char *str = devmgr_query_driver(id_);
-  cJSON *obj = cJSON_Parse(str);
-  from_json(obj);
-  cJSON_Delete(obj);
+  from_json_str(str);
+  cJSON_free((void *)str);  // NOLINT
 }
 
 void driver::devmgr_delete() { devmgr_remove_driver(id_); }
@@ -186,9 +184,8 @@ driver::runtime_ref driver::get_runtime() { return *runtime_p_; }
 driver::device_ptr driver::query_device(device_id id) {
   auto dev = std::make_unique<device>();
   const char *json_str = devmgr_query_device(id);
-  cJSON *json = cJSON_Parse(json_str);
-  dev->from_json(json);
-
+  dev->from_json_str(json_str);
+  cJSON_free((void *)json_str);  // NOLINT
   return std::move(dev);
 }
 

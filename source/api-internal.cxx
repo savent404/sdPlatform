@@ -100,9 +100,7 @@ __weak int devmgr_create_driver(const char *json_str) {
 __weak int devmgr_update_driver(int driver_id, const char *json_str) {
   auto dri_iter = driver_queue.find(driver_id);
   if (dri_iter == driver_queue.end()) return eno::ENOTEXIST;
-  auto obj = cJSON_Parse(json_str);
-  dri_iter->second->from_json(obj);
-  cJSON_Delete(obj);
+  dri_iter->second->from_json_str(json_str);
   return 0;
 }
 __weak int devmgr_remove_driver(int driver_id) {
@@ -114,10 +112,7 @@ __weak int devmgr_remove_driver(int driver_id) {
 __weak const char *devmgr_query_driver(int driver_id) {
   auto dri_iter = driver_queue.find(driver_id);
   if (dri_iter == driver_queue.end()) return nullptr;
-  cJSON *obj = dri_iter->second->to_json();
-  auto ret = cJSON_Print(obj);
-  cJSON_Delete(obj);
-  return ret;
+  return dri_iter->second->to_json_str();
 }
 }
 
