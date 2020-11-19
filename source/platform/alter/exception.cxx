@@ -25,37 +25,37 @@
 namespace std {
 
 // void __throw_bad_exception() { _GLIBCXX_THROW_OR_ABORT(bad_exception()); }
-__weak void __throw_bad_exception() { platform::internal::alter::throw_or_abort(); }
+__weak void __throw_bad_exception() { platform::alter::throw_or_abort(); }
 
 // void __throw_bad_alloc() { _GLIBCXX_THROW_OR_ABORT(bad_alloc()); }
-__weak void __throw_bad_alloc() { platform::internal::alter::throw_or_abort(); }
+__weak void __throw_bad_alloc() { platform::alter::throw_or_abort(); }
 
 // void __throw_bad_cast() { _GLIBCXX_THROW_OR_ABORT(bad_cast()); }
-__weak void __throw_bad_cast() { platform::internal::alter::throw_or_abort(); }
+__weak void __throw_bad_cast() { platform::alter::throw_or_abort(); }
 
 // void __throw_bad_typeid() { _GLIBCXX_THROW_OR_ABORT(bad_typeid()); }
-__weak void __throw_bad_typeid() { platform::internal::alter::throw_or_abort(); }
+__weak void __throw_bad_typeid() { platform::alter::throw_or_abort(); }
 
 // void __throw_logic_error(const char* __s __attribute__((unused))) { _GLIBCXX_THROW_OR_ABORT(logic_error(_(__s))); }
-__weak void __throw_logic_error(const char* __s __attribute__((unused))) { platform::internal::alter::throw_or_abort(); }
+__weak void __throw_logic_error(const char* __s __attribute__((unused))) { platform::alter::throw_or_abort(); }
 
 // void __throw_domain_error(const char* __s __attribute__((unused))) { _GLIBCXX_THROW_OR_ABORT(domain_error(_(__s))); }
-__weak void __throw_domain_error(const char* __s __attribute__((unused))) { platform::internal::alter::throw_or_abort(); }
+__weak void __throw_domain_error(const char* __s __attribute__((unused))) { platform::alter::throw_or_abort(); }
 
 __weak void __throw_invalid_argument(const char* __s __attribute__((unused))) {
-  platform::internal::alter::throw_or_abort();
+  platform::alter::throw_or_abort();
 }
 //   void __throw_invalid_argument(const char* __s __attribute__((unused))) {
 //     _GLIBCXX_THROW_OR_ABORT(invalid_argument(_(__s)));
 //   }
 
 // void __throw_length_error(const char* __s __attribute__((unused))) { _GLIBCXX_THROW_OR_ABORT(length_error(_(__s))); }
-__weak void __throw_length_error(const char* __s __attribute__((unused))) { platform::internal::alter::throw_or_abort(); }
+__weak void __throw_length_error(const char* __s __attribute__((unused))) { platform::alter::throw_or_abort(); }
 
 // void __throw_out_of_range(const char* __s __attribute__((unused))) { _GLIBCXX_THROW_OR_ABORT(out_of_range(_(__s))); }
-__weak void __throw_out_of_range(const char* __s __attribute__((unused))) { platform::internal::alter::throw_or_abort(); }
+__weak void __throw_out_of_range(const char* __s __attribute__((unused))) { platform::alter::throw_or_abort(); }
 
-__weak void __throw_out_of_range_fmt(const char* __fmt, ...) { platform::internal::alter::throw_or_abort(); }
+__weak void __throw_out_of_range_fmt(const char* __fmt, ...) { platform::alter::throw_or_abort(); }
 //   void __throw_out_of_range_fmt(const char* __fmt, ...) {
 //     const size_t __len = __builtin_strlen(__fmt);
 //     // We expect at most 2 numbers, and 1 short string. The additional
@@ -70,25 +70,25 @@ __weak void __throw_out_of_range_fmt(const char* __fmt, ...) { platform::interna
 //     va_end(__ap);  // Not reached.
 //   }
 
-__weak void __throw_runtime_error(const char* __s __attribute__((unused))) { platform::internal::alter::throw_or_abort(); }
+__weak void __throw_runtime_error(const char* __s __attribute__((unused))) { platform::alter::throw_or_abort(); }
 //   void __throw_runtime_error(const char* __s __attribute__((unused))) {
 //     _GLIBCXX_THROW_OR_ABORT(runtime_error(_(__s)));
 //   }
 
 // void __throw_range_error(const char* __s __attribute__((unused))) { _GLIBCXX_THROW_OR_ABORT(range_error(_(__s))); }
-__weak void __throw_range_error(const char* __s __attribute__((unused))) { platform::internal::alter::throw_or_abort(); }
+__weak void __throw_range_error(const char* __s __attribute__((unused))) { platform::alter::throw_or_abort(); }
 
-__weak void __throw_overflow_error(const char* __s __attribute__((unused))) { platform::internal::alter::throw_or_abort(); }
+__weak void __throw_overflow_error(const char* __s __attribute__((unused))) { platform::alter::throw_or_abort(); }
 //   void __throw_overflow_error(const char* __s __attribute__((unused))) {
 //     _GLIBCXX_THROW_OR_ABORT(overflow_error(_(__s)));
 //   }
 
 __weak void __throw_underflow_error(const char* __s __attribute__((unused))) {
-  platform::internal::alter::throw_or_abort();
+  platform::alter::throw_or_abort();
 }
 //   void __throw_underflow_error(const char* __s __attribute__((unused))) {
 //     _GLIBCXX_THROW_OR_ABORT(underflow_error(_(__s)));
 //   }
 
-// __attribute__((weak)) void __throw_bad_variant_access(char const *) { platform::internal::alter::do_nothing(); }
+// __attribute__((weak)) void __throw_bad_variant_access(char const *) { platform::alter::do_nothing(); }
 }  // namespace std
