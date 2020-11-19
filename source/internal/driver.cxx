@@ -11,8 +11,12 @@
 #include <platform-types.h>
 #include <platform.h>
 #include <internal/driver.hxx>
+#include <internal/alter/string.hxx>
+
 
 namespace platform {
+
+using string = internal::alter::string;
 
 driver::driver(parameters::initial_list config_list, runtime_ptr runtime)
     : config_(config_list), runtime_p_(std::move(runtime)), id_(0), device_list_() {}
@@ -26,14 +30,14 @@ int driver::init(int argc, char **argv) { return init_(argc, argv); }
 int driver::deinit() { return deinit_(); }
 
 static bool match_compat(const char *v1, const char *v2) {
-  std::string s1(v1);
-  std::string s2(v2);
+  string s1(v1);
+  string s2(v2);
   auto pos = s1.find('|');
   do {
-    std::string sub = s1.substr(0, pos);
+    string sub = s1.substr(0, pos);
     if (s2.find(sub)) return true;
     s1 = s1.substr(pos + 1);
-  } while (pos != std::string::npos);
+  } while (pos != string::npos);
 
   return false;
 }
