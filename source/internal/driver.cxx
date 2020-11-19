@@ -15,9 +15,9 @@
 namespace platform {
 
 driver::driver(parameters::initial_list config_list, runtime_ptr runtime)
-    : id_(0), config_(config_list), runtime_p_(std::move(runtime)), device_list_() {}
+    : config_(config_list), runtime_p_(std::move(runtime)), id_(0), device_list_() {}
 
-driver::driver(const char *json) : id_(0), config_({}), runtime_p_(), device_list_() { from_json_str(json); }
+driver::driver(const char *json) : config_({}), runtime_p_(), id_(0), device_list_() { from_json_str(json); }
 
 driver::~driver() {}
 

@@ -60,8 +60,8 @@ struct driver {
   int ioctl(device_id dev, int cmds, void* in_out, size_t* in_out_len, size_t buffer_max);
   cJSON* to_json();
   void from_json(cJSON* obj);
-  const char *to_json_str();
-  void from_json_str(const char *);
+  const char* to_json_str();
+  void from_json_str(const char*);
   driver_id get_id();
 
   /**
@@ -98,10 +98,6 @@ struct driver {
   parameters_ref get_config();
   runtime_ref get_runtime();
 
- protected:
-  parameters config_;
-  runtime_ptr runtime_p_;
-
  private:
   bool add_device(device_id id, device_ptr ptr);
   bool has_device(device_id id);
@@ -111,6 +107,10 @@ struct driver {
 
   device_ptr query_device(device_id id);
   bool update_device(device_id id, device_ref dev);
+
+ protected:
+  parameters config_;
+  runtime_ptr runtime_p_;
 
  private:
   driver_id id_;
