@@ -24,3 +24,4 @@ __attribute__((weak)) void  operator delete[](void* p) { return heap_free(p); }
 
 extern "C" __attribute__((weak)) void* heap_alloc(size_t n) { return malloc(n); }
 extern "C" __attribute__((weak)) void heap_free(void* p) { free(p); }
+extern "C" __attribute__((weak)) void abort() { while (1) {} }
