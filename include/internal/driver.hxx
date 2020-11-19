@@ -78,19 +78,19 @@ struct driver {
    */
 
  protected:
-  virtual int init_(int argc, char** argv) { return eno::ENOTEXIST; }
-  virtual int deinit_() { return eno::ENOTEXIST; }
-  virtual int bind_(device_ref dev) { return eno::ENOTEXIST; }
-  virtual int unbind_(device_ref dev) { return eno::ENOTEXIST; }
-  virtual int open_(device_ref dev, int flags) { return eno::ENOTEXIST; }
-  virtual int close_(device_ref dev) { return eno::ENOTEXIST; }
+  virtual int init_(int argc, char** argv) { return eno::ENO_NOTEXIST; }
+  virtual int deinit_() { return eno::ENO_NOTEXIST; }
+  virtual int bind_(device_ref dev) { return eno::ENO_NOTEXIST; }
+  virtual int unbind_(device_ref dev) { return eno::ENO_NOTEXIST; }
+  virtual int open_(device_ref dev, int flags) { return eno::ENO_NOTEXIST; }
+  virtual int close_(device_ref dev) { return eno::ENO_NOTEXIST; }
   virtual int transfer_(device_ref dev, const void* in, size_t in_len, void* out, size_t out_len) {
-    return eno::ENOTEXIST;
+    return eno::ENO_NOTEXIST;
   }
-  virtual int write_(device_ref dev, const void* in, size_t len) { return eno::ENOTEXIST; }
-  virtual int read_(device_ref dev, void* out, size_t len) { return eno::ENOTEXIST; }
+  virtual int write_(device_ref dev, const void* in, size_t len) { return eno::ENO_NOTEXIST; }
+  virtual int read_(device_ref dev, void* out, size_t len) { return eno::ENO_NOTEXIST; }
   virtual int ioctl_(device_ref dev, int cmds, void* in_out, size_t* in_out_len, size_t buffer_max) {
-    return eno::ENOTEXIST;
+    return eno::ENO_NOTEXIST;
   }
   virtual cJSON* to_json_() { return nullptr; }
   virtual void from_json_(cJSON* obj) {}

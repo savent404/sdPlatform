@@ -40,16 +40,16 @@ static bool match_compat(const char *v1, const char *v2) {
 
 int driver::bind(device_id dev) {
   auto ptr = query_device(dev);
-  if (!ptr) return eno::ENOTEXIST;
+  if (!ptr) return eno::ENO_NOTEXIST;
 
   // check compat string
-  if (!get_config().has("compat") || !ptr->get_config().has("compat")) return eno::EINVALID;
+  if (!get_config().has("compat") || !ptr->get_config().has("compat")) return eno::ENO_INVALID;
   const char *driver_compat(std::get<const char *>(get_config().get("compat")));
   const char *device_compat(std::get<const char *>(ptr->get_config().get("compat")));
-  if (!match_compat(driver_compat, device_compat)) return eno::EINVALID;
+  if (!match_compat(driver_compat, device_compat)) return eno::ENO_INVALID;
 
   auto res = bind_(*ptr);
-  if (eno::EOK == res) {
+  if (eno::ENO_OK == res) {
     add_device(dev, std::move(ptr));
   }
   return res;
@@ -57,7 +57,7 @@ int driver::bind(device_id dev) {
 
 int driver::unbind(device_id dev) {
   auto ptr = get_device(dev);
-  if (!ptr) return eno::ENOTEXIST;
+  if (!ptr) return eno::ENO_NOTEXIST;
   auto res = unbind_(*ptr);
   put_device(dev, std::move(ptr));
   return res;
@@ -65,7 +65,7 @@ int driver::unbind(device_id dev) {
 
 int driver::open(device_id dev, int flags) {
   auto ptr = get_device(dev);
-  if (!ptr) return eno::ENOTEXIST;
+  if (!ptr) return eno::ENO_NOTEXIST;
   auto res = open_(*ptr, flags);
   put_device(dev, std::move(ptr));
   return res;
@@ -73,7 +73,7 @@ int driver::open(device_id dev, int flags) {
 
 int driver::close(device_id dev) {
   auto ptr = get_device(dev);
-  if (!ptr) return eno::ENOTEXIST;
+  if (!ptr) return eno::ENO_NOTEXIST;
   auto res = close_(*ptr);
   put_device(dev, std::move(ptr));
   return res;
@@ -81,7 +81,7 @@ int driver::close(device_id dev) {
 
 int driver::transfer(device_id dev, const void *in, size_t in_len, void *out, size_t out_len) {
   auto ptr = get_device(dev);
-  if (!ptr) return eno::ENOTEXIST;
+  if (!ptr) return eno::ENO_NOTEXIST;
   auto res = transfer_(*ptr, in, in_len, out, out_len);
   put_device(dev, std::move(ptr));
   return res;
@@ -89,7 +89,7 @@ int driver::transfer(device_id dev, const void *in, size_t in_len, void *out, si
 
 int driver::write(device_id dev, const void *in, size_t len) {
   auto ptr = get_device(dev);
-  if (!ptr) return eno::ENOTEXIST;
+  if (!ptr) return eno::ENO_NOTEXIST;
   auto res = write_(*ptr, in, len);
   put_device(dev, std::move(ptr));
   return res;
@@ -97,7 +97,7 @@ int driver::write(device_id dev, const void *in, size_t len) {
 
 int driver::read(device_id dev, void *out, size_t len) {
   auto ptr = get_device(dev);
-  if (!ptr) return eno::ENOTEXIST;
+  if (!ptr) return eno::ENO_NOTEXIST;
   auto res = read_(*ptr, out, len);
   put_device(dev, std::move(ptr));
   return res;
@@ -105,7 +105,7 @@ int driver::read(device_id dev, void *out, size_t len) {
 
 int driver::ioctl(device_id dev, int cmds, void *in_out, size_t *in_out_len, size_t max_len) {
   auto ptr = get_device(dev);
-  if (!ptr) return eno::ENOTEXIST;
+  if (!ptr) return eno::ENO_NOTEXIST;
   auto res = ioctl_(*ptr, cmds, in_out, in_out_len, max_len);
   put_device(dev, std::move(ptr));
   return res;

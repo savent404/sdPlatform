@@ -47,7 +47,7 @@ static bool driver_exist(int id) {
 
 __weak int dev_bind(int device_id, int driver_id) {
   if (!driver_exist(driver_id) || !device_exist(device_id)) {
-    return eno::ENOTEXIST;
+    return eno::ENO_NOTEXIST;
   }
 
   // TODO(savent): replace it with ipc method
@@ -74,7 +74,7 @@ __weak int devmgr_create_device(const char *json_str) {
 }
 __weak int devmgr_update_device(int device_id, const char *json_str) {
   auto dev_iter = device_queue.find(device_id);
-  if (dev_iter == device_queue.end()) return eno::ENOTEXIST;
+  if (dev_iter == device_queue.end()) return eno::ENO_NOTEXIST;
   dev_iter->second->from_json_str(json_str);
   return 0;
 }
@@ -99,13 +99,13 @@ __weak int devmgr_create_driver(const char *json_str) {
 
 __weak int devmgr_update_driver(int driver_id, const char *json_str) {
   auto dri_iter = driver_queue.find(driver_id);
-  if (dri_iter == driver_queue.end()) return eno::ENOTEXIST;
+  if (dri_iter == driver_queue.end()) return eno::ENO_NOTEXIST;
   dri_iter->second->from_json_str(json_str);
   return 0;
 }
 __weak int devmgr_remove_driver(int driver_id) {
   auto dri_iter = driver_queue.find(driver_id);
-  if (dri_iter == driver_queue.end()) return eno::ENOTEXIST;
+  if (dri_iter == driver_queue.end()) return eno::ENO_NOTEXIST;
   driver_queue.erase(dri_iter);
   return 0;
 }
@@ -122,28 +122,28 @@ __weak const char *devmgr_query_driver(int driver_id) {
 
 extern "C" {
 
-__weak int dev_bind(int device_id, int driver_id) { return eno::ENOPERMIT; }
-__weak int dev_unbind(int device_id) { return eno::ENOPERMIT; }
+__weak int dev_bind(int device_id, int driver_id) { return eno::ENO_NOPERMIT; }
+__weak int dev_unbind(int device_id) { return eno::ENO_NOPERMIT; }
 
-__weak int dev_open(int device_id, int flags) { return eno::ENOPERMIT; }
-__weak int dev_close(int device_id) { return eno::ENOPERMIT; }
+__weak int dev_open(int device_id, int flags) { return eno::ENO_NOPERMIT; }
+__weak int dev_close(int device_id) { return eno::ENO_NOPERMIT; }
 
 __weak int dev_transfer(int device_id, const void *in, size_t in_len, void *out, size_t out_len) {
-  return eno::ENOPERMIT;
+  return eno::ENO_NOPERMIT;
 }
-__weak int dev_write(int device_id, const void *in, size_t len) { return eno::ENOPERMIT; }
-__weak int dev_read(int device_id, void *out, size_t len) { return eno::ENOPERMIT; }
+__weak int dev_write(int device_id, const void *in, size_t len) { return eno::ENO_NOPERMIT; }
+__weak int dev_read(int device_id, void *out, size_t len) { return eno::ENO_NOPERMIT; }
 
-__weak int dev_ioctl(int device_id, void *in_out, size_t *in_out_len, size_t buffer_max_len) { return eno::ENOPERMIT; }
+__weak int dev_ioctl(int device_id, void *in_out, size_t *in_out_len, size_t buffer_max_len) { return eno::ENO_NOPERMIT; }
 
-__weak int devmgr_create_device(const char *json_str) { return eno::ENOPERMIT; }
-__weak int devmgr_update_device(int device_id, const char *json_str) { return eno::ENOPERMIT; }
-__weak int devmgr_remove_device(int device_id) { return eno::ENOPERMIT; }
+__weak int devmgr_create_device(const char *json_str) { return eno::ENO_NOPERMIT; }
+__weak int devmgr_update_device(int device_id, const char *json_str) { return eno::ENO_NOPERMIT; }
+__weak int devmgr_remove_device(int device_id) { return eno::ENO_NOPERMIT; }
 __weak const char *devmgr_query_driver(int driver_id) { return nullptr; }
 
-__weak int devmgr_create_driver(const char *json_str) { return eno::ENOPERMIT; }
-__weak int devmgr_update_driver(int driver_id, const char *json_str) { return eno::ENOPERMIT; }
-__weak int devmgr_remove_driver(int driver_id) { return eno::ENOPERMIT; }
+__weak int devmgr_create_driver(const char *json_str) { return eno::ENO_NOPERMIT; }
+__weak int devmgr_update_driver(int driver_id, const char *json_str) { return eno::ENO_NOPERMIT; }
+__weak int devmgr_remove_driver(int driver_id) { return eno::ENO_NOPERMIT; }
 __weak const char *devmgr_query_device(int device_id) { return nullptr; }
 
 }

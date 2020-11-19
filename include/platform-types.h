@@ -19,11 +19,11 @@ extern "C" {
  * @{
  */
 enum eno {
-  EOK = 0,
-  EINVALID = -1,
-  ENOPERMIT = -2,
-  EBUSY = -3,
-  ENOTEXIST = -4,
+  ENO_OK = 0,
+  ENO_INVALID = -1,
+  ENO_NOPERMIT = -2,
+  ENO_BUSY = -3,
+  ENO_NOTEXIST = -4,
 };
 /**
  * @}
