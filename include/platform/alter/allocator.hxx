@@ -17,10 +17,9 @@
 #include <memory>
 #include <new>
 
-#include <internal/alter/exception.hxx>
+#include <platform/alter/exception.hxx>
 
 namespace platform {
-namespace internal {
 namespace alter {
 // #include <boost/container/detail/config_begin.hpp>
 // #include <boost/container/detail/workaround.hpp>
@@ -166,5 +165,4 @@ template <typename T>
 using allocator = new_allocator<T>;
 
 }  // namespace alter
-}  // namespace internal
 }  // namespace platform

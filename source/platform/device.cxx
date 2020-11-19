@@ -11,7 +11,7 @@
 #include <cJSON_Utils.h>
 
 #include <platform.h>
-#include <internal/device.hxx>
+#include <platform/device.hxx>
 
 namespace platform {
 

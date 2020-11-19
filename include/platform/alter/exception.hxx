@@ -12,7 +12,7 @@
 
 #include <exception>
 
-namespace platform::internal::alter {
+namespace platform::alter {
 __attribute__((noreturn)) static inline void throw_or_abort() {
   while (1) {
   }

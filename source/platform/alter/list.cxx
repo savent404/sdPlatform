@@ -10,7 +10,7 @@
  */
 #include <utility>
 
-#include <internal/alter/list.hxx>
+#include <platform/alter/list.hxx>
 
 namespace std {
 namespace __detail {

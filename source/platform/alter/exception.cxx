@@ -8,7 +8,7 @@
  * Copyright 2020 jrlc
  *
  */
-#include <internal/alter/exception.hxx>
+#include <platform/alter/exception.hxx>
 
 #ifndef __PLATFORM_THROW_OR_ABORT
 #define __PLATFORM_THROW_OR_ABORT

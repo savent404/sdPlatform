@@ -12,15 +12,13 @@
 
 #include <list>
 
-#include <internal/alter/allocator.hxx>
+#include <platform/alter/allocator.hxx>
 
 namespace platform {
-namespace internal {
 namespace alter {
 
 template <typename T>
 using list = std::list<T, alter::allocator<T>>;
 
 }  // namespace alter
-}  // namespace internal
 }  // namespace platform

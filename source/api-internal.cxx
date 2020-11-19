@@ -23,8 +23,8 @@
 #include <random>
 #include <thread>  //NOLINT
 
-#include <internal/device.hxx>
-#include <internal/driver.hxx>
+#include <platform/device.hxx>
+#include <platform/driver.hxx>
 
 static std::map<int, platform::device *> device_queue;
 static std::map<int, platform::driver *> driver_queue;

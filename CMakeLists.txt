@@ -18,11 +18,11 @@ endif()
 
 aux_source_directory(source user_source)
 set(user_source "source/api-internal.cxx")
-aux_source_directory(source/internal platform_source)
+aux_source_directory(source/platform platform_source)
 add_library(platform-user ${sys_source} ${user_source} ${platform_source})
 target_link_libraries(platform-user)
 
-aux_source_directory(source/internal/alter stl_alter_source)
+aux_source_directory(source/platform/alter stl_alter_source)
 add_library(stl_alter ${stl_alter_source})
 
 add_executable(cxx-test tests/cxx-test.cc)

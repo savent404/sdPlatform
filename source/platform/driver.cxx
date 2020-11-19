@@ -10,7 +10,7 @@
  */
 #include <platform-types.h>
 #include <platform.h>
-#include <internal/driver.hxx>
+#include <platform/driver.hxx>
 
 namespace platform {
 

@@ -10,7 +10,7 @@
  */
 #include <bits/stl_tree.h>
 
-#include <internal/alter/map.hxx>
+#include <platform/alter/map.hxx>
 
 namespace std {
 

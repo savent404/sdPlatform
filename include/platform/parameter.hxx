@@ -20,8 +20,8 @@
 #include <utility>
 #include <variant>
 
-#include <internal/alter/map.hxx>
-#include <internal/alter/string.hxx>
+#include <platform/alter/map.hxx>
+#include <platform/alter/string.hxx>
 
 /**
  * @brief duplicate a string
@@ -44,8 +44,8 @@ struct parameters {
   using initial_list = std::initializer_list<initial_item_type>;
   using value_ref = parameters&;
   using value_ptr = std::unique_ptr<parameters>;
-  using string = internal::alter::string;
-  using kv_map = internal::alter::map<string, value_type>;
+  using string = platform::alter::string;
+  using kv_map = platform::alter::map<string, value_type>;
 
   explicit parameters(initial_list list) {
     for (auto& item : list) {

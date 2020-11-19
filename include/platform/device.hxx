@@ -15,9 +15,9 @@
 
 #include <memory>
 
-#include <internal/parameter.hxx>
-#include <internal/runtime.hxx>
-#include <internal/utils.hxx>
+#include <platform/parameter.hxx>
+#include <platform/runtime.hxx>
+#include <platform/utils.hxx>
 
 /**
  * @brief platform API

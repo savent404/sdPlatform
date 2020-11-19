@@ -17,10 +17,10 @@
 #include <list>
 #include <utility>
 
-#include <internal/device.hxx>
-#include <internal/parameter.hxx>
-#include <internal/runtime.hxx>
-#include <internal/utils.hxx>
+#include <platform/device.hxx>
+#include <platform/parameter.hxx>
+#include <platform/runtime.hxx>
+#include <platform/utils.hxx>
 /**
  * @brief platform API
  * @defgroup platform_api
