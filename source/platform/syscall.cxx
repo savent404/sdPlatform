@@ -33,14 +33,14 @@ int syscall::call(hash_id id, void *buf, size_t len) const {
   return syscall_dtl::call_fn_from_buffer(f, buf, len);
 }
 
-syscall &syscall::get_instance() {
+syscall *syscall::get_instance() {
   static syscall *c = nullptr;
   if (!c) c = new syscall;
-  return *c;
+  return c;
 }
 
-bool syscall::add(const string& func_name, func_t func) { return add(hash(func_name), func); }
-bool syscall::del(const string& func_name) { return del(hash(func_name)); }
+bool syscall::add(string func_name, func_t func) { return add(hash(func_name), func); }
+bool syscall::del(string func_name) { return del(hash(func_name)); }
 bool syscall::add(hash_id func_id, func_t func) { kv_[func_id] = func; }
 bool syscall::del(hash_id func_id) { kv_[func_id] = dummy_syscall; }
 syscall::func_t syscall::find(hash_id id) const {

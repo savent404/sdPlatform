@@ -10,9 +10,9 @@
  */
 #include <platform-types.h>
 #include <platform.h>
-#include <platform/driver.hxx>
 #include <platform/alter/string.hxx>
-
+#include <platform/driver.hxx>
+#include <platform/syscall.hxx>
 
 namespace platform {
 
@@ -163,6 +163,7 @@ driver::driver_id driver::devmgr_register() {
   if (id) {
     id_ = id;
     devmgr_update();
+    register_syscall();
   }
   return id_;
 }
@@ -229,6 +230,23 @@ bool driver::put_device(device_id id, device_ptr ptr) {
   if (iter == device_list_.end()) return false;
   iter->second = std::move(ptr);
   return true;
+}
+
+void driver::register_syscall() {
+  using namespace std::placeholders;  // NOLINT
+  string prefix;
+  if (!get_config().has("name")) {
+    prefix = "unknow-name-";
+  } else {
+    prefix = std::get<const char *>(get_config().get("name"));
+    prefix += "-";
+  }
+
+  auto syscall_handler = syscall::get_instance();
+
+  syscall_handler->add(prefix + "deinit", static_cast<std::function<int(void)>>(std::bind(&driver::deinit, this)));
+  syscall_handler->add(prefix + "bind", static_cast<std::function<int(int, int)>>(std::bind(&driver::bind, this, _1)));
+  register_internal_syscall_();
 }
 
 }  // namespace platform

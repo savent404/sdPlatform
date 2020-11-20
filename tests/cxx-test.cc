@@ -24,27 +24,25 @@ struct driver_demo : public driver {
   virtual int ioctl_(device_ref dev, int cmds, void* in_out, size_t* in_out_len, size_t buffer_max) {
     return eno::ENO_INVALID;
   }
+  virtual cJSON* to_json_() { return nullptr; }
+  virtual void from_json_(cJSON* obj) {}
+  virtual void register_internal_syscall_() {}
 };
 
 }  // namespace platform
 
 #include <platform/syscall.hxx>
-#include <iostream>
-
-void test(void)
-{
-  platform::syscall_dtl::func_t fnc = [](int a, int b) { return a + b; };
-  int val[2] = {1, 2};
-  std::cout << platform::syscall_dtl::call_fn_from_buffer(fnc, &val, sizeof(val)) << std::endl;
-}
 
 int main(void) {
-  test();
   platform::driver_demo demo_driver;
   platform::device demo_device({{"name", "demo"}, {"compat", "arm,demo|none"}});
 
   int dev_id = demo_device.devmgr_register();
   int dri_id = demo_driver.devmgr_register();
 
-  return dev_bind(dev_id, dri_id);
+  auto syscall_handler = platform::syscall::get_instance();
+  auto bind_hash_id = platform::syscall::hash(platform::alter::string("demo-bind"));
+  int v[2] = {dev_id, dri_id};
+  return syscall_handler->call(bind_hash_id, &v, sizeof(v));
+  // return dev_bind(dev_id, dri_id);
 }

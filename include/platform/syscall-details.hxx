@@ -70,41 +70,10 @@ bool do_parse(param_t<T, Args...>& ts, void*& buf, size_t& len) {  // NOLINT
   return true;
 }
 
-int call_fn_from_buffer(func_t func, void* buf, size_t len) {
-  // as default, any error as syscall error
-  int res = eno::ENO_SYSCALL_ERR;
-  switch (func.index()) {
-    // f -> std::funcion<int(void)>
-    case 0: {
-      auto f = std::get<0>(func);
-      res = f();
-    } break;
-
-    // f -> std::function<int(int)>
-    case 1: {
-      auto f = std::get<1>(func);
-      param_t<int> ts;
-      do_parse<int>(ts, buf, len);
-      res = f(std::get<0>(ts));
-    } break;
-
-    // f -> std::function<int(int, int)>
-    case 2: {
-      auto f = std::get<2>(func);
-      param_t<int, int> ts;
-      if (!do_parse<int, int>(ts, buf, len)) break;
-      res = f(std::get<0>(ts), std::get<1>(ts));
-    } break;
-
-    default:
-      res = eno::ENO_NOSYSCALL;
-  }
-  return res;
-}
-
 template <typename... Args>
 int call_fn_from_param(func_t func, Args... args) {
   return eno::ENO_NOPERMIT;
 }
+int call_fn_from_buffer(func_t func, void* buf, size_t len);
 
 }  // namespace platform::syscall_dtl

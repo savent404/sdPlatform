@@ -25,9 +25,11 @@
 
 #include <platform/device.hxx>
 #include <platform/driver.hxx>
+// #include <platform/driver-dummy.hxx>
+#include <platform/driver-dummy.hxx>
 
 static std::map<int, platform::device *> device_queue;
-static std::map<int, platform::driver *> driver_queue;
+static std::map<int, platform::driver_dummy*> driver_queue;
 
 // __attribute__((constructor)) void devmanager_init(void)
 // {
@@ -91,9 +93,11 @@ __weak const char *devmgr_query_device(int device_id) {
 }
 
 __weak int devmgr_create_driver(const char *json_str) {
-  auto dri = new platform::driver(json_str);
+  // auto dri = new platform::driver(json_str);
+  auto dir = new platform::driver_dummy;
   int id = rand();  // NOLINT
-  driver_queue[id] = dri;
+  // driver_queue[id] = dri;
+  driver_queue[id] = dir;
   return id;
 }
 

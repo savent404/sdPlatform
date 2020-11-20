@@ -200,19 +200,19 @@ struct driver {
   driver_id devmgr_register();
   /**
    * @brief 主动通知设备管理更新驱动数据
-   * 
+   *
    * @note 将驱动的数据打包并上传给设备管理器
    */
   void devmgr_update();
   /**
    * @brief 向设备管理器查询该设备的信息
-   * 
+   *
    * @note 驱动在收到通知后调用该接口更新自身数据
    */
   void devmgr_query();
   /**
    * @brief 通知设备管理器注销设备
-   * 
+   *
    */
   void devmgr_delete();
   /**
@@ -220,22 +220,19 @@ struct driver {
    */
 
  protected:
-  virtual int init_(int argc, char** argv) { return eno::ENO_NOTEXIST; }
-  virtual int deinit_() { return eno::ENO_NOTEXIST; }
-  virtual int bind_(device_ref dev) { return eno::ENO_NOTEXIST; }
-  virtual int unbind_(device_ref dev) { return eno::ENO_NOTEXIST; }
-  virtual int open_(device_ref dev, int flags) { return eno::ENO_NOTEXIST; }
-  virtual int close_(device_ref dev) { return eno::ENO_NOTEXIST; }
-  virtual int transfer_(device_ref dev, const void* in, size_t in_len, void* out, size_t out_len) {
-    return eno::ENO_NOTEXIST;
-  }
-  virtual int write_(device_ref dev, const void* in, size_t len) { return eno::ENO_NOTEXIST; }
-  virtual int read_(device_ref dev, void* out, size_t len) { return eno::ENO_NOTEXIST; }
-  virtual int ioctl_(device_ref dev, int cmds, void* in_out, size_t* in_out_len, size_t buffer_max) {
-    return eno::ENO_NOTEXIST;
-  }
-  virtual cJSON* to_json_() { return nullptr; }
-  virtual void from_json_(cJSON* obj) {}
+  virtual int init_(int argc, char** argv) = 0;
+  virtual int deinit_() = 0;
+  virtual int bind_(device_ref dev) = 0;
+  virtual int unbind_(device_ref dev) = 0;
+  virtual int open_(device_ref dev, int flags) = 0;
+  virtual int close_(device_ref dev) = 0;
+  virtual int transfer_(device_ref dev, const void* in, size_t in_len, void* out, size_t out_len) = 0;
+  virtual int write_(device_ref dev, const void* in, size_t len) = 0;
+  virtual int read_(device_ref dev, void* out, size_t len) = 0;
+  virtual int ioctl_(device_ref dev, int cmds, void* in_out, size_t* in_out_len, size_t buffer_max) = 0;
+  virtual cJSON* to_json_() = 0;
+  virtual void from_json_(cJSON* obj) = 0;
+  virtual void register_internal_syscall_() = 0;
 
   parameters_ref get_config();
   runtime_ref get_runtime();
@@ -249,6 +246,8 @@ struct driver {
 
   device_ptr query_device(device_id id);
   bool update_device(device_id id, device_ref dev);
+
+  void register_syscall();
 
  protected:
   parameters config_;

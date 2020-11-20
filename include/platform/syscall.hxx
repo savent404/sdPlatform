@@ -28,8 +28,8 @@ struct syscall {
   syscall() = default;
   ~syscall() = delete;
 
-  bool add(const string& func_name, func_t func);
-  bool del(const string& func_name);
+  bool add(string func_name, func_t func);
+  bool del(string func_name);
 
   static hash_id hash(const string& func_name);  // NOLINT
 
@@ -38,7 +38,7 @@ struct syscall {
   template <typename... Args>
   int call_p(hash_id id, Args&... args) const;
 
-  static syscall& get_instance();
+  static syscall* get_instance();
 
  private:
   func_t find(hash_id func_id) const;
