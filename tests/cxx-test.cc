@@ -28,7 +28,18 @@ struct driver_demo : public driver {
 
 }  // namespace platform
 
+#include <platform/syscall.hxx>
+#include <iostream>
+
+void test(void)
+{
+  platform::syscall_dtl::func_t fnc = [](int a, int b) { return a + b; };
+  int val[2] = {1, 2};
+  std::cout << platform::syscall_dtl::call_fn_from_buffer(fnc, &val, sizeof(val)) << std::endl;
+}
+
 int main(void) {
+  test();
   platform::driver_demo demo_driver;
   platform::device demo_device({{"name", "demo"}, {"compat", "arm,demo|none"}});
 

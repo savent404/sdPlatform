@@ -24,6 +24,8 @@ enum eno {
   ENO_NOPERMIT = -2,
   ENO_BUSY = -3,
   ENO_NOTEXIST = -4,
+  ENO_NOSYSCALL = -5,
+  ENO_SYSCALL_ERR = -6,
 };
 /**
  * @}
