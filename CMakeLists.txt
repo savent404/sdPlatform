@@ -33,3 +33,12 @@ add_custom_target(doxygen
     COMMAND doxygen
     COMMENT "building api reference"
 )
+
+
+set_target_properties(platform-user PROPERTIES PUBLIC_HEADER "include/platform.h")
+set_target_properties(platform-user PROPERTIES PUBLIC_HEADER "include/platform-types.h")
+
+install(TARGETS platform-user stl_alter
+        LIBRARY DESTINATION lib
+        PUBLIC_HEADER DESTINATION include
+)
