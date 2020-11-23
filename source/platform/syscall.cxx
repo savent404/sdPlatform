@@ -11,6 +11,7 @@
 #include <platform-types.h>
 #include <tuple>
 
+#include <consthash/all.hxx>
 #include <platform/syscall.hxx>
 
 namespace platform {
@@ -18,10 +19,13 @@ namespace platform {
 // flag this syscall has been forbiden
 static int dummy_syscall(void) { return eno::ENO_NOSYSCALL; }
 
-syscall::hash_id syscall::hash(const string& name) {
-  auto s = std::_Hash_impl::hash(name.data(), name.length());
-  return s;
+constexpr int const_length(const char *str) { return *str ? 1 + const_length(str + 1) : 0; }
+
+syscall::hash_id syscall::hash(const string &name) {
+  int len = name.length();
+  return consthash::crc32(name.data(), len);
 }
+syscall::hash_id syscall::hash(const char *name) { return consthash::crc32(name, const_length(name)); }
 
 template <typename... Args>
 int syscall::call_p(hash_id id, Args &... args) const {

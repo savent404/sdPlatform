@@ -31,7 +31,8 @@ struct syscall {
   bool add(string func_name, func_t func);
   bool del(string func_name);
 
-  static hash_id hash(const string& func_name);  // NOLINT
+  constexpr static hash_id hash(const string& func_name);
+  constexpr static hash_id hash(const char* fun_name);
 
   int call(hash_id id, void* buf, size_t len) const;
 

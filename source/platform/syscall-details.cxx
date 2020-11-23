@@ -1,7 +1,8 @@
 /**
  * @file syscall-details.cxx
  * @author savent (savent_gate@outlook.com)
- * @brief
+ * @brief 驱动接口调用的细节
+ * @note  根据接口注册的callback形参类型来具体处理
  * @version 0.1
  * @date 2020-11-20
  *

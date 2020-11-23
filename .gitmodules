@@ -1,3 +1,6 @@
 [submodule "extern/cJSON"]
 	path = extern/cJSON
 	url = https://github.com/DaveGamble/cJSON.git
+[submodule "extern/consthash"]
+	path = extern/consthash
+	url = https://github.com/LordJZ/consthash.git

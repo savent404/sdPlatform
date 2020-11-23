@@ -3,7 +3,11 @@ project(driver_platform)
 
 set(CMAKE_CXX_STANDARD 17)
 
-include_directories(include extern/cJSON ${CMAKE_INCLUDE_PATH})
+include_directories(include
+                    extern/cJSON
+                    extern/consthash/include
+                    ${CMAKE_INCLUDE_PATH}
+                    ${CMAKE_INSTALL_PREFIX}/include)
 link_directories(${CMAKE_LIBRARY_PATH})
 
 add_library(cJSON extern/cJSON/cJSON.c extern/cJSON/cJSON_Utils.c)
@@ -20,13 +24,13 @@ aux_source_directory(source user_source)
 set(user_source "source/api-internal.cxx")
 aux_source_directory(source/platform platform_source)
 add_library(platform-user ${sys_source} ${user_source} ${platform_source})
-target_link_libraries(platform-user)
+link_libraries(platform-user)
 
 aux_source_directory(source/platform/alter stl_alter_source)
 add_library(stl_alter ${stl_alter_source})
 
 add_executable(cxx-test tests/cxx-test.cc)
-target_link_libraries(cxx-test cJSON platform-user)
+# target_link_libraries(cxx-test cJSON platform-user)
 
 add_custom_target(doxygen
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
@@ -42,3 +46,6 @@ install(TARGETS platform-user stl_alter
         LIBRARY DESTINATION lib
         PUBLIC_HEADER DESTINATION include
 )
+
+# include drivers
+include(cmake/drivers/dummy.cmake)

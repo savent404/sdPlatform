@@ -55,6 +55,9 @@ __weak void __throw_length_error(const char* __s __attribute__((unused))) { plat
 // void __throw_out_of_range(const char* __s __attribute__((unused))) { _GLIBCXX_THROW_OR_ABORT(out_of_range(_(__s))); }
 __weak void __throw_out_of_range(const char* __s __attribute__((unused))) { platform::alter::throw_or_abort(); }
 
+__weak void __throw_bad_function_call() { platform::alter::throw_or_abort(); }
+extern "C" __weak void __cxa_pure_virtual() { platform::alter::throw_or_abort(); }
+
 __weak void __throw_out_of_range_fmt(const char* __fmt, ...) { platform::alter::throw_or_abort(); }
 //   void __throw_out_of_range_fmt(const char* __fmt, ...) {
 //     const size_t __len = __builtin_strlen(__fmt);
