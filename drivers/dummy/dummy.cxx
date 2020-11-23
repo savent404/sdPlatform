@@ -14,7 +14,7 @@
 #include <platform/driver-dummy.hxx>
 #include <platform/driver.hxx>
 #include <functional>
-// #include <initcall.h>
+#include <initcall.h>
 
 struct driver_dummy : public platform::driver_dummy {
  public:

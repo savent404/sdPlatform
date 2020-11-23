@@ -48,4 +48,6 @@ install(TARGETS platform-user stl_alter
 )
 
 # include drivers
+add_custom_target(install_drivers)
+
 include(cmake/drivers/dummy.cmake)
