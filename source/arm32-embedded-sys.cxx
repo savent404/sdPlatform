@@ -62,6 +62,11 @@ extern "C" __attribute__((weak)) void* memmove(void* dest, const void* src, size
   return dest;
 }
 
+extern "C" __attribute__((weak)) int rand(void) {
+  static int holdrand = 0;
+  return (((holdrand = holdrand * 214013L + 2531011L) >> 16) & 0x7fff);
+}
+
 #if __cplusplus < 201103L
 #error "placeholders.cc must be compiled with -std=gnu++0x"
 #endif
