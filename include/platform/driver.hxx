@@ -185,6 +185,7 @@ struct driver {
    */
   driver_id get_id();
 
+protected:
   /**
    * @brief devmanager's api
    * @defgroup driver_devmgr_api

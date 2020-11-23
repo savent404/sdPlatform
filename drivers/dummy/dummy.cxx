@@ -9,12 +9,12 @@
  *
  */
 
+#include <initcall.h>
 #include <platform-types.h>
 #include <platform.h>
+#include <functional>
 #include <platform/driver-dummy.hxx>
 #include <platform/driver.hxx>
-#include <functional>
-#include <initcall.h>
 
 struct driver_dummy : public platform::driver_dummy {
  public:
@@ -22,12 +22,10 @@ struct driver_dummy : public platform::driver_dummy {
   ~driver_dummy() = default;
 };
 
-
-
-extern "C"
-int entry(void) {
-    auto driver = new driver_dummy;
-    return driver->init(0, nullptr);
+extern "C" int entry(void) {
+  auto driver = new driver_dummy;
+  auto res = driver->init(0, nullptr);
+  if (res != eno::ENO_OK) { return res; }
 }
 
 // static auto _dummyy_xxx __attribute__((section(".initcall0.init"))) = entry;

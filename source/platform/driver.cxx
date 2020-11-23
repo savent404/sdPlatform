@@ -25,7 +25,13 @@ driver::driver(const char *json) : config_({}), runtime_p_(), id_(0), device_lis
 
 driver::~driver() {}
 
-int driver::init(int argc, char **argv) { return init_(argc, argv); }
+int driver::init(int argc, char **argv) {
+  auto id = devmgr_register();
+  if (!id) {
+    // TODO(savent): warning if register no registed
+  }
+  return init_(argc, argv);
+}
 
 int driver::deinit() { return deinit_(); }
 
