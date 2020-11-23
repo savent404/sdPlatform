@@ -16,6 +16,8 @@
 #include <platform/alter/string.hxx>
 #include <platform/syscall-details.hxx>
 
+#include <consthash/crc32.hxx>
+
 namespace platform {
 
 struct syscall {
@@ -31,8 +33,8 @@ struct syscall {
   bool add(string func_name, func_t func);
   bool del(string func_name);
 
-  constexpr static hash_id hash(const string& func_name);
-  constexpr static hash_id hash(const char* fun_name);
+  static hash_id hash(const string& func_name) { return consthash::crc32(func_name.data(), func_name.length()); }
+  constexpr static hash_id hash(const char* func_name) { return consthash::crc32(func_name, _strlen(func_name)); }
 
   int call(hash_id id, void* buf, size_t len) const;
 
@@ -45,6 +47,7 @@ struct syscall {
   func_t find(hash_id func_id) const;
   bool add(hash_id func_id, func_t func);
   bool del(hash_id func_id);
+  constexpr static int _strlen(const char* name) { return *name ? _strlen(name + 1) + 1 : 0; }
 
   using kv_t = alter::map<hash_id, func_t>;
   kv_t kv_;
