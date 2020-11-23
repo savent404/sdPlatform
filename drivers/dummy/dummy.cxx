@@ -15,7 +15,12 @@
 #include <functional>
 #include <platform/driver-dummy.hxx>
 #include <platform/driver.hxx>
+<<<<<<< HEAD
 #include <platform/cJSON.hxx>
+=======
+#include <functional>
+#include <initcall.h>
+>>>>>>> 088e486... support install drivers to /obj
 
 struct driver_dummy : public platform::driver_dummy {
  public:
