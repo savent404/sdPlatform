@@ -29,8 +29,8 @@ struct device {
  public:
   using device_id = int;
   using driver_id = int;
-  using value_ptr = std::unique_ptr<device>;
-  using value_ref = device&;
+  using device_ptr = std::unique_ptr<device>;
+  using device_ref = device&;
   using parameters_ptr = parameters::value_ptr;
   using parameters_ref = parameters::value_ref;
   using parameters_init_list = parameters::initial_list;
@@ -61,6 +61,8 @@ struct device {
 
   runtime_ref get_runtime();
   parameters_ref get_config();
+  device_id get_id();
+  driver_id get_bind_id();
   // cJSON* gen_patch(cJSON* from);
   // cJSON* apply_patch(cJSON* from);
 

@@ -15,6 +15,7 @@
 #include <stddef.h>
 
 #include <list>
+#include <memory>
 #include <utility>
 
 #include <platform/device.hxx>
@@ -34,9 +35,11 @@ namespace platform {
 struct driver {
  public:
   using driver_id = int;
+  using driver_ptr = std::unique_ptr<driver>;
+  using driver_ref = driver&;
   using device_id = device::device_id;
-  using device_ptr = device::value_ptr;
-  using device_ref = device::value_ref;
+  using device_ptr = device::device_ptr;
+  using device_ref = device::device_ref;
   using device_kv = std::pair<device_id, device_ptr>;
   using device_kv_list = std::list<device_kv>;
   using parameters_ptr = parameters::value_ptr;

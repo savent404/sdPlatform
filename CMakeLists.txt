@@ -21,7 +21,7 @@ else()
 endif()
 
 aux_source_directory(source user_source)
-set(user_source "source/api-internal.cxx")
+set(user_source source/api-internal.cxx source/requirements.cxx)
 aux_source_directory(source/platform platform_source)
 add_library(platform-user ${sys_source} ${user_source} ${platform_source})
 link_libraries(platform-user)

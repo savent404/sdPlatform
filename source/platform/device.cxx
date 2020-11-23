@@ -10,8 +10,8 @@
  */
 #include <cJSON_Utils.h>
 
-#include <requirements.h>
 #include <platform.h>
+#include <requirements.h>
 #include <platform/device.hxx>
 
 namespace platform {
@@ -66,6 +66,8 @@ void device::from_json_str(const char* ptr) {
 
 device::runtime_ref device::get_runtime() { return *runtime_; }
 device::parameters_ref device::get_config() { return config_; }
+device::device_id device::get_id() { return id_; }
+device::driver_id device::get_bind_id() { return 0; }
 
 device::device_id device::devmgr_register() {
   const char* str = to_json_str();

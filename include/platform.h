@@ -21,7 +21,7 @@ int dev_transfer(int device_id, const void *in, size_t in_len, void *out, size_t
 int dev_write(int device_id, const void *in, size_t len);
 int dev_read(int device_id, void *out, size_t len);
 
-int dev_ioctl(int device_id, void *in_out, size_t *in_out_len, size_t buffer_max_len);
+int dev_ioctl(int device_id, int cmds, void *in_out, size_t *in_out_len, size_t buffer_max_len);
 
 /**
  * @}
