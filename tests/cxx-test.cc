@@ -37,12 +37,12 @@ int main(void) {
   platform::driver_demo demo_driver;
   platform::device demo_device({{"name", "demo"}, {"compat", "arm,demo|none"}});
 
-  int dev_id = demo_device.devmgr_register();
-  int dri_id = demo_driver.devmgr_register();
+  // int dev_id = demo_device.devmgr_register();
+  // int dri_id = demo_driver.devmgr_register();
 
-  auto syscall_handler = platform::syscall::get_instance();
-  auto bind_hash_id = platform::syscall::hash(platform::alter::string("demo-bind"));
-  int v[2] = {dev_id, dri_id};
-  return syscall_handler->call(bind_hash_id, &v, sizeof(v));
+  // auto syscall_handler = platform::syscall::get_instance();
+  // auto bind_hash_id = platform::syscall::hash(platform::alter::string("demo-bind"));
+  // int v[2] = {dev_id, dri_id};
+  // return syscall_handler->call(bind_hash_id, &v, sizeof(v));
   // return dev_bind(dev_id, dri_id);
 }

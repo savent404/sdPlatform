@@ -10,6 +10,7 @@
  */
 #include <cJSON_Utils.h>
 
+#include <requirements.h>
 #include <platform.h>
 #include <platform/device.hxx>
 

@@ -8,6 +8,7 @@
  * Copyright 2020 jrlc
  *
  */
+#include <requirements.h>
 #include <platform-types.h>
 #include <platform.h>
 #include <platform/alter/string.hxx>
