@@ -67,6 +67,14 @@ extern "C" __attribute__((weak)) int rand(void) {
   return (((holdrand = holdrand * 214013L + 2531011L) >> 16) & 0x7fff);
 }
 
+extern "C" __attribute__((weak)) void* __dso_handle __attribute__((__visibility__("hidden"))) = nullptr;
+extern "C" __attribute__((weak)) int __cxa_atexit(void (*)(void*), void*, void*) { return 0; }
+
+extern "C" __attribute__((weak)) int __aeabi_atexit(void* arg, void (*func)(void*), void* d) {
+  return __cxa_atexit(func, arg, d);
+}
+
+
 #if __cplusplus < 201103L
 #error "placeholders.cc must be compiled with -std=gnu++0x"
 #endif
@@ -107,6 +115,6 @@ namespace std _GLIBCXX_VISIBILITY(default) {
   extern const _Placeholder<28> _28{};
   extern const _Placeholder<29> _29{};
   }  // namespace placeholders
-
+  // namespace std_GLIBCXX_VISIBILITY(default)
   _GLIBCXX_END_NAMESPACE_VERSION
 }  // namespace std_GLIBCXX_VISIBILITY(default)
