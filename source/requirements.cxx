@@ -80,6 +80,7 @@ __weak const char *devmgr_query_device(int device_id) {
 __weak int devmgr_create_driver(const char *json_str) {
   // auto dri = new platform::driver(json_str);
   auto dir = new platform::driver_dummy;
+  dir->from_json_str(json_str);
   int id = rand();  // NOLINT
   // driver_queue[id] = dri;
   driver_queue()[id] = dir;
