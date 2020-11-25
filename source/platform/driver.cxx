@@ -127,8 +127,8 @@ cJSON *driver::to_json() {
   cJSON *subdev = to_json_();
 
   cJSON *root = cJSON_CreateObject();
-  cJSON_AddObjectToObject(config, "config");
-  cJSON_AddObjectToObject(subdev, "subdev");
+  cJSON_AddItemToObject(root, "config", config);
+  cJSON_AddItemToObject(root, "subdev", subdev);
   if (id_) {
     cJSON_AddNumberToObject(root, "id", id_);
   }
