@@ -10,7 +10,6 @@
  */
 #pragma once
 
-#include <cJSON.h>
 #include <string.h>
 #include <functional>
 #include <initializer_list>
@@ -22,6 +21,7 @@
 
 #include <platform/alter/map.hxx>
 #include <platform/alter/string.hxx>
+#include <platform/cJSON.hxx>
 
 /**
  * @brief duplicate a string

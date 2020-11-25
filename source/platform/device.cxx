@@ -8,7 +8,6 @@
  * Copyright 2020 jrlc
  *
  */
-#include <cJSON_Utils.h>
 
 #include <platform.h>
 #include <requirements.h>

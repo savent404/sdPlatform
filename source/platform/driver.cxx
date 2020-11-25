@@ -20,17 +20,18 @@ namespace platform {
 using string = alter::string;
 
 driver::driver(parameters::initial_list config_list, runtime_ptr runtime)
-    : config_(config_list), runtime_p_(std::move(runtime)), id_(0), device_list_() {}
+    : config_(config_list), runtime_p_(std::move(runtime)), id_(0), device_list_() {
+}
 
 driver::driver(const char *json) : config_({}), runtime_p_(), id_(0), device_list_() { from_json_str(json); }
 
 driver::~driver() {}
 
 int driver::init(int argc, char **argv) {
-  auto id = devmgr_register();
-  if (!id) {
-    // TODO(savent): warning if register no registed
-  }
+  // auto id = devmgr_register();
+  // if (!id) {
+  //   // TODO(savent): warning if register no registed
+  // }
   return init_(argc, argv);
 }
 

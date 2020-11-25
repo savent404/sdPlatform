@@ -4,14 +4,10 @@ project(driver_platform)
 set(CMAKE_CXX_STANDARD 17)
 
 include_directories(include
-                    extern/cJSON
                     extern/consthash/include
                     ${CMAKE_INCLUDE_PATH}
                     ${CMAKE_INSTALL_PREFIX}/include)
 link_directories(${CMAKE_LIBRARY_PATH})
-
-add_library(cJSON extern/cJSON/cJSON.c extern/cJSON/cJSON_Utils.c)
-link_libraries(cJSON)
 
 if (${CMAKE_SYSTEM_PROCESSOR} STREQUAL arm)
     set(sys_source "source/arm32-embedded-sys.cxx")

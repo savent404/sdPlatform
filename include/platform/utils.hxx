@@ -10,7 +10,7 @@
  */
 #pragma once
 
-#include <cJSON.h>
+#include <platform/cJSON.hxx>
 
 namespace platform {
 namespace tools {

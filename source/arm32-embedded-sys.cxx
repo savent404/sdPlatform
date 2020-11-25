@@ -67,13 +67,94 @@ extern "C" __attribute__((weak)) int rand(void) {
   return (((holdrand = holdrand * 214013L + 2531011L) >> 16) & 0x7fff);
 }
 
+extern "C" __attribute__((weak)) void* memset(void* buf, int val, size_t n) {
+  char* t = static_cast<char*>(buf);
+  while (*t && n--) {
+    *t++ = val;
+  }
+  return t;
+}
+
+extern "C" __attribute__((weak)) double strtod(const char* str, char** endptr) {
+  double result = 0.0;
+  char signedResult = '\0';
+  char signedExponent = '\0';
+  int decimals = 0;
+  bool isExponent = false;
+  bool hasExponent = false;
+  bool hasResult = false;
+  // exponent is logically int but is coded as double so that its eventual
+  // overflow detection can be the same as for double result
+  double exponent = 0;
+  char c;
+
+  for (; '\0' != (c = *str); ++str) {
+    if ((c >= '0') && (c <= '9')) {
+      int digit = c - '0';
+      if (isExponent) {
+        exponent = (10 * exponent) + digit;
+        hasExponent = true;
+      } else if (decimals == 0) {
+        result = (10 * result) + digit;
+        hasResult = true;
+      } else {
+        result += (double)digit / decimals;
+        decimals *= 10;
+      }
+      continue;
+    }
+    if (c == '.') {
+      if (!hasResult) break;     // don't allow leading '.'
+      if (isExponent) break;     // don't allow decimal places in exponent
+      if (decimals != 0) break;  // this is the 2nd time we've found a '.'
+
+      decimals = 10;
+      continue;
+    }
+    if ((c == '-') || (c == '+')) {
+      if (isExponent) {
+        if (signedExponent || (exponent != 0))
+          break;
+        else
+          signedExponent = c;
+      } else {
+        if (signedResult || (result != 0))
+          break;
+        else
+          signedResult = c;
+      }
+      continue;
+    }
+    if (c == 'E') {
+      if (!hasResult) break;  // don't allow leading 'E'
+      if (isExponent)
+        break;
+      else
+        isExponent = true;
+      continue;
+    }
+    break;  // unexpected character
+  }
+  if (isExponent && !hasExponent) {
+    while (*str != 'E') --str;
+  }
+  if (!hasResult && signedResult) --str;
+  if (endptr) *endptr = const_cast<char*>(str);
+  for (; exponent != 0; --exponent) {
+    if (signedExponent == '-')
+      result /= 10;
+    else
+      result *= 10;
+  }
+  if (signedResult == '-' && result != 0) result = -result;
+  return result;
+}
 // extern "C" __attribute__((weak)) void* __dso_handle __attribute__((__visibility__("hidden"))) = nullptr;
 // extern "C" __attribute__((weak)) int __cxa_atexit(void (*)(void*), void*, void*) { return 0; }
-// 
+//
 // extern "C" __attribute__((weak)) int __aeabi_atexit(void* arg, void (*func)(void*), void* d) {
-  // return __cxa_atexit(func, arg, d);
+// return __cxa_atexit(func, arg, d);
 // }
-
 
 #if __cplusplus < 201103L
 #error "placeholders.cc must be compiled with -std=gnu++0x"

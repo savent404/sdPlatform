@@ -10,7 +10,6 @@
  */
 #pragma once
 
-#include <cJSON.h>
 #include <platform-types.h>
 #include <stddef.h>
 
@@ -18,6 +17,7 @@
 #include <memory>
 #include <utility>
 
+#include <platform/cJSON.hxx>
 #include <platform/device.hxx>
 #include <platform/parameter.hxx>
 #include <platform/runtime.hxx>
@@ -188,7 +188,7 @@ struct driver {
    */
   driver_id get_id();
 
-protected:
+  // protected:
   /**
    * @brief devmanager's api
    * @defgroup driver_devmgr_api
