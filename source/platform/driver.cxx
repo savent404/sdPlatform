@@ -31,6 +31,7 @@ int driver::init(int argc, char **argv) {
   if (!id) {
     // TODO(savent): warning if register no registed
   }
+  _register_driver_hook_(this);
   return init_(argc, argv);
 }
 
@@ -42,7 +43,7 @@ static bool match_compat(const char *v1, const char *v2) {
   auto pos = s1.find('|');
   do {
     string sub = s1.substr(0, pos);
-    if (s2.find(sub)) return true;
+    if (s2.find(sub) != string::npos) return true;
     s1 = s1.substr(pos + 1);
   } while (pos != string::npos);
 

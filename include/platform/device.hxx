@@ -62,6 +62,7 @@ struct device {
   runtime_ref get_runtime();
   parameters_ref get_config();
   device_id get_id();
+  void set_id(device_id);
   driver_id get_bind_id();
   // cJSON* gen_patch(cJSON* from);
   // cJSON* apply_patch(cJSON* from);

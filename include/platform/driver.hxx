@@ -187,7 +187,6 @@ struct driver {
    * @return driver_id
    */
   driver_id get_id();
-
   // protected:
   /**
    * @brief devmanager's api
@@ -261,6 +260,8 @@ struct driver {
   driver_id id_;
   device_kv_list device_list_;
 };
+
+bool _register_driver_hook_(driver *ptr);
 }  // namespace platform
 /**
  * @}

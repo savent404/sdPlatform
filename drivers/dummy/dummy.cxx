@@ -17,16 +17,16 @@
 #include <platform/driver.hxx>
 #include <platform/cJSON.hxx>
 
+#include <requirements.h>
+
 #include <smempool.h>
+
 struct driver_dummy : public platform::driver_dummy {
  public:
   driver_dummy() : platform::driver_dummy() {
   }
   ~driver_dummy() = default;
 };
-
-// extern "C" void* heap_alloc(size_t n);
-// extern "C" void heap_free(void*);
 
 extern "C" void init_mempool();
 extern "C" int entry(void) {
@@ -38,12 +38,27 @@ extern "C" int entry(void) {
   };
   platform::cJSON_InitHooks(&hooks);
 
+  // register a driver
   auto driver = new driver_dummy;
   auto res = driver->init(0, nullptr);
-  res = driver->devmgr_register();
   if (res != eno::ENO_OK) { return res; }
-  return 0;
+  auto driver_id = driver->get_id();
+
+  // register a device
+  auto device = new platform::device({
+    {"name", "dummy-device"},
+    {"compat", "dummy"}
+  });
+  auto str = device->to_json_str();
+  auto device_id = devmgr_create_device(str);
+  device->set_id(device_id);
+  platform::cJSON_free((char *)(str));
+  str = device->to_json_str();
+  devmgr_update_device(device_id, str);
+  platform::cJSON_free((char*)str);
+
+
+  return dev_bind(device_id, driver_id);
 }
 
-// static auto _dummyy_xxx __attribute__((section(".initcall0.init"))) = entry;
 lvl0_initcall(entry);

@@ -22,9 +22,9 @@ struct driver_dummy : public driver {
   ~driver_dummy() = default;
 
  protected:
-  virtual int init_(int argc, char** argv) { return eno::ENO_NOPERMIT; }
+  virtual int init_(int argc, char** argv) { return eno::ENO_OK; }
   virtual int deinit_() { return eno::ENO_NOPERMIT; }
-  virtual int bind_(device_ref dev) { return eno::ENO_NOPERMIT; }
+  virtual int bind_(device_ref dev) { return eno::ENO_OK; }
   virtual int unbind_(device_ref dev) { return eno::ENO_NOPERMIT; }
   virtual int open_(device_ref dev, int flags) { return eno::ENO_NOPERMIT; }
   virtual int close_(device_ref dev) { return eno::ENO_NOPERMIT; }
