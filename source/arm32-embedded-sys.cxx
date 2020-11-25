@@ -10,15 +10,26 @@
  */
 #include <stddef.h>
 
+#include <smempool.h>
+
 extern "C" void* heap_alloc(size_t n);
 extern "C" void heap_free(void*);
 
+#if 0
 __attribute__((weak)) void* operator new(size_t n) { return heap_alloc(n); }
 __attribute__((weak)) void operator delete(void* p) { heap_free(p); }
 __attribute__((weak)) void operator delete(void* p, size_t n) { heap_free(p); }
 
 __attribute__((weak)) void* operator new[](size_t n) { return heap_alloc(n); }
 __attribute__((weak)) void operator delete[](void* p) { return heap_free(p); }
+#else
+__attribute__((weak)) void* operator new(size_t n) { return smem_alloc(n); }
+__attribute__((weak)) void operator delete(void* p) { smem_free(p); }
+__attribute__((weak)) void operator delete(void* p, size_t n) { smem_free(p); }
+
+__attribute__((weak)) void* operator new[](size_t n) { return smem_alloc(n); }
+__attribute__((weak)) void operator delete[](void* p) { return smem_free(p); }
+#endif
 
 #include <stdlib.h>
 #include <string.h>
@@ -48,7 +59,7 @@ extern "C" __attribute__((weak)) char* strcpy(char* dest, const char* src) {  //
 }
 
 extern "C" __attribute__((weak)) char* strdup(const char* str) {
-  char* ptr = (char*)heap_alloc(strlen(str) + 1);  // NOLINT
+  char* ptr = (char*)smem_alloc(strlen(str) + 1);  // NOLINT
   strcpy(ptr, str);                                // NOLINT
   return ptr;
 }
@@ -69,7 +80,7 @@ extern "C" __attribute__((weak)) int rand(void) {
 
 extern "C" __attribute__((weak)) void* memset(void* buf, int val, size_t n) {
   char* t = static_cast<char*>(buf);
-  while (*t && n--) {
+  while (n--) {
     *t++ = val;
   }
   return t;
@@ -155,6 +166,22 @@ extern "C" __attribute__((weak)) double strtod(const char* str, char** endptr) {
 // extern "C" __attribute__((weak)) int __aeabi_atexit(void* arg, void (*func)(void*), void* d) {
 // return __cxa_atexit(func, arg, d);
 // }
+
+#include <smempool.h>
+
+extern "C" void init_mempool() {
+  smem_config_t config;
+  memset(&config, 0, sizeof(config));
+  config.malloc = heap_alloc;
+  config.free = heap_free;
+  config.list_default_bs = 2048;
+  config.slab_8B_default_bs = 1024;
+  config.slab_16B_default_bs = 256;
+  config.slab_32B_default_bs = 256;
+  config.slab_64B_default_bs = 256;
+  config.slab_128B_default_bs = 256;
+  smem_init(&config);
+}
 
 #if __cplusplus < 201103L
 #error "placeholders.cc must be compiled with -std=gnu++0x"

@@ -17,6 +17,7 @@
 #include <platform/driver.hxx>
 #include <platform/cJSON.hxx>
 
+#include <smempool.h>
 struct driver_dummy : public platform::driver_dummy {
  public:
   driver_dummy() : platform::driver_dummy() {
@@ -24,15 +25,16 @@ struct driver_dummy : public platform::driver_dummy {
   ~driver_dummy() = default;
 };
 
-extern "C" void* heap_alloc(size_t n);
-extern "C" void heap_free(void*);
+// extern "C" void* heap_alloc(size_t n);
+// extern "C" void heap_free(void*);
 
+extern "C" void init_mempool();
 extern "C" int entry(void) {
   void * ptr = nullptr;
-
+  init_mempool();
   platform::cJSON_Hooks hooks = {
-    .malloc_fn = heap_alloc,
-    .free_fn = heap_free,
+    .malloc_fn = smem_alloc,
+    .free_fn = smem_free,
   };
   platform::cJSON_InitHooks(&hooks);
 

@@ -8,9 +8,9 @@
  * Copyright 2020 jrlc
  *
  */
-#include <requirements.h>
 #include <platform-types.h>
 #include <platform.h>
+#include <requirements.h>
 #include <platform/alter/string.hxx>
 #include <platform/driver.hxx>
 #include <platform/syscall.hxx>
@@ -20,18 +20,17 @@ namespace platform {
 using string = alter::string;
 
 driver::driver(parameters::initial_list config_list, runtime_ptr runtime)
-    : config_(config_list), runtime_p_(std::move(runtime)), id_(0), device_list_() {
-}
+    : config_(config_list), runtime_p_(std::move(runtime)), id_(0), device_list_() {}
 
 driver::driver(const char *json) : config_({}), runtime_p_(), id_(0), device_list_() { from_json_str(json); }
 
 driver::~driver() {}
 
 int driver::init(int argc, char **argv) {
-  // auto id = devmgr_register();
-  // if (!id) {
-  //   // TODO(savent): warning if register no registed
-  // }
+  auto id = devmgr_register();
+  if (!id) {
+    // TODO(savent): warning if register no registed
+  }
   return init_(argc, argv);
 }
 
@@ -166,6 +165,7 @@ driver::driver_id driver::get_id() { return id_; }
 
 driver::driver_id driver::devmgr_register() {
   const char *str = to_json_str();
+  if (!str) return 0;
   driver_id id = devmgr_create_driver(str);
   cJSON_free((void *)str);  // NOLINT
   if (id) {

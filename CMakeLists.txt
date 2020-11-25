@@ -5,9 +5,12 @@ set(CMAKE_CXX_STANDARD 17)
 
 include_directories(include
                     extern/consthash/include
+                    extern/smempool/include
                     ${CMAKE_INCLUDE_PATH}
                     ${CMAKE_INSTALL_PREFIX}/include)
 link_directories(${CMAKE_LIBRARY_PATH})
+
+add_subdirectory(extern/smempool)
 
 if (${CMAKE_SYSTEM_PROCESSOR} STREQUAL arm)
     set(sys_source "source/arm32-embedded-sys.cxx")
@@ -20,7 +23,7 @@ aux_source_directory(source user_source)
 set(user_source source/api-internal.cxx source/requirements.cxx)
 aux_source_directory(source/platform platform_source)
 add_library(platform-user ${sys_source} ${user_source} ${platform_source})
-link_libraries(platform-user)
+link_libraries(platform-user sMemPool)
 
 aux_source_directory(source/platform/alter stl_alter_source)
 add_library(stl_alter ${stl_alter_source})

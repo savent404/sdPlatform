@@ -1020,7 +1020,8 @@ static unsigned char *print(const cJSON *const item, cJSON_bool format, const in
   memset(buffer, 0, sizeof(buffer));
 
   /* create buffer */
-  buffer->buffer = (unsigned char *)hooks->allocate(default_buffer_size);
+  // buffer->buffer = (unsigned char *)hooks->allocate(default_buffer_size);
+  buffer->buffer = reinterpret_cast<unsigned char*>(hooks->allocate(default_buffer_size));
   buffer->length = default_buffer_size;
   buffer->format = format;
   buffer->hooks = *hooks;

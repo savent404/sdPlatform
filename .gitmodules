@@ -1,3 +1,6 @@
 [submodule "extern/consthash"]
 	path = extern/consthash
 	url = https://github.com/LordJZ/consthash.git
+[submodule "extern/smempool"]
+	path = extern/smempool
+	url = https://github.com/savent404/smempool
