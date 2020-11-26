@@ -68,6 +68,12 @@ struct parameters {
     if (maps_.find(string(key)) != maps_.end()) return true;
     return false;
   }
+
+  template<typename T>
+  T get(const string& key) { return std::get<T>(maps_[key]); }
+  template<typename T>
+  T get(const char *key) { return std::get<T>(maps_[string(key)]); }
+
   value_type get(const string& key) { return maps_[key]; }
   value_type get(const char* key) { return maps_[string(key)]; }
 
