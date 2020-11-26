@@ -64,6 +64,7 @@ void device::from_json_str(const char* ptr) {
 }
 
 device::runtime_ref device::get_runtime() { return *runtime_; }
+void device::set_runtime(runtime_ptr ptr) { runtime_ = std::move(ptr); }
 device::parameters_ref device::get_config() { return config_; }
 device::device_id device::get_id() { return id_; }
 void device::set_id(device_id id) { id_ = id; }

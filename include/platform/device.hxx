@@ -60,6 +60,7 @@ struct device {
    */
 
   runtime_ref get_runtime();
+  void set_runtime(runtime_ptr ptr);
   parameters_ref get_config();
   device_id get_id();
   void set_id(device_id);
