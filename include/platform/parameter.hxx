@@ -39,7 +39,7 @@ namespace platform {
  */
 struct parameters {
  public:
-  using value_type = std::variant<bool, double, const char*>;
+  using value_type = std::variant<bool, int, const char*>;
   using initial_item_type = std::pair<const char*, value_type>;
   using initial_list = std::initializer_list<initial_item_type>;
   using value_ref = parameters&;
@@ -78,10 +78,22 @@ struct parameters {
     }
     return root;
   }
+  const char * to_json_str() const {
+    auto obj = to_json();
+    auto res = cJSON_PrintUnformatted(obj);
+    cJSON_free(obj);
+    return res;
+  }
 
   void from_json(cJSON const* root) {
-    if (!cJSON_IsObject(root) || !root->string || strcmp(root->string, "config")) return;
+    if (!cJSON_IsObject(root) || !root->child) return;
     recurse_parse(root->child);
+  }
+
+  void from_json_str(const char *str) {
+    auto obj = cJSON_Parse(str);
+    from_json(obj);
+    cJSON_free(obj);
   }
 
  private:
@@ -92,8 +104,8 @@ struct parameters {
         case 0:  // bool
           cJSON_AddBoolToObject(root, key.c_str(), std::get<bool>(value));
           break;
-        case 1:  // double
-          cJSON_AddNumberToObject(root, key.c_str(), std::get<double>(value));
+        case 1:  // int
+          cJSON_AddNumberToObject(root, key.c_str(), std::get<int>(value));
           break;
         case 2:  // const char *
           cJSON_AddStringToObject(root, key.c_str(), std::get<const char*>(value));
@@ -103,29 +115,34 @@ struct parameters {
       }
     } else {
       string obj_name = key.substr(0, pos);
-      if (cJSON_HasObjectItem(root, obj_name.c_str())) {
-        string sub_name = key.substr(pos + 1);
-        cJSON* sub_obj = cJSON_GetObjectItem(root, obj_name.c_str());
-        recurse_print(sub_obj, sub_name, value);
+      cJSON* obj;
+      if (!cJSON_HasObjectItem(root, obj_name.c_str())) {
+        obj = cJSON_CreateObject();
+        cJSON_AddItemToObject(root, obj_name.c_str(), obj);
+      } else {
+        obj = cJSON_GetObjectItem(root, obj_name.c_str());
       }
+      string sub_name = key.substr(pos + 1);
+      recurse_print(obj, sub_name, value);
     }
   }
   void recurse_parse(cJSON* obj, string prefix = "") {
     while (obj) {
-      const char* key = obj->string;
+      // const char* key = obj->string;
+      string key = prefix + obj->string;
       switch (obj->type & 0xFF) {
         case cJSON_True:
         case cJSON_False:
           set(key, cJSON_IsTrue(obj) ? true : false);
           break;
         case cJSON_Number:
-          set(key, cJSON_GetNumberValue(obj));
+          set(key, (int)cJSON_GetNumberValue(obj));
           break;
         case cJSON_String:
           set(key, strdup(cJSON_GetStringValue(obj)));
           break;
         case cJSON_Object:
-          string new_prefix = prefix + "/";
+          string new_prefix = prefix + key + "/";
           recurse_parse(obj->child, new_prefix);
           break;
       }
