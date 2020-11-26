@@ -48,7 +48,14 @@ static bool device_exist(int id) {
 
 static int get_driver_id(int id) {
   auto iter = get_device_map().find(id);
-  if (iter == get_device_map().end() || !(iter->second)) return 0;
+  if (iter == get_device_map().end() || !(iter->second)) {
+    auto dev = new platform::device;
+    auto str = devmgr_query_device(id);
+    dev->from_json_str(str);
+    platform::cJSON_free((void*)str);
+    get_device_map()[id] = platform::device::device_ptr(dev);
+    return dev->get_bind_id();
+  }
   return iter->second->get_bind_id();
 };
 
