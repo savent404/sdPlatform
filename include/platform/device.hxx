@@ -65,6 +65,7 @@ struct device {
   device_id get_id();
   void set_id(device_id);
   driver_id get_bind_id();
+  void set_bind_id(driver_id id);
   // cJSON* gen_patch(cJSON* from);
   // cJSON* apply_patch(cJSON* from);
 

@@ -11,6 +11,7 @@
 
 #include <platform.h>
 #include <requirements.h>
+#include <platform/alter/string.hxx>
 #include <platform/device.hxx>
 
 namespace platform {
@@ -20,22 +21,15 @@ device::device() : id_(0), runtime_(nullptr), config_({}) {}
 device::device(parameters_init_list list) : id_(0), runtime_(nullptr), config_(list) {}
 
 cJSON* device::to_json() {
-  cJSON* root = cJSON_CreateObject();
-  if (id_) {
-    cJSON_AddNumberToObject(root, "id", id_);
-  }
+  cJSON* root = config_.to_json();
   if (runtime_) {
     cJSON_AddItemToObject(root, "runtime", runtime_->to_json());
   }
-  cJSON_AddItemToObject(root, "config", config_.to_json());
   return root;
 }
 
 void device::from_json(cJSON* root) {
-  if (cJSON_HasObjectItem(root, "id")) {
-    double id = cJSON_GetNumberValue(cJSON_GetObjectItem(root, "id"));
-    id_ = static_cast<device_id>(id);
-  }
+  config_.from_json(root);
   if (cJSON_HasObjectItem(root, "runtime")) {
     cJSON* item = cJSON_GetObjectItem(root, "runtime");
     if (runtime_) {
@@ -44,10 +38,6 @@ void device::from_json(cJSON* root) {
       runtime_ = std::make_unique<runtime>();
       runtime_->from_json(item);
     }
-  }
-  if (cJSON_HasObjectItem(root, "config")) {
-    cJSON* item = cJSON_GetObjectItem(root, "config");
-    config_.from_json(item);
   }
 }
 
@@ -66,9 +56,19 @@ void device::from_json_str(const char* ptr) {
 device::runtime_ref device::get_runtime() { return *runtime_; }
 void device::set_runtime(runtime_ptr ptr) { runtime_ = std::move(ptr); }
 device::parameters_ref device::get_config() { return config_; }
-device::device_id device::get_id() { return id_; }
-void device::set_id(device_id id) { id_ = id; }
-device::driver_id device::get_bind_id() { return 0; }
+
+device::device_id device::get_id() {
+  if (config_.has("id")) return config_.get<int>("id");
+  return 0;
+}
+void device::set_id(device_id id) { config_.set("id", id); }
+device::driver_id device::get_bind_id() {
+  if (config_.has("dri_id")) return config_.get<int>("dri_id");
+  return 0;
+}
+void device::set_bind_id(driver_id id) {
+  config_.set("dri_id", id);
+}
 
 device::device_id device::devmgr_register() {
   const char* str = to_json_str();
