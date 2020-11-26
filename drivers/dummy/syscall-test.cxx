@@ -30,6 +30,7 @@ extern "C" int test_case_syscall() {
       0x04, 0x00, 0x00, 0x00,  // size_t len
     };
     syscall_hdl->call(platform::syscall::hash("FOO"), foo_buf, sizeof(foo_buf));
+    return 0;
 }
 
 lvl0_initcall(test_case_syscall);

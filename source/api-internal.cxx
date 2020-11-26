@@ -56,6 +56,7 @@ bool platform::_register_driver_hook_(platform::driver* ptr) {
   if (ptr && ptr->get_id()) {
     get_driver_map()[ptr->get_id()] = platform::driver::driver_ptr(ptr);
   }
+  return true;
 }
 
 extern "C" {
