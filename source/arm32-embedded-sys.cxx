@@ -34,8 +34,6 @@ __attribute__((weak)) void operator delete[](void* p) { return smem_free(p); }
 #include <stdlib.h>
 #include <string.h>
 
-extern "C" __attribute__((weak)) void* heap_alloc(size_t n) { return nullptr; }
-extern "C" __attribute__((weak)) void heap_free(void* p) {}
 extern "C" __attribute__((weak)) void abort() {
   while (1) {
   }
@@ -166,22 +164,6 @@ extern "C" __attribute__((weak)) double strtod(const char* str, char** endptr) {
 // extern "C" __attribute__((weak)) int __aeabi_atexit(void* arg, void (*func)(void*), void* d) {
 // return __cxa_atexit(func, arg, d);
 // }
-
-#include <smempool.h>
-
-extern "C" void init_mempool() {
-  smem_config_t config;
-  memset(&config, 0, sizeof(config));
-  config.malloc = heap_alloc;
-  config.free = heap_free;
-  config.list_default_bs = 2048;
-  config.slab_8B_default_bs = 1024;
-  config.slab_16B_default_bs = 256;
-  config.slab_32B_default_bs = 256;
-  config.slab_64B_default_bs = 256;
-  config.slab_128B_default_bs = 256;
-  smem_init(&config);
-}
 
 #if __cplusplus < 201103L
 #error "placeholders.cc must be compiled with -std=gnu++0x"

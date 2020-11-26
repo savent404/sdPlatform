@@ -255,6 +255,19 @@ void driver::register_syscall() {
 
   syscall_handler->add(prefix + "deinit", static_cast<std::function<int(void)>>(std::bind(&driver::deinit, this)));
   syscall_handler->add(prefix + "bind", static_cast<std::function<int(int, int)>>(std::bind(&driver::bind, this, _1)));
+  syscall_handler->add(prefix + "unbind", static_cast<std::function<int(int)>>(std::bind(&driver::unbind, this, _1)));
+  syscall_handler->add(prefix + "open", static_cast<std::function<int(int, int)>>(
+    std::bind(&driver::open, this, _1, _2)));
+  syscall_handler->add(prefix + "close", static_cast<std::function<int(int)>>(std::bind(&driver::close, this, _1)));
+  syscall_handler->add(prefix + "transfer", static_cast<std::function<int(int, const void*, size_t, void*, size_t)>>(
+    std::bind(&driver::transfer, this, _1, _2, _3, _4, _5)));
+  syscall_handler->add(prefix + "write", static_cast<std::function<int(int, void*, size_t)>>(
+    std::bind(&driver::write, this, _1, _2, _3)));
+  syscall_handler->add(prefix + "read", static_cast<std::function<int(int, void*, size_t)>>(
+    std::bind(&driver::read, this, _1, _2, _3)));
+  syscall_handler->add(prefix + "ioctl", static_cast<std::function<int(int, int, void*, size_t*, size_t)>>(
+    std::bind(&driver::ioctl, this, _1, _2, _3, _4, _5)));
+
   register_internal_syscall_();
 }
 

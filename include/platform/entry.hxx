@@ -11,4 +11,15 @@
 
 #pragma once
 
-#define INIT_DRIVER_ENTRY(driver) {}
+namespace platform {
+
+struct entry {
+  /**
+   * @brief 初始化驱动框架的运行环境
+   *
+   * @return 0 初始化成功
+   */
+  static int platform_init();
+};
+
+}  // namespace platform

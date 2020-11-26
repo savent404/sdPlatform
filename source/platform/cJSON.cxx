@@ -58,8 +58,6 @@
 
 #include "platform/cJSON.hxx"
 
-extern "C" void * heap_alloc(size_t n);
-extern "C" void heap_free(void*);
 
 namespace platform {
 
@@ -192,18 +190,18 @@ static unsigned char *cJSON_strdup(const unsigned char *string, const internal_h
 CJSON_PUBLIC(void) cJSON_InitHooks(cJSON_Hooks *hooks) {
   if (hooks == NULL) {
     /* Reset hooks */
-    global_cJSON_mem_hook.allocate = heap_alloc;
-    global_cJSON_mem_hook.deallocate = heap_free;
+    global_cJSON_mem_hook.allocate = NULL;
+    global_cJSON_mem_hook.deallocate = NULL;
     global_cJSON_mem_hook.reallocate = NULL;
     return;
   }
 
-  global_cJSON_mem_hook.allocate = heap_alloc;
+  global_cJSON_mem_hook.allocate = NULL;
   if (hooks->malloc_fn != NULL) {
     global_cJSON_mem_hook.allocate = hooks->malloc_fn;
   }
 
-  global_cJSON_mem_hook.deallocate = heap_free;
+  global_cJSON_mem_hook.deallocate = NULL;
   if (hooks->free_fn != NULL) {
     global_cJSON_mem_hook.deallocate = hooks->free_fn;
   }

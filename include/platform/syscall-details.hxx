@@ -23,56 +23,16 @@ using func_t = std::variant<
   /** Index: 0 */ std::function<int(void)>,
   /** Index: 1 */ std::function<int(int)>,
   /** Index: 2 */ std::function<int(int, int)>,
-  /** Index: 3 */ std::function<int(int, const char*, size_t)>
+  /** Index: 3 */ std::function<int(int, const char*, size_t)>,
+  /** Index: 4 */ std::function<int(int, void*, size_t)>,                 // dev_write & dev_read
+  /** Index: 5 */ std::function<int(int, void*, size_t, void*, size_t)>,  // dev_transfer
+  /** Index: 6 */ std::function<int(int, int, void*, size_t *, size_t)>   // dev_ioctl
   >;
 // clang-format on
 
-template <typename T, typename... Args>
-using param_t = std::tuple<T, Args...>;
-
-/**
- * @brief 从buffer中获取一个数据
- *
- * @tparam T 数据类型
- * @param[out] t 输出的数据
- * @param[in/out] buf
- * @param[in/out] len
- * @note 该函数仅能解析基础数据类型，复杂类型需要特例化该函数
- * @note 该函数会位移buff指针指向下一个数据起始位置
- * @note 该函数会减去*len的大小，指示buf剩余字节长度
- * @return true 获取成功
- * @return false 获取失败
- */
-template <typename T>
-bool parse_param(T& t, void*& buf, size_t& len) {  // NOLINT
-  if (len < sizeof(t)) return false;
-  t = *reinterpret_cast<T*>(buf);
-  len -= sizeof(t);
-  // buf += sizeof(t);
-  buf = static_cast<void*>(static_cast<char*>(buf) + sizeof(t));
-  return true;
-}
-
-template <typename T>
-bool do_parse(param_t<T>& ts, void*& buf, size_t& len) {  // NOLINT
-  T val;
-  if (!parse_param<T>(val, buf, len)) return false;
-  ts = std::tie(val);
-  return true;
-}
-template <typename T, typename... Args>
-bool do_parse(param_t<T, Args...>& ts, void*& buf, size_t& len) {  // NOLINT
-  T val;
-  if (!parse_param<T>(val, buf, len)) return false;
-  std::tuple<Args...> t;
-  if (!do_parse(t, buf, len)) return false;
-  ts = std::tuple_cat(std::tie(val), t);
-  return true;
-}
-
 template <typename... Args>
 int call_fn_from_param(func_t func, Args... args) {
-  return eno::ENO_NOPERMIT;
+  return -1;
 }
 int call_fn_from_buffer(func_t func, void* buf, size_t len);
 
