@@ -62,6 +62,8 @@ int driver::bind(device_id dev) {
 
   auto res = bind_(*ptr);
   if (eno::ENO_OK == res) {
+    ptr->set_bind_id(get_id());
+    update_device(dev, *ptr);
     add_device(dev, std::move(ptr));
   }
   return res;
@@ -203,7 +205,13 @@ driver::device_ptr driver::query_device(device_id id) {
   return std::move(dev);
 }
 
-bool driver::update_device(device_id id, device_ref dev) { return true; }
+bool driver::update_device(device_id id, device_ref dev) {
+  dev.set_id(id);
+  const char * str = dev.to_json_str();
+  auto res = devmgr_update_device(id, str);
+  platform::cJSON_free((void*)str); // NOLINT
+  return res == 0;
+}
 
 static auto device_list_iter_handle = [](driver::device_kv_list &list, driver::driver_id id) {
   auto iter = list.begin();
@@ -219,7 +227,7 @@ bool driver::add_device(device_id id, device_ptr ptr) {
   return true;
 }
 
-bool driver::has_device(device_id id) { return device_list_iter_handle(device_list_, id) == device_list_.end(); }
+bool driver::has_device(device_id id) { return device_list_iter_handle(device_list_, id) != device_list_.end(); }
 
 bool driver::del_device(device_id id) {
   auto iter = device_list_iter_handle(device_list_, id);
