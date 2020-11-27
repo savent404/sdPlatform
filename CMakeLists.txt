@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.10)
 project(driver_platform)
 
+option(USE_TEST OFF)
+
 set(CMAKE_CXX_STANDARD 17)
 
 include_directories(include
@@ -28,8 +30,10 @@ link_libraries(platform-user sMemPool)
 aux_source_directory(source/platform/alter stl_alter_source)
 add_library(stl_alter ${stl_alter_source})
 
+if (USE_TEST)
 add_executable(cxx-test tests/cxx-test.cc)
 # target_link_libraries(cxx-test cJSON platform-user)
+endif (USE_TEST)
 
 add_custom_target(doxygen
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
