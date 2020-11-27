@@ -9,11 +9,11 @@
  *
  */
 
-#include <initcall.h>
 #include <platform-types.h>
 #include <platform.h>
-#include <platform/driver-dummy.hxx>
 #include <platform/cJSON.hxx>
+#include <platform/driver-dummy.hxx>
+#include <platform/entry.hxx>
 
 #include <requirements.h>
 
@@ -26,7 +26,7 @@ struct driver_dummy : public platform::driver_dummy {
   ~driver_dummy() = default;
 };
 
-extern "C" int driver_entry(void) {
+extern "C" int dummy_entry(void) {
   platform::entry::platform_init();
 
   // register a driver
@@ -50,4 +50,4 @@ extern "C" int driver_entry(void) {
   return dev_bind(device_id, driver_id);
 }
 
-lvl0_initcall(driver_entry);
+driver_entry_level_default(dummy_entry);

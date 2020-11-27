@@ -8,7 +8,7 @@
  * Copyright 2020 jrlc
  *
  */
-#include <initcall.h>
+#include <platform/entry.hxx>
 #include <platform/parameter.hxx>
 
 extern "C" int test_case_parameter() {
@@ -32,4 +32,4 @@ extern "C" int test_case_parameter() {
   return 0;
 }
 
-lvl0_initcall(test_case_parameter);
+driver_entry_level_untest(test_case_parameter);

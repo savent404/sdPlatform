@@ -8,7 +8,7 @@
  * Copyright 2020 jrlc
  *
  */
-#include <initcall.h>
+#include <platform/entry.hxx>
 #include <platform/runtime.hxx>
 #include <consthash/crc32.hxx>
 
@@ -26,7 +26,6 @@ struct myruntime : public platform::runtime {
   int c;
 };
 
-
 extern "C" int test_case_runtime() {
     platform::runtime rt1;
     myruntime rt2;
@@ -37,5 +36,4 @@ extern "C" int test_case_runtime() {
     return 0;
 }
 
-lvl0_initcall(test_case_runtime);
-
+driver_entry_level_untest(test_case_runtime);
