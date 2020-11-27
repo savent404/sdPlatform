@@ -24,7 +24,8 @@ endif()
 aux_source_directory(source user_source)
 set(user_source source/api-internal.cxx source/requirements.cxx)
 aux_source_directory(source/platform platform_source)
-add_library(platform-user ${sys_source} ${user_source} ${platform_source})
+aux_source_directory(source/platform/drivers driver_source)
+add_library(platform-user ${sys_source} ${user_source} ${platform_source} ${driver_source})
 link_libraries(platform-user sMemPool)
 
 aux_source_directory(source/platform/alter stl_alter_source)
@@ -54,3 +55,4 @@ install(TARGETS platform-user stl_alter
 add_custom_target(install_drivers)
 
 include(cmake/drivers/dummy.cmake)
+include(cmake/drivers/sunxi-uart.cmake)

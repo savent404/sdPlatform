@@ -26,6 +26,8 @@ enum eno {
   ENO_NOTEXIST = -4,
   ENO_NOSYSCALL = -5,
   ENO_SYSCALL_ERR = -6,
+  ENO_NOMEM = -7,
+  ENO_NOTIMPL = -8,
 };
 /**
  * @}
