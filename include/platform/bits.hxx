@@ -15,14 +15,13 @@ namespace platform {
 
 struct bits {
   template <typename T>
-  static constexpr inline T in(void* addr) {
-    return reinterpret_cast<T*>(addr);
+  static constexpr inline T in(T* addr) {
+    return *reinterpret_cast<volatile T*>(addr);
   }
   template <typename T>
   static constexpr inline void out(T* addr, const T val) {
-    *reinterpret_cast<T*>(addr) = val;
+    *reinterpret_cast<volatile T*>(addr) = val;
   }
-
   template <typename T>
   static constexpr inline T* io_addr_shift(void* addr, int offset) {
     return reinterpret_cast<T*>(reinterpret_cast<char*>(addr) + offset);

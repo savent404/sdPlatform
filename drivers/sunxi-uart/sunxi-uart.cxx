@@ -15,8 +15,17 @@ using namespace platform::drivers::uart;  // NOLINT
 static int sunxi_uart_setup(runtime_ptr rt) { return eno::ENO_OK; }
 
 static int sunxi_uart_tx(runtime_ptr rt, const char* out, size_t len) {
-  char* base = platform::bits::io_addr_shift<char>(rt->mem_base, SUNXI_UART_THR);
-  while (len--) platform::bits::out(base, *out--);
+  uint32_t* thr = platform::bits::io_addr_shift<uint32_t>(rt->mem_base, SUNXI_UART_THR);
+  uint32_t* lsr = platform::bits::io_addr_shift<uint32_t>(rt->mem_base, SUNXI_UART_LSR);
+  uint32_t x;
+
+  while (len--) {
+    do {
+      x = platform::bits::in(lsr);
+    } while (x & SUNXI_UART_LSR_TEMT == 0);
+    x = *out++;
+    platform::bits::out(thr, x);
+  }
   return eno::ENO_OK;
 }
 

@@ -18,7 +18,7 @@
 extern "C" int sunxi_uart_test_bind(void) {
   platform::device uart_1({{"name", "uart-1"},
                            {"compat", "arm,uart-sunxi,t3"},
-                           {"config/base", (int)0x38000000 + 20},
+                           {"config/base", (int)0x38000000},
                            {"config/range", 0x400},
                            {"config/irq", 34},
                            {"config/baudrate", 115200},
@@ -37,9 +37,11 @@ extern "C" int sunxi_uart_test_bind(void) {
 
   dev_bind(id, sunxi_uart_driver->get_id());
 
-  const char msg[] = "Hello\r\n";
-  while (1)
+  const char msg[] = "sunxi-uart:Hello\r\n";
+  int cnt = 3;
+  while (cnt--) {
     dev_write(id, msg, sizeof(msg));
+  }
 
   return 0;
 }
