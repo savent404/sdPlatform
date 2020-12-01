@@ -13,7 +13,7 @@
 using namespace platform::drivers::uart;  // NOLINT
 
 static int api_setup(runtime_ptr rt);
-static int api_tx(runtime_ptr rt, const char *buf, size_t len);
+static int api_tx(runtime_ptr rt, const char* buf, size_t len);
 static int api_config_parity(runtime_ptr rt);
 static int api_config_data_bit(runtime_ptr rt);
 static int api_config_stop_bit(runtime_ptr rt);
@@ -42,8 +42,75 @@ extern "C" int sunxi_uart_entry() {
 
 driver_entry_level_default(sunxi_uart_entry);
 
+static void sunxi_uart_setup_clk(void* ccu_base, int uart_index) {
+  /* reset uart */
+  static uint32_t* ccu_sw_reset_reg4 = platform::bits::io_addr_shift<uint32_t>(ccu_base, 0x2d8);
+  auto sw_reset4 = platform::bits::in(ccu_sw_reset_reg4);
+  sw_reset4 = platform::bits::clear_bit(sw_reset4, 16 + uart_index);
+  platform::bits::out(ccu_sw_reset_reg4, sw_reset4);
+  // for (int i = 0; i < 100; i++) {
+  // }
+  sw_reset4 = platform::bits::set_bit(sw_reset4, 16 + uart_index);
+  platform::bits::out(ccu_sw_reset_reg4, sw_reset4);
+
+  /* enable gate */
+  static uint32_t* ccu_bcg_reg3 = platform::bits::io_addr_shift<uint32_t>(ccu_base, 0x6c);
+  auto bcg_reg3 = platform::bits::in(ccu_bcg_reg3);
+  bcg_reg3 = platform::bits::clear_bit(bcg_reg3, 16 + uart_index);
+  platform::bits::out(ccu_bcg_reg3, bcg_reg3);
+  // for (int i = 0; i < 100; i++) {
+  // }
+  bcg_reg3 = platform::bits::set_bit(bcg_reg3, 16 + uart_index);
+  platform::bits::out(ccu_bcg_reg3, bcg_reg3);
+}
+
+/**
+ * @brief setup uart's pinmux
+ *
+ * @param uart_index uart's index(start at zero(0))
+ * @note  use gpio's function and set pull as pull-up mode
+ */
+static void sunxi_uart_setup_pinmux(int uart_index) {
+  constexpr auto pio_base = (0x38001800);
+  switch (uart_index) {
+    case 2: {
+      /* UART_2 tx */
+      auto tx_conf_reg = platform::bits::io_addr_shift<uint32_t>(pio_base, 0x128);
+      auto tx_pull_reg = platform::bits::io_addr_shift<uint32_t>(pio_base, 0x128);
+      auto tx_conf = platform::bits::in(tx_conf_reg);
+      tx_conf &= ~(0x7 << 8);
+      tx_conf |= 0x3 << 8;
+      platform::bits::out(tx_conf_reg, tx_conf);
+      auto tx_pull = platform::bits::in(tx_pull_reg);
+      tx_pull &= ~(0x3 << 2 * 2);
+      tx_pull |= 0x1 << 2 * 2;
+      platform::bits::out(tx_pull_reg, tx_pull);
+      /* UART_2 rx */
+      auto rx_conf_reg = platform::bits::io_addr_shift<uint32_t>(pio_base, 0x128);
+      auto rx_pull_reg = platform::bits::io_addr_shift<uint32_t>(pio_base, 0x128);
+      auto rx_conf = platform::bits::in(rx_conf_reg);
+      rx_conf &= ~(0x07 << 12);
+      rx_conf |= 0x3 << 12;
+      platform::bits::out(rx_conf_reg, rx_conf);
+      auto rx_pull = platform::bits::in(rx_pull_reg);
+      rx_pull &= ~(0x3 << 2 * 3);
+      rx_pull |= 0x1 << 2 * 3;
+      platform::bits::out(rx_pull_reg, rx_pull);
+    } break;
+    default:
+      break;
+  }
+}
+
 int api_setup(runtime_ptr rt) {
   int res = 0;
+  static void* ccu_base = reinterpret_cast<void*>(0x38001000);
+
+  /* enable ccu for uart */
+  sunxi_uart_setup_clk(ccu_base, rt->uart_idx);
+
+  /* pinmux for uart */
+  sunxi_uart_setup_pinmux(rt->uart_idx);
 
   /* enable fifo for rx/tx */
   auto pfcr = platform::bits::io_addr_shift<int8_t>(rt->mem_base, SUNXI_UART_FCR);
@@ -60,6 +127,17 @@ int api_setup(runtime_ptr rt) {
 
   res = api_config_baud_rate(rt);
   if (res) goto out;
+
+  /* enable interrupts */
+  {
+    auto ier_reg = platform::bits::io_addr_shift<uint32_t>(rt->mem_base, SUNXI_UART_IER);
+    platform::bits::out(ier_reg, 0x8d);
+  }
+  /* set MCR */
+  {
+    auto mcr_reg = platform::bits::io_addr_shift<uint32_t>(rt->mem_base, SUNXI_UART_MCR);
+    platform::bits::out(mcr_reg, 0x03);
+  }
 
 out:
   return res;
@@ -106,10 +184,11 @@ static int api_config_data_bit(runtime_ptr rt) {
       lcr = platform::bits::set_bit(lcr, 1);
       break;
     case 8:
-      lcr = platform::bits::set_bit(lcr, 1);
+      lcr = platform::bits::set_bit(lcr, 0);
       lcr = platform::bits::set_bit(lcr, 1);
       break;
-    default: return eno::ENO_INVALID;
+    default:
+      return eno::ENO_INVALID;
   }
   platform::bits::out(plcr, lcr);
   return 0;
@@ -142,11 +221,11 @@ int api_config_stop_bit(runtime_ptr rt) {
 
 int api_config_baud_rate(runtime_ptr rt) {
   // check ccn(rcc) find out APB2's freq
-  uint8_t *plcr = platform::bits::io_addr_shift<uint8_t>(rt->mem_base, SUNXI_UART_LCR);
-  uint8_t *pdll = platform::bits::io_addr_shift<uint8_t>(rt->mem_base, SUNXI_UART_DLL);
-  uint8_t *pdlh = platform::bits::io_addr_shift<uint8_t>(rt->mem_base, SUNXI_UART_DLH);
-  uint8_t *phalt= platform::bits::io_addr_shift<uint8_t>(rt->mem_base, SUNXI_UART_HALT);
-  size_t APB2_freq = 24 * 1000 * 1000; // 24MHz
+  uint8_t* plcr = platform::bits::io_addr_shift<uint8_t>(rt->mem_base, SUNXI_UART_LCR);
+  uint8_t* pdll = platform::bits::io_addr_shift<uint8_t>(rt->mem_base, SUNXI_UART_DLL);
+  uint8_t* pdlh = platform::bits::io_addr_shift<uint8_t>(rt->mem_base, SUNXI_UART_DLH);
+  uint8_t* phalt = platform::bits::io_addr_shift<uint8_t>(rt->mem_base, SUNXI_UART_HALT);
+  size_t APB2_freq = 24 * 1000 * 1000;  // 24MHz
   size_t baud_rate = rt->baudrate;
   uint16_t dvi = 0;
   size_t res = APB2_freq / (16 * baud_rate);
@@ -188,4 +267,3 @@ int api_tx(runtime_ptr rt, const char* out, size_t len) {
   }
   return eno::ENO_OK;
 }
-

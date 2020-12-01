@@ -198,11 +198,11 @@ driver::parameters_ref driver::get_config() { return config_; }
 driver::runtime_ref driver::get_runtime() { return *runtime_p_; }
 
 driver::device_ptr driver::query_device(device_id id) {
-  auto dev = std::make_unique<device>();
+  auto dev = new device;
   const char *json_str = devmgr_query_device(id);
   dev->from_json_str(json_str);
   cJSON_free((void *)json_str);  // NOLINT
-  return std::move(dev);
+  return std::unique_ptr<device>(dev);
 }
 
 bool driver::update_device(device_id id, device_ref dev) {

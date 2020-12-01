@@ -24,6 +24,7 @@
  *      "parity": "none", // 'odd', 'even', 'none'
  *      "data_bits": 8,
  *      "stop_bits": 0, // 0-1Bit, 1-1.5Bit, 2-2Bit
+ *      "uart_idx": 0, // means uart-0
  *  }
  * }
  * @endcode
@@ -53,6 +54,7 @@ struct runtime : public platform::runtime {
   uint8_t parity;  // 0-none, 1-odd, 2-even
   uint8_t data_bits;
   uint8_t stop_bits; // 0-1bit, 1-1.5bit, 2-2bit
+  uint8_t uart_idx;  // 0~255
   buffer_t rx_buffer;
   buffer_t tx_buffer;
 };

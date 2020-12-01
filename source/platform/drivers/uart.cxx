@@ -83,6 +83,7 @@ bool uart::driver::load_device_runtime(parameters_ref dev_conf, runtime* rt) {
   CHECK_KEY(dev_conf, "config/parity");
   CHECK_KEY(dev_conf, "config/data_bits");
   CHECK_KEY(dev_conf, "config/stop_bits");
+  CHECK_KEY(dev_conf, "config/uart_idx");
 
   rt->mem_base = GET_VAL(dev_conf, "config/base", int, void*);
   rt->mem_range = GET_VAL(dev_conf, "config/range", int, int);
@@ -91,6 +92,7 @@ bool uart::driver::load_device_runtime(parameters_ref dev_conf, runtime* rt) {
   rt->parity = GET_VAL(dev_conf, "config/parity", int, int);
   rt->data_bits = GET_VAL(dev_conf, "config/data_bits", int, int);
   rt->stop_bits = GET_VAL(dev_conf, "config/stop_bits", int, int);
+  rt->uart_idx = GET_VAL(dev_conf, "config/uart_idx", int, int);
 
   return true;
 }

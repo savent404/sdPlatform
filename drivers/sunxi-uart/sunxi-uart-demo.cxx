@@ -21,10 +21,11 @@ extern "C" int sunxi_uart_test_bind(void) {
                            {"config/base", (int)0x38000000 + 0x800},
                            {"config/range", 0x400},
                            {"config/irq", 34},
-                           {"config/baudrate", 115200},
+                           {"config/baudrate", 9600},
                            {"config/parity", 0},
                            {"config/data_bits", 8},
-                           {"config/stop_bits", 0}});
+                           {"config/stop_bits", 0},
+                           {"config/uart_idx", 2}});
   auto str = uart_1.to_json_str();
   auto id = devmgr_create_device(str);
   platform::cJSON_free((void*)str);  //  NOLINT
