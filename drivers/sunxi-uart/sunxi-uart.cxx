@@ -1,50 +1,14 @@
 #include <sunxi-uart.h>
 
+#include <platform/bits.hxx>
 #include <platform/drivers/uart.hxx>
 #include <platform/entry.hxx>
 
-// headers only for test
-#include <platform.h>
-#include <requirements.h>
-
-#include <platform/bits.hxx>
-#include <platform/device.hxx>
-
-using namespace platform::drivers::uart;  // NOLINT
+namespace platform::drivers::uart::sunxi_t3 {
 
 using platform::bits;
 
-static int api_setup(runtime_ptr rt);
-static int api_tx(runtime_ptr rt, const char* buf, size_t len);
-static int api_config_parity(runtime_ptr rt);
-static int api_config_data_bit(runtime_ptr rt);
-static int api_config_stop_bit(runtime_ptr rt);
-static int api_config_baud_rate(runtime_ptr rt);
-
-driver* sunxi_uart_driver = nullptr;
-
-extern "C" int sunxi_uart_entry() {
-  platform::entry::platform_init();
-  api sunxi_uart_api = {
-      .match = nullptr,
-      .setup = api_setup,
-      .shutdown = nullptr,
-      .tx = api_tx,
-      .stop_rx = nullptr,
-      .pm = nullptr,
-      .config_parity = api_config_parity,
-      .config_data_bit = api_config_data_bit,
-      .config_stop_bit = api_config_stop_bit,
-      .config_baud_rate = api_config_baud_rate,
-      .ioctl = nullptr,
-  };
-  sunxi_uart_driver = new driver({{"name", "sunxi-uart"}, {"compat", "arm,uart-sunxi,t3"}}, sunxi_uart_api);
-  return sunxi_uart_driver->init(0, nullptr);
-}
-
-driver_entry_level_default(sunxi_uart_entry);
-
-static void sunxi_uart_setup_clk(void* ccu_base, int uart_index) {
+void setup_clk(void* ccu_base, int uart_index) {
   /* reset uart */
   static uint32_t* ccu_sw_reset_reg4 = bits::shift_addr<uint32_t*>(ccu_base, 0x2d8);
   auto sw_reset4 = bits::in(ccu_sw_reset_reg4);
@@ -72,7 +36,7 @@ static void sunxi_uart_setup_clk(void* ccu_base, int uart_index) {
  * @param uart_index uart's index(start at zero(0))
  * @note  use gpio's function and set pull as pull-up mode
  */
-static void sunxi_uart_setup_pinmux(int uart_index) {
+void setup_pinmux(int uart_index) {
   constexpr auto pio_base = (0x38001800);
   switch (uart_index) {
     case 2: {
@@ -104,47 +68,6 @@ static void sunxi_uart_setup_pinmux(int uart_index) {
   }
 }
 
-int api_setup(runtime_ptr rt) {
-  int res = 0;
-  static void* ccu_base = reinterpret_cast<void*>(0x38001000);
-
-  /* enable ccu for uart */
-  sunxi_uart_setup_clk(ccu_base, rt->uart_idx);
-
-  /* pinmux for uart */
-  sunxi_uart_setup_pinmux(rt->uart_idx);
-
-  /* enable fifo for rx/tx */
-  auto pfcr = bits::shift_addr<int8_t*>(rt->mem_base, SUNXI_UART_FCR);
-  bits::out(pfcr, SUNXI_UART_FCR_RXTRG_1_2 | SUNXI_UART_FCR_TXTRG_1_2 | SUNXI_UART_FCR_FIFO_EN);
-
-  res = api_config_data_bit(rt);
-  if (res) goto out;
-
-  res = api_config_parity(rt);
-  if (res) goto out;
-
-  res = api_config_stop_bit(rt);
-  if (res) goto out;
-
-  res = api_config_baud_rate(rt);
-  if (res) goto out;
-
-  /* enable interrupts */
-  {
-    auto ier_reg = bits::shift_addr<uint32_t*>(rt->mem_base, SUNXI_UART_IER);
-    bits::out(ier_reg, 0x8d);
-  }
-  /* set MCR */
-  {
-    auto mcr_reg = bits::shift_addr<uint32_t*>(rt->mem_base, SUNXI_UART_MCR);
-    bits::out(mcr_reg, 0x03);
-  }
-
-out:
-  return res;
-}
-
 int api_config_parity(runtime_ptr rt) {
   uint32_t* plcr = bits::shift_addr<uint32_t*>(rt->mem_base, SUNXI_UART_LCR);
   uint32_t lcr = *plcr;
@@ -169,7 +92,7 @@ int api_config_parity(runtime_ptr rt) {
   return 0;
 }
 
-static int api_config_data_bit(runtime_ptr rt) {
+int api_config_data_bit(runtime_ptr rt) {
   uint32_t* plcr = bits::shift_addr<uint32_t*>(rt->mem_base, SUNXI_UART_LCR);
   uint32_t lcr = *plcr;
   switch (rt->data_bits) {
@@ -269,3 +192,70 @@ int api_tx(runtime_ptr rt, const char* out, size_t len) {
   }
   return eno::ENO_OK;
 }
+
+int api_setup(runtime_ptr rt) {
+  int res = 0;
+  static void* ccu_base = reinterpret_cast<void*>(0x38001000);
+
+  /* enable ccu for uart */
+  setup_clk(ccu_base, rt->uart_idx);
+
+  /* pinmux for uart */
+  setup_pinmux(rt->uart_idx);
+
+  /* enable fifo for rx/tx */
+  auto pfcr = bits::shift_addr<int8_t*>(rt->mem_base, SUNXI_UART_FCR);
+  bits::out(pfcr, SUNXI_UART_FCR_RXTRG_1_2 | SUNXI_UART_FCR_TXTRG_1_2 | SUNXI_UART_FCR_FIFO_EN);
+
+  res = api_config_data_bit(rt);
+  if (res) goto out;
+
+  res = api_config_parity(rt);
+  if (res) goto out;
+
+  res = api_config_stop_bit(rt);
+  if (res) goto out;
+
+  res = api_config_baud_rate(rt);
+  if (res) goto out;
+
+  /* enable interrupts */
+  {
+    auto ier_reg = bits::shift_addr<uint32_t*>(rt->mem_base, SUNXI_UART_IER);
+    bits::out(ier_reg, 0x8d);
+  }
+  /* set MCR */
+  {
+    auto mcr_reg = bits::shift_addr<uint32_t*>(rt->mem_base, SUNXI_UART_MCR);
+    bits::out(mcr_reg, 0x03);
+  }
+
+out:
+  return res;
+}
+
+}  // namespace platform::drivers::uart::sunxi_t3
+
+platform::drivers::uart::driver* sunxi_uart_driver = nullptr;
+
+extern "C" int sunxi_uart_entry() {
+  platform::entry::platform_init();
+  platform::drivers::uart::api sunxi_uart_api = {
+      .match = nullptr,
+      .setup = platform::drivers::uart::sunxi_t3::api_setup,
+      .shutdown = nullptr,
+      .tx = platform::drivers::uart::sunxi_t3::api_tx,
+      .stop_rx = nullptr,
+      .pm = nullptr,
+      .config_parity = platform::drivers::uart::sunxi_t3::api_config_parity,
+      .config_data_bit = platform::drivers::uart::sunxi_t3::api_config_data_bit,
+      .config_stop_bit = platform::drivers::uart::sunxi_t3::api_config_stop_bit,
+      .config_baud_rate = platform::drivers::uart::sunxi_t3::api_config_baud_rate,
+      .ioctl = nullptr,
+  };
+  sunxi_uart_driver =
+      new platform::drivers::uart::driver({{"name", "sunxi-uart"}, {"compat", "arm,uart-sunxi,t3"}}, sunxi_uart_api);
+  return sunxi_uart_driver->init(0, nullptr);
+}
+
+driver_entry_level_default(sunxi_uart_entry);
