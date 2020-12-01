@@ -43,14 +43,14 @@ std::map<int, platform::driver_dummy *> &driver_queue() {
 
 extern "C" {
 
-static bool device_exist(int id) {
-  auto iter = device_queue().find(id);
-  return iter != device_queue().end();
-}
-static bool driver_exist(int id) {
-  auto iter = driver_queue().find(id);
-  return iter != driver_queue().end();
-}
+// static bool device_exist(int id) {
+//   auto iter = device_queue().find(id);
+//   return iter != device_queue().end();
+// }
+// static bool driver_exist(int id) {
+//   auto iter = driver_queue().find(id);
+//   return iter != driver_queue().end();
+// }
 
 __weak int devmgr_create_device(const char *json_str) {
   auto dev = new platform::device;

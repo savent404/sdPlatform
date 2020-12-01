@@ -36,15 +36,15 @@ static auto &get_device_map() {
   return *device_map;
 }
 
-static bool driver_exist(int id) {
-  auto iter = get_driver_map().find(id);
-  return get_driver_map().end() != iter;
-}
+// static bool driver_exist(int id) {
+//   auto iter = get_driver_map().find(id);
+//   return get_driver_map().end() != iter;
+// }
 
-static bool device_exist(int id) {
-  auto iter = get_device_map().find(id);
-  return get_device_map().end() != iter ? !(iter->second) : false;
-}
+// static bool device_exist(int id) {
+//   auto iter = get_device_map().find(id);
+//   return get_device_map().end() != iter ? !(iter->second) : false;
+// }
 
 static int get_driver_id(int id) {
   auto iter = get_device_map().find(id);

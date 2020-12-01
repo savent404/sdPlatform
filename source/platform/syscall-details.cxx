@@ -11,6 +11,7 @@
  */
 #include <platform-types.h>
 
+#include <platform/bits.hxx>
 #include <platform/syscall-details.hxx>
 
 namespace platform::syscall_dtl {
@@ -24,11 +25,11 @@ using param_t = std::tuple<T, Args...>;
  * @param pointer 指针
  * @param offset  位移大小(字节为单位)
  */
-static void shift_buffer_point(const void*& pointer, size_t offset) {  // NOLINT
-  pointer = reinterpret_cast<const void*>(reinterpret_cast<const char*>(pointer) + offset);
-}
+// static void __attribute__((used)) shift_buffer_point(const void*& pointer, size_t offset) {  // NOLINT
+//   pointer = bits::shift_addr<const void*>(pointer, offset);
+// }
 static void shift_buffer_point(void*& pointer, size_t offset) {  // NOLINT
-  pointer = reinterpret_cast<void*>(reinterpret_cast<char*>(pointer) + offset);
+  pointer = bits::shift_addr<void*>(pointer, offset);
 }
 
 /**

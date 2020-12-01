@@ -33,6 +33,7 @@ extern "C" int test_case_runtime() {
     myruntime rt3(rt2);
 
     auto rt = rt2.promote<myruntime>();
+    rt = rt;
     return 0;
 }
 
