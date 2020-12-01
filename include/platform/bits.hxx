@@ -40,23 +40,23 @@ struct bits {
     return ((1 << len) - 1) << offset;
   }
   template <typename T>
-  static inline constexpr T set_bit(const T val, const int bit_offset, const int len = 1) {
+  static inline constexpr T set_bits(const T val, const int bit_offset, const int len = 1) {
     return val | bitmask<T>(len, bit_offset);
   }
   template <typename T>
-  static inline constexpr T clear_bit(const T val, const int bit_offset, const int len = 1) {
+  static inline constexpr T clear_bits(const T val, const int bit_offset, const int len = 1) {
     return val & ~bitmask<T>(len, bit_offset);
   }
   template <typename T>
-  static inline constexpr int get_bit(const T val, const int bit_offset, const int len = 1) {
+  static inline constexpr int get_bits(const T val, const int bit_offset, const int len = 1) {
     return (val & bitmask<T>(len, bit_offset)) >> bit_offset;
   }
   template <typename T1, typename T2>
-  static inline constexpr auto and_bit(const T1 v1, const T2 v2) {
+  static inline constexpr auto and_bits(const T1 v1, const T2 v2) {
     return v1 & v2;
   }
   template <typename T1, typename T2>
-  static inline constexpr auto or_bit(const T1 v1, const T2 v2) {
+  static inline constexpr auto or_bits(const T1 v1, const T2 v2) {
     return v1 | v2;
   }
 };

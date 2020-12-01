@@ -48,21 +48,21 @@ static void sunxi_uart_setup_clk(void* ccu_base, int uart_index) {
   /* reset uart */
   static uint32_t* ccu_sw_reset_reg4 = bits::shift_addr<uint32_t*>(ccu_base, 0x2d8);
   auto sw_reset4 = bits::in(ccu_sw_reset_reg4);
-  sw_reset4 = bits::clear_bit(sw_reset4, 16 + uart_index);
+  sw_reset4 = bits::clear_bits(sw_reset4, 16 + uart_index);
   bits::out(ccu_sw_reset_reg4, sw_reset4);
   // for (int i = 0; i < 100; i++) {
   // }
-  sw_reset4 = bits::set_bit(sw_reset4, 16 + uart_index);
+  sw_reset4 = bits::set_bits(sw_reset4, 16 + uart_index);
   bits::out(ccu_sw_reset_reg4, sw_reset4);
 
   /* enable gate */
   static uint32_t* ccu_bcg_reg3 = bits::shift_addr<uint32_t*>(ccu_base, 0x6c);
   auto bcg_reg3 = bits::in(ccu_bcg_reg3);
-  bcg_reg3 = bits::clear_bit(bcg_reg3, 16 + uart_index);
+  bcg_reg3 = bits::clear_bits(bcg_reg3, 16 + uart_index);
   bits::out(ccu_bcg_reg3, bcg_reg3);
   // for (int i = 0; i < 100; i++) {
   // }
-  bcg_reg3 = bits::set_bit(bcg_reg3, 16 + uart_index);
+  bcg_reg3 = bits::set_bits(bcg_reg3, 16 + uart_index);
   bits::out(ccu_bcg_reg3, bcg_reg3);
 }
 
@@ -80,8 +80,8 @@ static void sunxi_uart_setup_pinmux(int uart_index) {
       auto tx_conf_reg = bits::shift_addr<uint32_t*>(pio_base, 0x128);
       auto tx_pull_reg = bits::shift_addr<uint32_t*>(pio_base, 0x128);
       auto tx_conf = bits::in(tx_conf_reg);
-      tx_conf = bits::clear_bit(tx_conf, 8, 3);
-      tx_conf = bits::or_bit(tx_conf, bits::shift_bits(0x03, 8));
+      tx_conf = bits::clear_bits(tx_conf, 8, 3);
+      tx_conf = bits::or_bits(tx_conf, bits::shift_bits(0x03, 8));
       bits::out(tx_conf_reg, tx_conf);
       auto tx_pull = bits::in(tx_pull_reg);
       tx_pull &= ~(0x3 << 2 * 2);
@@ -152,15 +152,15 @@ int api_config_parity(runtime_ptr rt) {
   // pairty
   switch (rt->parity) {
     case 0:
-      lcr = bits::clear_bit(lcr, 3);
+      lcr = bits::clear_bits(lcr, 3);
       break;
     case 1:  // odd
-      lcr = bits::set_bit(lcr, 3);
-      lcr = bits::clear_bit(lcr, 4);
+      lcr = bits::set_bits(lcr, 3);
+      lcr = bits::clear_bits(lcr, 4);
       break;
     case 2:  // even
-      lcr = bits::set_bit(lcr, 3);
-      lcr = bits::clear_bit(lcr, 4);
+      lcr = bits::set_bits(lcr, 3);
+      lcr = bits::clear_bits(lcr, 4);
       break;
     default:  // as parameter invalid
       return eno::ENO_INVALID;
@@ -174,20 +174,20 @@ static int api_config_data_bit(runtime_ptr rt) {
   uint32_t lcr = *plcr;
   switch (rt->data_bits) {
     case 5:  // 5Bit - DLS(00)
-      lcr = bits::clear_bit(lcr, 0);
-      lcr = bits::clear_bit(lcr, 1);
+      lcr = bits::clear_bits(lcr, 0);
+      lcr = bits::clear_bits(lcr, 1);
       break;
     case 6:  // 6Bit - DLS(01)
-      lcr = bits::set_bit(lcr, 0);
-      lcr = bits::clear_bit(lcr, 1);
+      lcr = bits::set_bits(lcr, 0);
+      lcr = bits::clear_bits(lcr, 1);
       break;
     case 7:  // 7Bit - DLS(10)
-      lcr = bits::clear_bit(lcr, 0);
-      lcr = bits::set_bit(lcr, 1);
+      lcr = bits::clear_bits(lcr, 0);
+      lcr = bits::set_bits(lcr, 1);
       break;
     case 8:
-      lcr = bits::set_bit(lcr, 0);
-      lcr = bits::set_bit(lcr, 1);
+      lcr = bits::set_bits(lcr, 0);
+      lcr = bits::set_bits(lcr, 1);
       break;
     default:
       return eno::ENO_INVALID;
@@ -202,17 +202,17 @@ int api_config_stop_bit(runtime_ptr rt) {
 
   switch (rt->stop_bits) {
     case 0:  // 1 bit
-      lcr = bits::clear_bit(lcr, 2);
+      lcr = bits::clear_bits(lcr, 2);
       break;
     case 1:  // 1.5 bit
       // as sunxi-uart datasheet, 1.5 stop bit when DLS is zero
-      if (bits::and_bit(lcr, (uint32_t)0x03) != 0) return eno::ENO_INVALID;
-      lcr = bits::set_bit(lcr, 2);
+      if (bits::and_bits(lcr, (uint32_t)0x03) != 0) return eno::ENO_INVALID;
+      lcr = bits::set_bits(lcr, 2);
       break;
     case 2:
       // as sunxi-uart datasheet, 1.5 stop bit when DLS is zero
-      if (bits::and_bit(lcr, (uint32_t)0x03) == 0) return eno::ENO_INVALID;
-      lcr = bits::set_bit(lcr, 2);
+      if (bits::and_bits(lcr, (uint32_t)0x03) == 0) return eno::ENO_INVALID;
+      lcr = bits::set_bits(lcr, 2);
       break;
     default:
       return eno::ENO_INVALID;
@@ -235,12 +235,12 @@ int api_config_baud_rate(runtime_ptr rt) {
 
   /* hold tx so that uart will update lcr and baud in the gap of rx */
   uint8_t halt = bits::in(phalt);
-  halt = bits::clear_bit(halt, 0);
-  halt = bits::clear_bit(halt, 1);
+  halt = bits::clear_bits(halt, 0);
+  halt = bits::clear_bits(halt, 1);
   bits::out(phalt, halt | SUNXI_UART_HALT_FORCECFG | SUNXI_UART_HALT_HTX);
 
   uint8_t lcr = bits::in(plcr);
-  lcr = bits::clear_bit(lcr, 7);
+  lcr = bits::clear_bits(lcr, 7);
   bits::out(plcr, lcr | SUNXI_UART_LCR_DLAB);
   bits::out(pdll, dvi & 0xFF);
   bits::out(pdlh, dvi >> 8);
@@ -263,7 +263,7 @@ int api_tx(runtime_ptr rt, const char* out, size_t len) {
   while (len--) {
     do {
       x = bits::in(lsr);
-    } while (bits::get_bit(*lsr, 6) == 0);
+    } while (bits::get_bits(*lsr, 6) == 0);
     x = *out++;
     bits::out(thr, x);
   }
