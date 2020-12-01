@@ -47,6 +47,10 @@ struct bits {
   static inline constexpr T clear_bits(const T val, const int bit_offset, const int len = 1) {
     return val & ~bitmask<T>(len, bit_offset);
   }
+  template <typename T1, typename T2>
+  static inline constexpr auto modify_bits(const T1 val1, const T2 val2, const int offset, const int len = 1) {
+    return clear_bits(val1, offset, len) | shift_bits(val2, offset);
+  }
   template <typename T>
   static inline constexpr int get_bits(const T val, const int bit_offset, const int len = 1) {
     return (val & bitmask<T>(len, bit_offset)) >> bit_offset;

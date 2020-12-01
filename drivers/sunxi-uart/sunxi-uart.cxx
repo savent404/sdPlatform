@@ -1,3 +1,13 @@
+/**
+ * @file sunxi-uart.cxx
+ * @author savent (savent_gate@outlook.com)
+ * @brief 
+ * @version 0.1
+ * @date 2020-12-01
+ * 
+ * Copyright 2020 jrlc
+ * 
+ */
 #include <sunxi-uart.h>
 
 #include <platform/bits.hxx>
@@ -44,23 +54,19 @@ void setup_pinmux(int uart_index) {
       auto tx_conf_reg = bits::shift_addr<uint32_t*>(pio_base, 0x128);
       auto tx_pull_reg = bits::shift_addr<uint32_t*>(pio_base, 0x128);
       auto tx_conf = bits::in(tx_conf_reg);
-      tx_conf = bits::clear_bits(tx_conf, 8, 3);
-      tx_conf = bits::or_bits(tx_conf, bits::shift_bits(0x03, 8));
+      tx_conf = bits::modify_bits(tx_conf, 0x03, 8, 3);
       bits::out(tx_conf_reg, tx_conf);
       auto tx_pull = bits::in(tx_pull_reg);
-      tx_pull &= ~(0x3 << 2 * 2);
-      tx_pull |= 0x1 << 2 * 2;
+      tx_pull = bits::modify_bits(tx_pull, 0x01, 4, 2);
       bits::out(tx_pull_reg, tx_pull);
       /* UART_2 rx */
       auto rx_conf_reg = bits::shift_addr<uint32_t*>(pio_base, 0x128);
       auto rx_pull_reg = bits::shift_addr<uint32_t*>(pio_base, 0x128);
       auto rx_conf = bits::in(rx_conf_reg);
-      rx_conf &= ~(0x07 << 12);
-      rx_conf |= 0x3 << 12;
+      rx_conf = bits::modify_bits(rx_conf, 0x03, 12, 3);
       bits::out(rx_conf_reg, rx_conf);
       auto rx_pull = bits::in(rx_pull_reg);
-      rx_pull &= ~(0x3 << 2 * 3);
-      rx_pull |= 0x1 << 2 * 3;
+      rx_pull = bits::modify_bits(rx_pull, 0x01, 6, 2);
       bits::out(rx_pull_reg, rx_pull);
     } break;
     default:
@@ -78,12 +84,10 @@ int api_config_parity(runtime_ptr rt) {
       lcr = bits::clear_bits(lcr, 3);
       break;
     case 1:  // odd
-      lcr = bits::set_bits(lcr, 3);
-      lcr = bits::clear_bits(lcr, 4);
+      lcr = bits::modify_bits(lcr, 0x01, 3, 2);
       break;
     case 2:  // even
-      lcr = bits::set_bits(lcr, 3);
-      lcr = bits::clear_bits(lcr, 4);
+      lcr = bits::modify_bits(lcr, 0x03, 3, 2);
       break;
     default:  // as parameter invalid
       return eno::ENO_INVALID;
@@ -97,20 +101,16 @@ int api_config_data_bit(runtime_ptr rt) {
   uint32_t lcr = *plcr;
   switch (rt->data_bits) {
     case 5:  // 5Bit - DLS(00)
-      lcr = bits::clear_bits(lcr, 0);
-      lcr = bits::clear_bits(lcr, 1);
+      lcr = bits::clear_bits(lcr, 0, 2);
       break;
     case 6:  // 6Bit - DLS(01)
-      lcr = bits::set_bits(lcr, 0);
-      lcr = bits::clear_bits(lcr, 1);
+      lcr = bits::modify_bits(lcr, 0x01, 0, 2);
       break;
     case 7:  // 7Bit - DLS(10)
-      lcr = bits::clear_bits(lcr, 0);
-      lcr = bits::set_bits(lcr, 1);
+      lcr = bits::modify_bits(lcr, 0x02, 0, 2);
       break;
-    case 8:
-      lcr = bits::set_bits(lcr, 0);
-      lcr = bits::set_bits(lcr, 1);
+    case 8:  // 8Bit - DLS(11)
+      lcr = bits::modify_bits(lcr, 0x03, 0, 2);
       break;
     default:
       return eno::ENO_INVALID;
@@ -158,15 +158,14 @@ int api_config_baud_rate(runtime_ptr rt) {
 
   /* hold tx so that uart will update lcr and baud in the gap of rx */
   uint8_t halt = bits::in(phalt);
-  halt = bits::clear_bits(halt, 0);
-  halt = bits::clear_bits(halt, 1);
+  halt = bits::clear_bits(halt, 0, 2);
   bits::out(phalt, halt | SUNXI_UART_HALT_FORCECFG | SUNXI_UART_HALT_HTX);
 
   uint8_t lcr = bits::in(plcr);
   lcr = bits::clear_bits(lcr, 7);
   bits::out(plcr, lcr | SUNXI_UART_LCR_DLAB);
-  bits::out(pdll, dvi & 0xFF);
-  bits::out(pdlh, dvi >> 8);
+  bits::out(pdll, bits::and_bits(dvi, 0xFF));
+  bits::out(pdlh, bits::shift_bits(dvi, -8));
   bits::out(phalt, halt | SUNXI_UART_HALT_HTX | SUNXI_UART_HALT_FORCECFG | SUNXI_UART_HALT_LCRUP);
   do {
     halt = bits::in(phalt);
