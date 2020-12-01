@@ -207,22 +207,33 @@ int api_setup(runtime_ptr rt) {
   auto pfcr = bits::shift_addr<int8_t*>(rt->mem_base, SUNXI_UART_FCR);
   bits::out(pfcr, SUNXI_UART_FCR_RXTRG_1_2 | SUNXI_UART_FCR_TXTRG_1_2 | SUNXI_UART_FCR_FIFO_EN);
 
+  /* config data bit length */
   res = api_config_data_bit(rt);
   if (res) goto out;
 
+  /* config parity */
   res = api_config_parity(rt);
   if (res) goto out;
 
+  /* config stop bit length */
   res = api_config_stop_bit(rt);
   if (res) goto out;
 
+  /* config uart baud rate */
   res = api_config_baud_rate(rt);
   if (res) goto out;
 
-  /* enable interrupts */
+  /**
+   * @brief enable PTIME | EDSSI | ELSI | ERBFI
+   * 
+   * @note  PTIME:  THRE interrupt
+   *        EDSSI:  Modem status interrupt
+   *        ELSI:   Receiver Line interrupt
+   *        ERBFI:  Received data interrupt
+   */
   {
     auto ier_reg = bits::shift_addr<uint32_t*>(rt->mem_base, SUNXI_UART_IER);
-    bits::out(ier_reg, 0x8d);
+    bits::out(ier_reg, 0x83);
   }
   /* set MCR */
   {

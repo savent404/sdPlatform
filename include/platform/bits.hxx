@@ -25,7 +25,7 @@ struct bits {
   static inline constexpr int _shift_addr(const int addr, const int offset) { return addr + offset; }
   template <typename _Tp_ret = void*, typename _Tp_param = void*>
   static inline constexpr _Tp_ret shift_addr(_Tp_param addr, const int offset) {
-    return reinterpret_cast<_Tp_ret>(_shift_addr((int)addr, offset));
+    return reinterpret_cast<_Tp_ret>(_shift_addr(reinterpret_cast<int>(addr), offset));
   }
   template <typename T>
   static inline constexpr T shift_bits(const T val, const int offset) {
