@@ -22,7 +22,8 @@
  *      "irq": 10,
  *      "baudrate": 115200,
  *      "parity": "none", // 'odd', 'even', 'none'
- *      "data_bits": 8
+ *      "data_bits": 8,
+ *      "stop_bits": 0, // 0-1Bit, 1-1.5Bit, 2-2Bit
  *  }
  * }
  * @endcode
@@ -51,6 +52,7 @@ struct runtime : public platform::runtime {
   uint32_t baudrate;
   uint8_t parity;  // 0-none, 1-odd, 2-even
   uint8_t data_bits;
+  uint8_t stop_bits; // 0-1bit, 1-1.5bit, 2-2bit
   buffer_t rx_buffer;
   buffer_t tx_buffer;
 };
@@ -68,6 +70,11 @@ struct api {
   int (*stop_rx)(runtime_ptr);  // 停止接收流程
 
   int (*pm)(runtime_ptr, int state);  // 暂停/回复
+
+  int (*config_parity)(runtime_ptr ptr);
+  int (*config_data_bit)(runtime_ptr ptr);
+  int (*config_stop_bit)(runtime_ptr ptr);
+  int (*config_baud_rate)(runtime_ptr ptr);
 
   int (*ioctl)(runtime_ptr, int cmds, void* in_out, size_t* in_out_len,
                size_t buffer_max);  // 硬件提供的额外的ioctl功能

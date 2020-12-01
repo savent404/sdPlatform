@@ -18,12 +18,13 @@
 extern "C" int sunxi_uart_test_bind(void) {
   platform::device uart_1({{"name", "uart-1"},
                            {"compat", "arm,uart-sunxi,t3"},
-                           {"config/base", (int)0x38000000},
+                           {"config/base", (int)0x38000000 + 0x800},
                            {"config/range", 0x400},
                            {"config/irq", 34},
                            {"config/baudrate", 115200},
                            {"config/parity", 0},
-                           {"config/data_bits", 8}});
+                           {"config/data_bits", 8},
+                           {"config/stop_bits", 0}});
   auto str = uart_1.to_json_str();
   auto id = devmgr_create_device(str);
   platform::cJSON_free((void*)str);  //  NOLINT
