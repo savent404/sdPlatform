@@ -1,22 +1,31 @@
 /**
  * @file sunxi-uart.cxx
  * @author savent (savent_gate@outlook.com)
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2020-12-01
- * 
+ *
  * Copyright 2020 jrlc
- * 
+ *
  */
+#include <loop.h>
+#include <osal.h>
 #include <sunxi-uart.h>
 
 #include <platform/bits.hxx>
+#include <platform/debug.hxx>
 #include <platform/drivers/uart.hxx>
 #include <platform/entry.hxx>
+
+extern "C" void* sunxi_uart_irqipc_loop(void*);
+extern "C" s32 sunxi_uart_irq_entry(irq_waiter_t*);
+
+#define SUNXI_UART_ECHO 0
 
 namespace platform::drivers::uart::sunxi_t3 {
 
 using platform::bits;
+using platform::debug;
 
 void setup_clk(void* ccu_base, int uart_index) {
   /* reset uart */
@@ -52,7 +61,7 @@ void setup_pinmux(int uart_index) {
     case 2: {
       /* UART_2 tx */
       auto tx_conf_reg = bits::shift_addr<uint32_t*>(pio_base, 0x128);
-      auto tx_pull_reg = bits::shift_addr<uint32_t*>(pio_base, 0x128);
+      auto tx_pull_reg = bits::shift_addr<uint32_t*>(pio_base, 0x140);
       auto tx_conf = bits::in(tx_conf_reg);
       tx_conf = bits::modify_bits(tx_conf, 0x03, 8, 3);
       bits::out(tx_conf_reg, tx_conf);
@@ -61,7 +70,7 @@ void setup_pinmux(int uart_index) {
       bits::out(tx_pull_reg, tx_pull);
       /* UART_2 rx */
       auto rx_conf_reg = bits::shift_addr<uint32_t*>(pio_base, 0x128);
-      auto rx_pull_reg = bits::shift_addr<uint32_t*>(pio_base, 0x128);
+      auto rx_pull_reg = bits::shift_addr<uint32_t*>(pio_base, 0x140);
       auto rx_conf = bits::in(rx_conf_reg);
       rx_conf = bits::modify_bits(rx_conf, 0x03, 12, 3);
       bits::out(rx_conf_reg, rx_conf);
@@ -72,6 +81,150 @@ void setup_pinmux(int uart_index) {
     default:
       break;
   }
+}
+
+void handle_irq_rx(runtime_ptr rt, uint32_t lsr) {
+  char ch = 0;
+  char flag;
+  int cnt = 255;
+  auto reg_lsr = bits::shift_addr<uint32_t*>(rt->mem_base, SUNXI_UART_LSR);
+  auto reg_rbr = bits::shift_addr<uint32_t*>(rt->mem_base, SUNXI_UART_RBR);
+  do {
+    if (lsr & SUNXI_UART_LSR_BRK_ERROR_BITS) {
+      // Do nothing
+    } else if ((lsr & SUNXI_UART_LSR_DR)) {
+      ch = bits::in(reg_rbr)&0xFF;
+      rt->rx_buffer.push(ch);
+#if SUNXI_UART_ECHO
+      rt->tx_buffer.push(ch);
+#endif
+    }
+
+    lsr = bits::in(reg_lsr);
+  } while ((lsr & (SUNXI_UART_LSR_DR | SUNXI_UART_LSR_BI)) && cnt--);
+}
+
+void handle_irq_modem_status(runtime_ptr rt) {
+  auto reg_msr = bits::shift_addr<uint32_t*>(rt->mem_base, SUNXI_UART_MSR);
+  auto msr = bits::in(reg_msr);
+}
+
+void tx_switch(runtime_ptr rt, bool enable) {
+  auto reg_ier = bits::shift_addr<uint32_t*>(rt->mem_base, SUNXI_UART_IER);
+  auto ier = bits::in(reg_ier);
+  if (enable)
+    ier = bits::set_bits(ier, 1);
+  else
+    ier = bits::clear_bits(ier, 1);
+  bits::out(reg_ier, ier);
+}
+
+void handle_irq_tx(runtime_ptr rt, uint32_t lsr) {
+  static const int fifo_left = 32;
+  size_t cnt = rt->tx_buffer.size();
+  cnt = cnt > fifo_left ? fifo_left : cnt;
+  auto reg_thr = bits::shift_addr<char*>(rt->mem_base, SUNXI_UART_THR);
+  auto& buffer = rt->tx_buffer;
+
+  if (!cnt) {
+    // disable tx interrupt
+    tx_switch(rt, false);
+    return;
+  }
+  while (cnt--) {
+    bits::out(reg_thr, buffer.front());
+    buffer.pop();
+  }
+  if ((lsr & SUNXI_UART_LSR_TEMT) && !rt->tx_buffer.empty()) {
+    // enable tx interrupt
+    tx_switch(rt, true);
+  }
+}
+
+int handle_irq(runtime_ptr rt) {
+  auto reg_iir = bits::shift_addr<uint32_t*>(rt->mem_base, SUNXI_UART_IIR);
+  auto reg_lsr = bits::shift_addr<uint32_t*>(rt->mem_base, SUNXI_UART_LSR);
+
+  auto iir = bits::in(reg_iir)&0x0F;
+  auto lsr = bits::in(reg_lsr);
+
+  if (iir == SUNXI_UART_IIR_IID_BUSBSY) {
+    /**
+     * Before reseting lcr, we should ensure that uart is not in busy state.
+     * Otherwise, a new busy interrupt will be introduced.
+     * It is wise to set uart into loopback mode, since it can cut down the
+     * serial in, then we should reset fifo(in some case, busy state can't be cleard until the fifo is empty)
+     *
+     */
+    auto reg_mcr = bits::shift_addr<uint32_t*>(rt->mem_base, SUNXI_UART_MCR);
+    auto reg_lcr = bits::shift_addr<uint32_t*>(rt->mem_base, SUNXI_UART_LCR);
+    auto reg_fcr = bits::shift_addr<uint32_t*>(rt->mem_base, SUNXI_UART_FCR);
+    auto reg_usr = bits::shift_addr<uint32_t*>(rt->mem_base, SUNXI_UART_USR);
+    auto mcr = bits::in(reg_mcr);
+    auto lcr = bits::in(reg_lcr);
+    auto fcr = bits::in(reg_fcr);
+    bits::out(reg_mcr, mcr | SUNXI_UART_MCR_LOOP);
+    auto usr = bits::in(reg_usr);
+    if (fcr & SUNXI_UART_FCR_FIFO_EN) {
+      bits::out(reg_fcr, SUNXI_UART_FCR_FIFO_EN);
+      bits::out(reg_fcr, SUNXI_UART_FCR_FIFO_EN | SUNXI_UART_FCR_TXFIFO_RST | SUNXI_UART_FCR_RXFIFO_RST);
+      bits::out(reg_fcr, 0);
+    }
+    bits::out(reg_fcr, fcr);
+    bits::out(reg_lcr, lcr);
+    bits::out(reg_mcr, mcr);
+  } else {
+    if (lsr & (SUNXI_UART_LSR_DR | SUNXI_UART_LSR_BI)) {
+      handle_irq_rx(rt, lsr);
+    } else if (iir & SUNXI_UART_IIR_IID_CHARTO) {
+      /** has charto irq but no dr lsr ? just read and ignore */
+      auto reg_rbr = bits::shift_addr<uint32_t*>(rt->mem_base, SUNXI_UART_RBR);
+      bits::in(reg_rbr);
+    }
+    handle_irq_modem_status(rt);
+    if (iir == SUNXI_UART_IIR_IID_THREMP || ((lsr & SUNXI_UART_LSR_TEMT) && !rt->tx_buffer.empty()))
+      handle_irq_tx(rt, lsr);
+  }
+
+  return 0;
+}
+
+s32 sunxi_uart_irq_entry(irq_waiter_t* info) {
+  auto rt = reinterpret_cast<runtime_ptr>(info->data);
+  if (rt->irq != info->irq) return -1;
+  return handle_irq(rt);
+}
+
+void* __attribute__((noreturn)) sunxi_uart_irqipc_loop(void* ptr) {
+  static const int irq_index[] = {
+      33,  // uart 0
+      34,  // uart 1
+      35,  // uart 2
+      36,  // uart 3
+      49,  // uart 4
+      50,  // uart 5
+      51,  // uart 6
+      52,  // uart 7
+  };
+  runtime_ptr rt = reinterpret_cast<runtime_ptr>(ptr);
+
+  auto loop = loop_new();
+  debug::assert(loop);
+  debug::assert(rt->uart_idx < (sizeof(irq_index) / sizeof(irq_index[0])));
+
+  rt->irq = irq_index[rt->uart_idx];
+  auto waiter = loop_irq_waiter_new(rt->irq, sunxi_uart_irq_entry, rt);
+  debug::assert(waiter);
+
+  loop_irq_waiter_register(loop, waiter);
+
+  loop_run(loop);
+  return NULL;
+}
+
+void sunxi_uart_irq_entry(void* ptr) {
+  runtime_ptr rt = reinterpret_cast<runtime_ptr>(ptr);
+  handle_irq(rt);
 }
 
 int api_config_parity(runtime_ptr rt) {
@@ -129,12 +282,12 @@ int api_config_stop_bit(runtime_ptr rt) {
       break;
     case 1:  // 1.5 bit
       // as sunxi-uart datasheet, 1.5 stop bit when DLS is zero
-      if (bits::and_bits(lcr, (uint32_t)0x03) != 0) return eno::ENO_INVALID;
+      if (bits::get_bits(lcr, 0, 2) != 0) return eno::ENO_INVALID;
       lcr = bits::set_bits(lcr, 2);
       break;
     case 2:
       // as sunxi-uart datasheet, 1.5 stop bit when DLS is zero
-      if (bits::and_bits(lcr, (uint32_t)0x03) == 0) return eno::ENO_INVALID;
+      if (bits::get_bits(lcr, 0, 2) == 0) return eno::ENO_INVALID;
       lcr = bits::set_bits(lcr, 2);
       break;
     default:
@@ -146,10 +299,10 @@ int api_config_stop_bit(runtime_ptr rt) {
 
 int api_config_baud_rate(runtime_ptr rt) {
   // check ccn(rcc) find out APB2's freq
-  uint8_t* plcr = bits::shift_addr<uint8_t*>(rt->mem_base, SUNXI_UART_LCR);
-  uint8_t* pdll = bits::shift_addr<uint8_t*>(rt->mem_base, SUNXI_UART_DLL);
-  uint8_t* pdlh = bits::shift_addr<uint8_t*>(rt->mem_base, SUNXI_UART_DLH);
-  uint8_t* phalt = bits::shift_addr<uint8_t*>(rt->mem_base, SUNXI_UART_HALT);
+  uint32_t* plcr = bits::shift_addr<uint32_t*>(rt->mem_base, SUNXI_UART_LCR);
+  uint32_t* pdll = bits::shift_addr<uint32_t*>(rt->mem_base, SUNXI_UART_DLL);
+  uint32_t* pdlh = bits::shift_addr<uint32_t*>(rt->mem_base, SUNXI_UART_DLH);
+  uint32_t* phalt = bits::shift_addr<uint32_t*>(rt->mem_base, SUNXI_UART_HALT);
   size_t APB2_freq = 24 * 1000 * 1000;  // 24MHz
   size_t baud_rate = rt->baudrate;
   uint16_t dvi = 0;
@@ -157,11 +310,11 @@ int api_config_baud_rate(runtime_ptr rt) {
   dvi = static_cast<uint16_t>(res);
 
   /* hold tx so that uart will update lcr and baud in the gap of rx */
-  uint8_t halt = bits::in(phalt);
+  uint32_t halt = bits::in(phalt);
   halt = bits::clear_bits(halt, 0, 2);
   bits::out(phalt, halt | SUNXI_UART_HALT_FORCECFG | SUNXI_UART_HALT_HTX);
 
-  uint8_t lcr = bits::in(plcr);
+  uint32_t lcr = bits::in(plcr);
   lcr = bits::clear_bits(lcr, 7);
   bits::out(plcr, lcr | SUNXI_UART_LCR_DLAB);
   bits::out(pdll, bits::and_bits(dvi, 0xFF));
@@ -178,17 +331,11 @@ int api_config_baud_rate(runtime_ptr rt) {
 }
 
 int api_tx(runtime_ptr rt, const char* out, size_t len) {
-  uint32_t* thr = bits::shift_addr<uint32_t*>(rt->mem_base, SUNXI_UART_THR);
-  uint32_t* lsr = bits::shift_addr<uint32_t*>(rt->mem_base, SUNXI_UART_LSR);
-  uint32_t x;
-
   while (len--) {
-    do {
-      x = bits::in(lsr);
-    } while (bits::get_bits(*lsr, 6) == 0);
-    x = *out++;
-    bits::out(thr, x);
+    rt->tx_buffer.push(*out++);
   }
+  // enable tx interrupts
+  tx_switch(rt, true);
   return eno::ENO_OK;
 }
 
@@ -203,8 +350,8 @@ int api_setup(runtime_ptr rt) {
   setup_pinmux(rt->uart_idx);
 
   /* enable fifo for rx/tx */
-  auto pfcr = bits::shift_addr<int8_t*>(rt->mem_base, SUNXI_UART_FCR);
-  bits::out(pfcr, SUNXI_UART_FCR_RXTRG_1_2 | SUNXI_UART_FCR_TXTRG_1_2 | SUNXI_UART_FCR_FIFO_EN);
+  auto pfcr = bits::shift_addr<uint32_t*>(rt->mem_base, SUNXI_UART_FCR);
+  bits::out(pfcr, SUNXI_UART_FCR_RXTRG_1CH | SUNXI_UART_FCR_TXTRG_1_2 | SUNXI_UART_FCR_FIFO_EN);
 
   /* config data bit length */
   res = api_config_data_bit(rt);
@@ -224,7 +371,7 @@ int api_setup(runtime_ptr rt) {
 
   /**
    * @brief enable PTIME | EDSSI | ELSI | ERBFI
-   * 
+   *
    * @note  PTIME:  THRE interrupt
    *        EDSSI:  Modem status interrupt
    *        ELSI:   Receiver Line interrupt
@@ -232,7 +379,8 @@ int api_setup(runtime_ptr rt) {
    */
   {
     auto ier_reg = bits::shift_addr<uint32_t*>(rt->mem_base, SUNXI_UART_IER);
-    bits::out(ier_reg, 0x83);
+    bits::out(ier_reg, 0x8d);
+    // bits::out(ier_reg, 0x83);
   }
   /* set MCR */
   {
@@ -240,6 +388,9 @@ int api_setup(runtime_ptr rt) {
     bits::out(mcr_reg, 0x03);
   }
 
+  /* setup interrupt */
+  rt->irq_handle = os.os_thread_create(sunxi_uart_irqipc_loop, rt);
+  if (!rt->irq_handle) return eno::ENO_SYSCALL_ERR;
 out:
   return res;
 }

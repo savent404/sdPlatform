@@ -56,13 +56,29 @@ int driver::transfer_(device_ref dev, const void* in, size_t in_len, void* out, 
 
 int driver::write_(device_ref dev, const void* out, size_t len) {
   runtime* rt = dev.get_runtime().promote<runtime>();
+  auto& buf = rt->tx_buffer;
+  const char* ptr = reinterpret_cast<const char*>(out);
 
-  if (!api_.tx) return eno::ENO_NOTIMPL;
-
-  return api_.tx(rt, reinterpret_cast<const char*>(out), len);
+  for (int i = 0; i < len; i++) {
+    rt->tx_buffer.push(*ptr++);
+  }
+  auto res = api_.start_tx(rt);
+  if (res < 0) return res;
+  return len;
 }
 
-int driver::read_(device_ref dev, void* in, size_t len) { return eno::ENO_NOPERMIT; }
+int driver::read_(device_ref dev, void* in, size_t len) {
+  char* ptr = reinterpret_cast<char*>(in);
+  runtime* rt = dev.get_runtime().promote<runtime>();
+  auto& rx_buf = rt->rx_buffer;
+  int left = rx_buf.size();
+  int cnt = left > len ? len : left;
+  for (int i = 0; i < cnt; i++) {
+    *ptr++ = rx_buf.front();
+    rx_buf.pop();
+  }
+  return cnt;
+}
 
 int driver::ioctl_(device_ref dev, int cmds, void* in_out, size_t* in_out_len, size_t max) { return eno::ENO_NOPERMIT; }
 
@@ -72,13 +88,11 @@ void driver::register_internal_syscall_() {}
 
 #define CHECK_KEY(conf, key) \
   if (!conf.has(key)) return false;
-#define GET_VAL(conf, key, internal_type, outside_type) \
-  (reinterpret_cast<outside_type>(conf.get<internal_type>(key)))
+#define GET_VAL(conf, key, internal_type, outside_type) (reinterpret_cast<outside_type>(conf.get<internal_type>(key)))
 
 bool uart::driver::load_device_runtime(parameters_ref dev_conf, runtime* rt) {
   CHECK_KEY(dev_conf, "config/base");
   CHECK_KEY(dev_conf, "config/range");
-  CHECK_KEY(dev_conf, "config/irq");
   CHECK_KEY(dev_conf, "config/baudrate");
   CHECK_KEY(dev_conf, "config/parity");
   CHECK_KEY(dev_conf, "config/data_bits");
@@ -87,9 +101,16 @@ bool uart::driver::load_device_runtime(parameters_ref dev_conf, runtime* rt) {
 
   rt->mem_base = GET_VAL(dev_conf, "config/base", int, void*);
   rt->mem_range = GET_VAL(dev_conf, "config/range", int, int);
-  rt->irq = GET_VAL(dev_conf, "config/irq", int, int);
   rt->baudrate = GET_VAL(dev_conf, "config/baudrate", int, int);
-  rt->parity = GET_VAL(dev_conf, "config/parity", int, int);
+  const char* parity_str = GET_VAL(dev_conf, "config/parity", const char*, const char*);
+  if (!strcmp(parity_str, "none"))
+    rt->parity = 0;
+  else if (!strcmp(parity_str, "odd"))
+    rt->parity = 1;
+  else if (!strcmp(parity_str, "even"))
+    rt->parity = 2;
+  else
+    return false;
   rt->data_bits = GET_VAL(dev_conf, "config/data_bits", int, int);
   rt->stop_bits = GET_VAL(dev_conf, "config/stop_bits", int, int);
   rt->uart_idx = GET_VAL(dev_conf, "config/uart_idx", int, int);

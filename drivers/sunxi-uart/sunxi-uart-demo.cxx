@@ -8,6 +8,7 @@
  * Copyright 2020 jrlc
  *
  */
+#include <osal.h>
 #include <platform.h>
 #include <requirements.h>
 #include <sunxi-uart.h>
@@ -16,14 +17,30 @@
 #include <platform/drivers/uart.hxx>
 #include <platform/entry.hxx>
 
+extern "C" void *sunxi_uart_echo_test(void *ptr) {
+  auto id = reinterpret_cast<int>(ptr);
+
+  const char msg[] = "sunxi-uart:Hello\r\n";
+  dev_write(id, msg, sizeof(msg));
+  int cnt = 3;
+  char ch[32];
+  while (1) {
+    os.os_msleep(10);
+    auto cnt = dev_read(id, ch, 32);
+    if (cnt > 0) {
+      dev_write(id, ch, cnt);
+    }
+  }
+}
+
 extern "C" int sunxi_uart_test_bind(void) {
   platform::device uart_1({{"name", "uart-1"},
                            {"compat", "arm,uart-sunxi,t3"},
                            {"config/base", (int)0x38000000 + 0x800},
                            {"config/range", 0x400},
                            {"config/irq", 34},
-                           {"config/baudrate", 9600},
-                           {"config/parity", 0},
+                           {"config/baudrate", 115200},
+                           {"config/parity", "none"},
                            {"config/data_bits", 8},
                            {"config/stop_bits", 0},
                            {"config/uart_idx", 2}});
@@ -40,12 +57,8 @@ extern "C" int sunxi_uart_test_bind(void) {
 
   dev_bind(id, sunxi_uart_driver->get_id());
 
-  const char msg[] = "sunxi-uart:Hello\r\n";
-  int cnt = 3;
-  while (cnt--) {
-    dev_write(id, msg, sizeof(msg));
-  }
-
+  // start a thread to handle uart echo
+  os.os_thread_create(sunxi_uart_echo_test, reinterpret_cast<void*>(id));
   return 0;
 }
 

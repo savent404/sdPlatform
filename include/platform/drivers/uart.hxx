@@ -1,14 +1,16 @@
 #pragma once
 
+#include <osal.h>
+
+#include <cstddef>
 #include <cstdint>
 
+#include <consthash/crc32.hxx>
 #include <platform/alter/queue.hxx>
 #include <platform/device.hxx>
 #include <platform/driver.hxx>
 #include <platform/parameter.hxx>
 #include <platform/runtime.hxx>
-
-#include <consthash/crc32.hxx>
 
 /**
  * @brief Json demo
@@ -19,9 +21,8 @@
  *  "config": {
  *      "base": 0x20000000,
  *      "range": 0x1000,
- *      "irq": 10,
  *      "baudrate": 115200,
- *      "parity": "none", // 'odd', 'even', 'none'
+ *      "parity": "none", // 'none', 'odd', 'even'
  *      "data_bits": 8,
  *      "stop_bits": 0, // 0-1Bit, 1-1.5Bit, 2-2Bit
  *      "uart_idx": 0, // means uart-0
@@ -44,19 +45,22 @@ using rx_irq_cb_t = std::function<int(device_ref, const char* buffer, size_t len
 using buffer_t = platform::alter::queue<char>;
 
 struct runtime : public platform::runtime {
-  RUNTIME_INIT(uart-runtime-structure);
+  RUNTIME_INIT(uart - runtime - structure);
   runtime() { __init(); }
 
   void* mem_base;
   size_t mem_range;
-  int irq;
   uint32_t baudrate;
   uint8_t parity;  // 0-none, 1-odd, 2-even
   uint8_t data_bits;
-  uint8_t stop_bits; // 0-1bit, 1-1.5bit, 2-2bit
-  uint8_t uart_idx;  // 0~255
+  uint8_t stop_bits;  // 0-1bit, 1-1.5bit, 2-2bit
+  uint8_t uart_idx;   // 0~255
+
   buffer_t rx_buffer;
   buffer_t tx_buffer;
+  ipc_handle_t irq_handle;
+  bool tx_running;
+  int irq;
 };
 
 using runtime_ptr = runtime*;
@@ -66,10 +70,11 @@ struct api {
   int (*setup)(runtime_ptr);     // 初始化硬件
   int (*shutdown)(runtime_ptr);  // 停用硬件
 
-  int (*tx)(runtime_ptr, const char* buf, size_t len);
-  // int (*tx_empty)(runtime_ptr);  // 检查发送队列是否为空
+  int (*start_tx)(runtime_ptr);
+  int (*stop_tx)(runtime_ptr);
 
-  int (*stop_rx)(runtime_ptr);  // 停止接收流程
+  // int (*start_rx)(runtime_ptr);
+  // int (*stop_rx)(runtime_ptr);  // 停止接收流程
 
   int (*pm)(runtime_ptr, int state);  // 暂停/回复
 
