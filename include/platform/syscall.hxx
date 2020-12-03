@@ -10,13 +10,16 @@
  */
 #pragma once
 
+#include <cstddef>
 #include <functional>
 
+// clang-format off
+#include <consthash/crc32.hxx>
 #include <platform/alter/map.hxx>
 #include <platform/alter/string.hxx>
+#include <platform/cJSON.hxx>
 #include <platform/syscall-details.hxx>
-
-#include <consthash/crc32.hxx>
+// clang-format on
 
 namespace platform {
 
@@ -42,6 +45,9 @@ struct syscall {
   int call_p(hash_id id, Args&... args) const;
 
   static syscall* get_instance();
+
+  cJSON* get_ipc_description();
+  void set_ipc_description(const void*);
 
  private:
   func_t find(hash_id func_id) const;

@@ -9,10 +9,10 @@
  *
  */
 #include <platform-types.h>
-#include <tuple>
 
 #include <consthash/all.hxx>
 #include <platform/syscall.hxx>
+#include <tuple>
 
 namespace platform {
 
@@ -35,10 +35,19 @@ syscall *syscall::get_instance() {
   return c;
 }
 
+cJSON *syscall::get_ipc_description() { return nullptr; }
+void syscall::set_ipc_description(const void *) {}
+
 bool syscall::add(string func_name, func_t func) { return add(hash(func_name), func); }
 bool syscall::del(string func_name) { return del(hash(func_name)); }
-bool syscall::add(hash_id func_id, func_t func) { kv_[func_id] = func; return true; }
-bool syscall::del(hash_id func_id) { kv_[func_id] = dummy_syscall; return true; }
+bool syscall::add(hash_id func_id, func_t func) {
+  kv_[func_id] = func;
+  return true;
+}
+bool syscall::del(hash_id func_id) {
+  kv_[func_id] = dummy_syscall;
+  return true;
+}
 syscall::func_t syscall::find(hash_id id) const {
   auto iter = kv_.find(id);
   return iter == kv_.end() ? dummy_syscall : iter->second;
