@@ -37,4 +37,4 @@ extern "C" int test_case_runtime() {
     return 0;
 }
 
-driver_entry_level_untest(test_case_runtime);
+func_entry_level_untest(test_case_runtime);

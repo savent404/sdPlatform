@@ -63,4 +63,4 @@ extern "C" int sunxi_uart_test_bind(void) {
   return 0;
 }
 
-driver_entry_level_untest(sunxi_uart_test_bind);
+func_entry_level_untest(sunxi_uart_test_bind);

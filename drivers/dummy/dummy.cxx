@@ -50,4 +50,4 @@ extern "C" int dummy_entry(void) {
   return dev_bind(device_id, driver_id);
 }
 
-driver_entry_level_default(dummy_entry);
+func_entry_level_default(dummy_entry);

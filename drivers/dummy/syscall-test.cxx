@@ -29,4 +29,4 @@ extern "C" int test_case_syscall() {
   return 0;
 }
 
-driver_entry_level_untest(test_case_syscall);
+func_entry_level_untest(test_case_syscall);

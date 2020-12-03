@@ -491,4 +491,4 @@ extern "C" int sunxi_uart_entry() {
   return sunxi_uart_driver->init(0, nullptr);
 }
 
-driver_entry_level_default(sunxi_uart_entry);
+func_entry_level_default(sunxi_uart_entry);
