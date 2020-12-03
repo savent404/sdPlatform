@@ -52,7 +52,7 @@ extern "C" {
 //   return iter != driver_queue().end();
 // }
 
-__weak int devmgr_create_device(const char *json_str) {
+__weak int devmgr_create_device(const char *json_str, int i) {
   auto dev = new platform::device;
   dev->from_json_str(json_str);
   int id = rand();  // NOLINT

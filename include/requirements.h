@@ -14,7 +14,7 @@ extern "C" {
  * @return int 0  创建失败
  *         int !0 创建成功，为设备的id值
  */
-int devmgr_create_device(const char *json_str);
+int devmgr_create_device(const char *json_str, int id);
 /**
  * @brief 向devmgr申请更新设备信息
  * 

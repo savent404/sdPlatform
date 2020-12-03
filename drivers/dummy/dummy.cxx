@@ -40,7 +40,7 @@ extern "C" int dummy_entry(void) {
   // register a device
   auto device = new platform::device({{"name", "dummy-device"}, {"compat", "dummy"}});
   auto str = device->to_json_str();
-  auto device_id = devmgr_create_device(str);
+  auto device_id = devmgr_create_device(str, device->get_id());
   device->set_id(device_id);
   platform::cJSON_free((char *)(str));
   str = device->to_json_str();
