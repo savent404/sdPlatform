@@ -25,8 +25,6 @@
 extern "C" void* sunxi_uart_irqipc_loop(void*);
 extern "C" s32 sunxi_uart_irq_entry(irq_waiter_t*);
 
-#define SUNXI_UART_ECHO 0
-
 namespace platform::drivers::uart::sunxi_t3 {
 
 struct runtime : public platform::runtime {
@@ -46,8 +44,6 @@ void setup_clk(void* ccu_base, int uart_index) {
   auto sw_reset4 = bits::in(ccu_sw_reset_reg4);
   sw_reset4 = bits::clear_bits(sw_reset4, 16 + uart_index);
   bits::out(ccu_sw_reset_reg4, sw_reset4);
-  // for (int i = 0; i < 100; i++) {
-  // }
   sw_reset4 = bits::set_bits(sw_reset4, 16 + uart_index);
   bits::out(ccu_sw_reset_reg4, sw_reset4);
 
@@ -56,8 +52,6 @@ void setup_clk(void* ccu_base, int uart_index) {
   auto bcg_reg3 = bits::in(ccu_bcg_reg3);
   bcg_reg3 = bits::clear_bits(bcg_reg3, 16 + uart_index);
   bits::out(ccu_bcg_reg3, bcg_reg3);
-  // for (int i = 0; i < 100; i++) {
-  // }
   bcg_reg3 = bits::set_bits(bcg_reg3, 16 + uart_index);
   bits::out(ccu_bcg_reg3, bcg_reg3);
 }
@@ -107,9 +101,6 @@ void handle_irq_rx(runtime_ptr rt, uint32_t lsr) {
     } else if ((lsr & SUNXI_UART_LSR_DR)) {
       ch = bits::in(reg_rbr)&0xFF;
       rt->rx_buffer.push(ch);
-#if SUNXI_UART_ECHO
-      rt->tx_buffer.push(ch);
-#endif
     }
 
     lsr = bits::in(reg_lsr);
@@ -129,6 +120,16 @@ void tx_switch(runtime_ptr rt, bool enable) {
     ier = bits::set_bits(ier, 1);
   else
     ier = bits::clear_bits(ier, 1);
+  bits::out(reg_ier, ier);
+}
+
+void rx_switch(runtime_ptr rt, bool enable) {
+  auto reg_ier = bits::shift_addr<uint32_t*>(rt->mem_base, SUNXI_UART_IER);
+  auto ier = bits::in(reg_ier);
+  if (enable)
+    ier = bits::set_bits(ier, 0);
+  else
+    ier = bits::clear_bits(ier, 0);
   bits::out(reg_ier, ier);
 }
 
@@ -356,8 +357,14 @@ int api_stop_tx(runtime_ptr rt) {
   return eno::ENO_OK;
 }
 
-int api_start_rx(runtime_ptr rt) { return eno::ENO_NOTIMPL; }
-int api_stop_rx(runtime_ptr rt) { return eno::ENO_NOTIMPL; }
+int api_start_rx(runtime_ptr rt) {
+  rx_switch(rt, true);
+  return eno::ENO_OK;
+}
+int api_stop_rx(runtime_ptr rt) {
+  rx_switch(rt, false);
+  return eno::ENO_OK;
+}
 int api_poll_rx(runtime_ptr rt, char* pc, size_t len) {
   auto reg_lsr = bits::shift_addr<uint32_t*>(rt->mem_base, SUNXI_UART_LSR);
   auto reg_rbr = bits::shift_addr<char*>(rt->mem_base, SUNXI_UART_RBR);
@@ -438,7 +445,6 @@ int api_setup(runtime_ptr rt) {
    */
   {
     auto ier_reg = bits::shift_addr<uint32_t*>(rt->mem_base, SUNXI_UART_IER);
-    // bits::out(ier_reg, 0x8d);
     bits::out(ier_reg, 0x8c);  // disable DR irq
   }
   /* set MCR */
@@ -467,11 +473,11 @@ extern "C" int sunxi_uart_entry() {
       .match = nullptr,
       .setup = platform::drivers::uart::sunxi_t3::api_setup,
       .shutdown = platform::drivers::uart::sunxi_t3::api_shutdown,
-      .start_tx = nullptr,
-      .stop_tx = nullptr,
+      .start_tx = platform::drivers::uart::sunxi_t3::api_start_tx,
+      .stop_tx = platform::drivers::uart::sunxi_t3::api_stop_tx,
       .poll_tx = platform::drivers::uart::sunxi_t3::api_poll_tx,
-      .start_rx = nullptr,
-      .stop_rx = nullptr,
+      .start_rx = platform::drivers::uart::sunxi_t3::api_start_rx,
+      .stop_rx = platform::drivers::uart::sunxi_t3::api_stop_rx,
       .poll_rx = platform::drivers::uart::sunxi_t3::api_poll_rx,
       .pm = nullptr,
       .config_parity = platform::drivers::uart::sunxi_t3::api_config_parity,

@@ -48,10 +48,6 @@ int driver::bind_(device_ref dev) {
   if (!rt_ptr) return eno::ENO_NOMEM;
   dev.set_runtime(device::runtime_ptr(rt_ptr));
 
-  // // 初始化硬件
-  // if (!api_.setup) return eno::ENO_NOTIMPL;
-  // // auto rt = dev.get_runtime().promote<runtime>();
-  // auto rt = dev.get_runtime().promote<runtime>();
   res = eno::ENO_OK;
   return res;
 }
