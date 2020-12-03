@@ -26,7 +26,7 @@ struct driver_dummy : public platform::driver_dummy {
   ~driver_dummy() = default;
 };
 
-extern "C" int dummy_entry(void) {
+extern "C" int dummy_entry(void* env) {
   platform::entry::platform_init();
 
   // register a driver
@@ -50,4 +50,5 @@ extern "C" int dummy_entry(void) {
   return dev_bind(device_id, driver_id);
 }
 
-func_entry_level_default(dummy_entry);
+driver_entry(dummy_entry, "dummy-device", "dummy");
+// func_entry_level_default(dummy_entry);
