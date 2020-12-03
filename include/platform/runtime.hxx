@@ -11,6 +11,7 @@
 #pragma once
 
 #include <memory>
+#include <cstddef>
 
 #include <consthash/crc32.hxx>
 #include <platform/cJSON.hxx>

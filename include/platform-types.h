@@ -55,6 +55,11 @@ enum fcmds {
 
 #define IS_QUERY_FCMDS(x) (x & 0x1000)
 #define IS_CONFIG_FCMDS(x) (x & 0x8000)
+
+#define DEV_ID_RESERVED_MAX (128)
+#define DEV_ID_IS_RESerVED(id) (((id) < DEV_ID_RESERVED) && !(id))
+#define DEV_ID_SYS_RCC (10)
+#define DEV_ID_SYS_GPIO (11)
 /**
  * @}
  */

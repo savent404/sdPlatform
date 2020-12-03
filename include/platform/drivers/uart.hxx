@@ -10,8 +10,6 @@
  */
 #pragma once
 
-#include <osal.h>
-
 #include <cstddef>
 #include <cstdint>
 #include <memory>
