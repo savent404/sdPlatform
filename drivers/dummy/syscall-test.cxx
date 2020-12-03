@@ -14,7 +14,7 @@
 static int foo(int id, const char* str, size_t len) { return 1; }
 
 extern "C" int test_case_syscall() {
-  platform::entry::platform_init();
+  platform::entry::platform_init(nullptr);
   auto syscall_hdl = platform::syscall::get_instance();
 
   syscall_hdl->add("FOO", foo);

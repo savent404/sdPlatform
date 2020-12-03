@@ -28,7 +28,7 @@ using driver_init_t = _driver_init_t;
 #define func_entry(fn, level)                                         \
   static func_entry_t __func_entry_##level_##fn __attribute__((used)) \
       __attribute__((section(".initcall" #level ".init"))) = fn
-#define driver_entry(fn, _name, _compat)                           \
+#define driver_entry(fn, _name, _compat)                         \
   static driver_init_t __driver_entry_##fn __attribute__((used)) \
       __attribute__((section(".driverinit"))) = {.entry = (fn), .name = (_name), .compat = (_compat)}
 
@@ -40,12 +40,15 @@ using driver_init_t = _driver_init_t;
 namespace platform {
 
 struct entry {
+ public:
   /**
    * @brief 初始化驱动框架的运行环境
    *
+   * @param ipc_ch a channel chat with device manager
+   *
    * @return 0 初始化成功
    */
-  static int platform_init();
+  static int platform_init(void* ipc_ch);
 };
 
 }  // namespace platform

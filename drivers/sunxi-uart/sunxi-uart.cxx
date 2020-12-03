@@ -467,8 +467,8 @@ out:
 
 platform::drivers::uart::driver* sunxi_uart_driver = nullptr;
 
-extern "C" int sunxi_uart_entry() {
-  platform::entry::platform_init();
+extern "C" int sunxi_uart_entry(void* env) {
+  platform::entry::platform_init(env);
   platform::drivers::uart::api sunxi_uart_api = {
       .match = nullptr,
       .setup = platform::drivers::uart::sunxi_t3::api_setup,
@@ -491,4 +491,4 @@ extern "C" int sunxi_uart_entry() {
   return sunxi_uart_driver->init(0, nullptr);
 }
 
-func_entry_level_default(sunxi_uart_entry);
+driver_entry(sunxi_uart_entry, "sunxi-uart", "arm,uart-sunxi,t3");

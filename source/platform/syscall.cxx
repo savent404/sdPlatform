@@ -10,9 +10,13 @@
  */
 #include <platform-types.h>
 
+#include <cstddef>
+#include <tuple>
+
+// clang-format off
 #include <consthash/all.hxx>
 #include <platform/syscall.hxx>
-#include <tuple>
+// clang-format on
 
 namespace platform {
 

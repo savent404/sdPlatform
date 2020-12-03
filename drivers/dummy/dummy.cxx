@@ -27,7 +27,7 @@ struct driver_dummy : public platform::driver_dummy {
 };
 
 extern "C" int dummy_entry(void* env) {
-  platform::entry::platform_init();
+  platform::entry::platform_init(env);
 
   // register a driver
   auto driver = new driver_dummy;
