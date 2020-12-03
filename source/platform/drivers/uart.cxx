@@ -1,5 +1,16 @@
+/**
+ * @file uart.cxx
+ * @author savent (savent_gate@outlook.com)
+ * @brief
+ * @version 0.1
+ * @date 2020-12-02
+ *
+ * Copyright 2020 jrlc
+ *
+ */
 #include <platform-types.h>
 
+#include <platform/bits.hxx>
 #include <platform/drivers/uart.hxx>
 
 namespace platform::drivers::uart {
@@ -32,23 +43,60 @@ int driver::bind_(device_ref dev) {
   }
 
   // 更新device的运行时
-  auto rt_ptr = new runtime(tmp_rt);
+  auto rt_ptr = new runtime(std::move(tmp_rt));
+  rt_ptr->file_flag = 0;
   if (!rt_ptr) return eno::ENO_NOMEM;
   dev.set_runtime(device::runtime_ptr(rt_ptr));
 
-  // 初始化硬件
-  if (!api_.setup) return eno::ENO_NOTIMPL;
+  // // 初始化硬件
+  // if (!api_.setup) return eno::ENO_NOTIMPL;
+  // // auto rt = dev.get_runtime().promote<runtime>();
   // auto rt = dev.get_runtime().promote<runtime>();
-  auto rt = dev.get_runtime().promote<runtime>();
-  res = api_.setup(rt);
+  res = eno::ENO_OK;
   return res;
 }
 
 int driver::unbind_(device_ref dev) { return eno::ENO_NOPERMIT; }
 
-int driver::open_(device_ref dev, int flags) { return eno::ENO_NOPERMIT; }
+int driver::open_(device_ref dev, int flags) {
+  int res = eno::ENO_OK;
+  auto rt = dev.get_runtime().promote<runtime>();
 
-int driver::close_(device_ref dev) { return eno::ENO_NOPERMIT; }
+  if (rt->file_flag) return eno::ENO_BUSY;
+
+  if (flags & fflag::FF_READ) {
+    if (flags & fflag::FF_POLL && !api_.poll_rx) return eno::ENO_NOTIMPL;
+    if (!(flags & fflag::FF_POLL) && (!api_.start_rx || !api_.stop_rx)) return eno::ENO_NOTIMPL;
+  }
+  if (flags & fflag::FF_WRITE) {
+    if (flags & fflag::FF_POLL && !api_.poll_tx) return eno::ENO_NOTIMPL;
+    if (!(flags & fflag::FF_POLL) && (!api_.start_tx || !api_.stop_tx)) return eno::ENO_NOTIMPL;
+  }
+  if (!api_.setup || !api_.shutdown) return eno::ENO_NOTIMPL;
+
+  /* call apis */
+  res = api_.setup(rt);
+  if (res) goto out;
+
+  // enable recv in no-block mode
+  if (rt->file_flag & (fflag::FF_READ | fflag::FF_POLL) == fflag::FF_READ) {
+    res = api_.start_rx(rt);
+    if (res) goto out;
+  }
+  rt->file_flag = flags;
+out:
+  return res;
+}
+
+int driver::close_(device_ref dev) {
+  auto rt = dev.get_runtime().promote<runtime>();
+  if (!rt->file_flag) return eno::ENO_OK;
+
+  int res = api_.shutdown(rt);
+  if (!res) rt->file_flag = 0;
+
+  return res;
+}
 
 int driver::transfer_(device_ref dev, const void* in, size_t in_len, void* out, size_t out_len) {
   return eno::ENO_NOPERMIT;
@@ -59,10 +107,17 @@ int driver::write_(device_ref dev, const void* out, size_t len) {
   auto& buf = rt->tx_buffer;
   const char* ptr = reinterpret_cast<const char*>(out);
 
+  if (!bits::and_bits(rt->file_flag, fflag::FF_WRITE)) return eno::ENO_INVALID;
+
   for (int i = 0; i < len; i++) {
     rt->tx_buffer.push(*ptr++);
   }
-  auto res = api_.start_tx(rt);
+  int res = 0;
+  if (rt->file_flag & fflag::FF_POLL) {
+    res = api_.poll_tx(rt);
+  } else {
+    res = api_.start_tx(rt);
+  }
   if (res < 0) return res;
   return len;
 }
@@ -70,17 +125,31 @@ int driver::write_(device_ref dev, const void* out, size_t len) {
 int driver::read_(device_ref dev, void* in, size_t len) {
   char* ptr = reinterpret_cast<char*>(in);
   runtime* rt = dev.get_runtime().promote<runtime>();
-  auto& rx_buf = rt->rx_buffer;
-  int left = rx_buf.size();
-  int cnt = left > len ? len : left;
-  for (int i = 0; i < cnt; i++) {
-    *ptr++ = rx_buf.front();
-    rx_buf.pop();
+
+  if (!bits::and_bits(rt->file_flag, fflag::FF_READ)) return eno::ENO_INVALID;
+
+  if (rt->file_flag & fflag::FF_POLL) {
+    return api_.poll_rx(rt, reinterpret_cast<char*>(in), len);
+  } else {
+    auto& rx_buf = rt->rx_buffer;
+    int left = rx_buf.size();
+    int cnt = left > len ? len : left;
+    for (int i = 0; i < cnt; i++) {
+      *ptr++ = rx_buf.front();
+      rx_buf.pop();
+    }
+    return cnt;
   }
-  return cnt;
 }
 
-int driver::ioctl_(device_ref dev, int cmds, void* in_out, size_t* in_out_len, size_t max) { return eno::ENO_NOPERMIT; }
+int driver::ioctl_(device_ref dev, int cmds, void* in_out, size_t* in_out_len, size_t max) {
+  runtime* rt = dev.get_runtime().promote<runtime>();
+  switch (cmds) {
+    default:
+      return api_.ioctl ? api_.ioctl(rt, cmds, in_out, in_out_len, max) : eno::ENO_INVALID;
+  }
+  return eno::ENO_OK;
+}
 
 cJSON* driver::to_json_() { return nullptr; }
 void driver::from_json_(cJSON*) {}

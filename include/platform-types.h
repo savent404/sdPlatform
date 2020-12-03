@@ -29,6 +29,12 @@ enum eno {
   ENO_NOMEM = -7,
   ENO_NOTIMPL = -8,
 };
+
+enum fflag {
+  FF_READ = 0x01,
+  FF_WRITE = 0x02,
+  FF_POLL = 0x04,  // use no-block as default
+};
 /**
  * @}
  */

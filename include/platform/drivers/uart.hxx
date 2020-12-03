@@ -1,16 +1,30 @@
+/**
+ * @file uart.hxx
+ * @author savent (savent_gate@outlook.com)
+ * @brief
+ * @version 0.1
+ * @date 2020-12-02
+ *
+ * Copyright 2020 jrlc
+ *
+ */
 #pragma once
 
 #include <osal.h>
 
 #include <cstddef>
 #include <cstdint>
+#include <memory>
+#include <utility>
 
+// clang-format off
 #include <consthash/crc32.hxx>
 #include <platform/alter/queue.hxx>
 #include <platform/device.hxx>
 #include <platform/driver.hxx>
 #include <platform/parameter.hxx>
 #include <platform/runtime.hxx>
+// clang-format on
 
 /**
  * @brief Json demo
@@ -33,20 +47,23 @@
 namespace platform::drivers::uart {
 
 using device_ref = platform::device::device_ref;
-using device_runtime_ptr = platform::device::runtime_ptr;
-using dev_rt_ref = device_runtime_ptr;
 using driver_ref = platform::driver::driver_ref;
-using driver_runtime_ptr = platform::device::runtime_ptr;
-using dri_rt_ref = driver_runtime_ptr;
-
 using initial_list = platform::parameters::initial_list;
-
-using rx_irq_cb_t = std::function<int(device_ref, const char* buffer, size_t len)>;
+// TODO(savent): enhance performance
 using buffer_t = platform::alter::queue<char>;
 
 struct runtime : public platform::runtime {
   RUNTIME_INIT(uart - runtime - structure);
-  runtime() { __init(); }
+  runtime() : pri_rt(nullptr) { __init(); }
+  runtime(runtime&& other)
+      : mem_base(other.mem_base),
+        mem_range(other.mem_range),
+        baudrate(other.baudrate),
+        parity(other.parity),
+        data_bits(other.data_bits),
+        stop_bits(other.stop_bits),
+        uart_idx(other.uart_idx),
+        pri_rt(std::move(other.pri_rt)) { __init(); }
 
   void* mem_base;
   size_t mem_range;
@@ -56,13 +73,13 @@ struct runtime : public platform::runtime {
   uint8_t stop_bits;  // 0-1bit, 1-1.5bit, 2-2bit
   uint8_t uart_idx;   // 0~255
 
+  int file_flag;
   buffer_t rx_buffer;
   buffer_t tx_buffer;
-  ipc_handle_t irq_handle;
-  bool tx_running;
-  int irq;
+  platform::runtime::value_ptr pri_rt;
 };
 
+using runtime_ref = runtime&;
 using runtime_ptr = runtime*;
 
 struct api {
@@ -72,9 +89,11 @@ struct api {
 
   int (*start_tx)(runtime_ptr);
   int (*stop_tx)(runtime_ptr);
+  int (*poll_tx)(runtime_ptr);
 
-  // int (*start_rx)(runtime_ptr);
-  // int (*stop_rx)(runtime_ptr);  // 停止接收流程
+  int (*start_rx)(runtime_ptr);
+  int (*stop_rx)(runtime_ptr);  // 停止接收流程
+  int (*poll_rx)(runtime_ptr, char*, size_t);
 
   int (*pm)(runtime_ptr, int state);  // 暂停/回复
 

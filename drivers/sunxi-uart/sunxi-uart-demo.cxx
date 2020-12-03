@@ -21,8 +21,8 @@ extern "C" void *sunxi_uart_echo_test(void *ptr) {
   auto id = reinterpret_cast<int>(ptr);
 
   const char msg[] = "sunxi-uart:Hello\r\n";
+  dev_open(id, fflag::FF_READ | fflag::FF_WRITE | fflag::FF_POLL);
   dev_write(id, msg, sizeof(msg));
-  int cnt = 3;
   char ch[32];
   while (1) {
     os.os_msleep(10);
@@ -31,6 +31,7 @@ extern "C" void *sunxi_uart_echo_test(void *ptr) {
       dev_write(id, ch, cnt);
     }
   }
+  dev_close(id);
 }
 
 extern "C" int sunxi_uart_test_bind(void) {

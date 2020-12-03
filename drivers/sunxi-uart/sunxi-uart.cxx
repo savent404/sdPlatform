@@ -12,10 +12,15 @@
 #include <osal.h>
 #include <sunxi-uart.h>
 
+#include <memory>
+#include <utility>
+
+// clang-format off
 #include <platform/bits.hxx>
 #include <platform/debug.hxx>
 #include <platform/drivers/uart.hxx>
 #include <platform/entry.hxx>
+// clang-format on
 
 extern "C" void* sunxi_uart_irqipc_loop(void*);
 extern "C" s32 sunxi_uart_irq_entry(irq_waiter_t*);
@@ -23,6 +28,14 @@ extern "C" s32 sunxi_uart_irq_entry(irq_waiter_t*);
 #define SUNXI_UART_ECHO 0
 
 namespace platform::drivers::uart::sunxi_t3 {
+
+struct runtime : public platform::runtime {
+  RUNTIME_INIT(sunxi_t3_uart);
+  runtime() : platform::runtime(), irq(0), irq_handle(0) { __init(); }
+
+  int irq;
+  ipc_handle_t irq_handle;
+};
 
 using platform::bits;
 using platform::debug;
@@ -85,7 +98,6 @@ void setup_pinmux(int uart_index) {
 
 void handle_irq_rx(runtime_ptr rt, uint32_t lsr) {
   char ch = 0;
-  char flag;
   int cnt = 255;
   auto reg_lsr = bits::shift_addr<uint32_t*>(rt->mem_base, SUNXI_UART_LSR);
   auto reg_rbr = bits::shift_addr<uint32_t*>(rt->mem_base, SUNXI_UART_RBR);
@@ -107,6 +119,7 @@ void handle_irq_rx(runtime_ptr rt, uint32_t lsr) {
 void handle_irq_modem_status(runtime_ptr rt) {
   auto reg_msr = bits::shift_addr<uint32_t*>(rt->mem_base, SUNXI_UART_MSR);
   auto msr = bits::in(reg_msr);
+  msr = msr;
 }
 
 void tx_switch(runtime_ptr rt, bool enable) {
@@ -165,6 +178,7 @@ int handle_irq(runtime_ptr rt) {
     auto fcr = bits::in(reg_fcr);
     bits::out(reg_mcr, mcr | SUNXI_UART_MCR_LOOP);
     auto usr = bits::in(reg_usr);
+    usr = usr;
     if (fcr & SUNXI_UART_FCR_FIFO_EN) {
       bits::out(reg_fcr, SUNXI_UART_FCR_FIFO_EN);
       bits::out(reg_fcr, SUNXI_UART_FCR_FIFO_EN | SUNXI_UART_FCR_TXFIFO_RST | SUNXI_UART_FCR_RXFIFO_RST);
@@ -191,7 +205,8 @@ int handle_irq(runtime_ptr rt) {
 
 s32 sunxi_uart_irq_entry(irq_waiter_t* info) {
   auto rt = reinterpret_cast<runtime_ptr>(info->data);
-  if (rt->irq != info->irq) return -1;
+  auto pri_rt = rt->pri_rt->promote<runtime>();
+  if (pri_rt->irq != static_cast<int>(info->irq)) return -1;
   return handle_irq(rt);
 }
 
@@ -207,13 +222,14 @@ void* __attribute__((noreturn)) sunxi_uart_irqipc_loop(void* ptr) {
       52,  // uart 7
   };
   runtime_ptr rt = reinterpret_cast<runtime_ptr>(ptr);
+  auto pri_rt = rt->pri_rt->promote<runtime>();
 
   auto loop = loop_new();
   debug::assert(loop);
   debug::assert(rt->uart_idx < (sizeof(irq_index) / sizeof(irq_index[0])));
 
-  rt->irq = irq_index[rt->uart_idx];
-  auto waiter = loop_irq_waiter_new(rt->irq, sunxi_uart_irq_entry, rt);
+  pri_rt->irq = irq_index[rt->uart_idx];
+  auto waiter = loop_irq_waiter_new(pri_rt->irq, sunxi_uart_irq_entry, rt);
   debug::assert(waiter);
 
   loop_irq_waiter_register(loop, waiter);
@@ -330,18 +346,61 @@ int api_config_baud_rate(runtime_ptr rt) {
   return 0;
 }
 
-int api_tx(runtime_ptr rt, const char* out, size_t len) {
-  while (len--) {
-    rt->tx_buffer.push(*out++);
-  }
-  // enable tx interrupts
+int api_start_tx(runtime_ptr rt) {
   tx_switch(rt, true);
+  return eno::ENO_OK;
+}
+
+int api_stop_tx(runtime_ptr rt) {
+  tx_switch(rt, false);
+  return eno::ENO_OK;
+}
+
+int api_start_rx(runtime_ptr rt) { return eno::ENO_NOTIMPL; }
+int api_stop_rx(runtime_ptr rt) { return eno::ENO_NOTIMPL; }
+int api_poll_rx(runtime_ptr rt, char* pc, size_t len) {
+  auto reg_lsr = bits::shift_addr<uint32_t*>(rt->mem_base, SUNXI_UART_LSR);
+  auto reg_rbr = bits::shift_addr<char*>(rt->mem_base, SUNXI_UART_RBR);
+  auto lsr = bits::in(reg_lsr);
+  int i = 0;
+
+  while ((i < len) && bits::and_bits(lsr, SUNXI_UART_LSR_DR)) {
+    *pc++ = bits::in(reg_rbr);
+    i++;
+    lsr = bits::in(reg_lsr);
+  }
+  return i;
+}
+
+int api_poll_tx(runtime_ptr rt) {
+  auto& buff = rt->tx_buffer;
+  auto reg_lsr = bits::shift_addr<uint32_t*>(rt->mem_base, SUNXI_UART_LSR);
+  auto reg_thr = bits::shift_addr<char*>(rt->mem_base, SUNXI_UART_THR);
+  uint32_t lsr;
+  while (!buff.empty()) {
+    do {
+      lsr = bits::in(reg_lsr);
+    } while ((lsr & SUNXI_UART_LSR_TEMT) == 0);
+    bits::out(reg_thr, buff.front());
+    buff.pop();
+  }
+  return eno::ENO_OK;
+}
+
+int api_shutdown(runtime_ptr rt) {
+  // no need close irq handler
   return eno::ENO_OK;
 }
 
 int api_setup(runtime_ptr rt) {
   int res = 0;
   static void* ccu_base = reinterpret_cast<void*>(0x38001000);
+
+  /* malloc for privatte runtime parameter */
+  if (!rt->pri_rt.get()) {
+    auto pri_rt = new runtime;
+    rt->pri_rt = std::move(std::unique_ptr<platform::runtime>(pri_rt));
+  }
 
   /* enable ccu for uart */
   setup_clk(ccu_base, rt->uart_idx);
@@ -379,8 +438,8 @@ int api_setup(runtime_ptr rt) {
    */
   {
     auto ier_reg = bits::shift_addr<uint32_t*>(rt->mem_base, SUNXI_UART_IER);
-    bits::out(ier_reg, 0x8d);
-    // bits::out(ier_reg, 0x83);
+    // bits::out(ier_reg, 0x8d);
+    bits::out(ier_reg, 0x8c);  // disable DR irq
   }
   /* set MCR */
   {
@@ -389,8 +448,11 @@ int api_setup(runtime_ptr rt) {
   }
 
   /* setup interrupt */
-  rt->irq_handle = os.os_thread_create(sunxi_uart_irqipc_loop, rt);
-  if (!rt->irq_handle) return eno::ENO_SYSCALL_ERR;
+  {
+    auto pri_rt = rt->pri_rt->promote<runtime>();
+    if (!pri_rt->irq_handle) pri_rt->irq_handle = os.os_thread_create(sunxi_uart_irqipc_loop, rt);
+    if (!pri_rt->irq_handle) return eno::ENO_SYSCALL_ERR;
+  }
 out:
   return res;
 }
@@ -404,9 +466,13 @@ extern "C" int sunxi_uart_entry() {
   platform::drivers::uart::api sunxi_uart_api = {
       .match = nullptr,
       .setup = platform::drivers::uart::sunxi_t3::api_setup,
-      .shutdown = nullptr,
-      .tx = platform::drivers::uart::sunxi_t3::api_tx,
+      .shutdown = platform::drivers::uart::sunxi_t3::api_shutdown,
+      .start_tx = nullptr,
+      .stop_tx = nullptr,
+      .poll_tx = platform::drivers::uart::sunxi_t3::api_poll_tx,
+      .start_rx = nullptr,
       .stop_rx = nullptr,
+      .poll_rx = platform::drivers::uart::sunxi_t3::api_poll_rx,
       .pm = nullptr,
       .config_parity = platform::drivers::uart::sunxi_t3::api_config_parity,
       .config_data_bit = platform::drivers::uart::sunxi_t3::api_config_data_bit,
