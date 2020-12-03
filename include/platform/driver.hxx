@@ -240,6 +240,11 @@ struct driver {
   parameters_ref get_config();
   runtime_ref get_runtime();
 
+  template<typename T>
+  static int ioctl_helper_get_param(const T& val, void* buf, size_t *sz, size_t max_sz);
+  template<typename T>
+  static int ioctl_helper_set_param(T& out, const void* buf, size_t sz);
+
  private:
   bool add_device(device_id id, device_ptr ptr);
   bool has_device(device_id id);

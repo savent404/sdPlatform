@@ -371,7 +371,7 @@ int api_poll_rx(runtime_ptr rt, char* pc, size_t len) {
   auto lsr = bits::in(reg_lsr);
   int i = 0;
 
-  while ((i < len) && bits::and_bits(lsr, SUNXI_UART_LSR_DR)) {
+  while (len-- && bits::and_bits(lsr, SUNXI_UART_LSR_DR)) {
     *pc++ = bits::in(reg_rbr);
     i++;
     lsr = bits::in(reg_lsr);

@@ -12,6 +12,7 @@
 
 #include <platform/bits.hxx>
 #include <platform/drivers/uart.hxx>
+#include <platform/utils.hxx>
 
 namespace platform::drivers::uart {
 
@@ -75,7 +76,7 @@ int driver::open_(device_ref dev, int flags) {
   if (res) goto out;
 
   // enable recv in no-block mode
-  if (rt->file_flag & (fflag::FF_READ | fflag::FF_POLL) == fflag::FF_READ) {
+  if ((rt->file_flag & fflag::FF_READ) && !(rt->file_flag & fflag::FF_POLL)) {
     res = api_.start_rx(rt);
     if (res) goto out;
   }
@@ -105,8 +106,8 @@ int driver::write_(device_ref dev, const void* out, size_t len) {
 
   if (!bits::and_bits(rt->file_flag, fflag::FF_WRITE)) return eno::ENO_INVALID;
 
-  for (int i = 0; i < len; i++) {
-    rt->tx_buffer.push(*ptr++);
+  for (size_t i = 0; i < len; i++) {
+    buf.push(*ptr++);
   }
   int res = 0;
   if (rt->file_flag & fflag::FF_POLL) {
@@ -128,9 +129,9 @@ int driver::read_(device_ref dev, void* in, size_t len) {
     return api_.poll_rx(rt, reinterpret_cast<char*>(in), len);
   } else {
     auto& rx_buf = rt->rx_buffer;
-    int left = rx_buf.size();
-    int cnt = left > len ? len : left;
-    for (int i = 0; i < cnt; i++) {
+    auto left = rx_buf.size();
+    auto cnt = left > len ? len : left;
+    for (size_t i = 0; i < cnt; i++) {
       *ptr++ = rx_buf.front();
       rx_buf.pop();
     }
@@ -140,9 +141,46 @@ int driver::read_(device_ref dev, void* in, size_t len) {
 
 int driver::ioctl_(device_ref dev, int cmds, void* in_out, size_t* in_out_len, size_t max) {
   runtime* rt = dev.get_runtime().promote<runtime>();
+  int res = eno::ENO_OK;
   switch (cmds) {
+    case fcmds::FC_GET_BAUD_RATE: {
+      res = tools::ioctl_helper_get_param(rt->baudrate, in_out, in_out_len, max);
+    } break;
+    case fcmds::FC_GET_PARITY_MODE: {
+      res = tools::ioctl_helper_get_param(rt->parity, in_out, in_out_len, max);
+    } break;
+    case fcmds::FC_GET_STOP_BIT: {
+      res = tools::ioctl_helper_get_param(rt->stop_bits, in_out, in_out_len, max);
+    } break;
+    case fcmds::FC_SET_BAUD_RATE: {
+      if (!api_.config_baud_rate) return eno::ENO_NOTIMPL;
+      auto origin = rt->baudrate;
+      res = tools::ioctl_helper_set_param(&rt->baudrate, in_out, *in_out_len);
+      if (res) break;
+      res = api_.config_baud_rate(rt);
+      if (res) rt->baudrate = origin;
+    } break;
+    case fcmds::FC_SET_PARITY_MODE: {
+      if (!api_.config_parity) return eno::ENO_NOTIMPL;
+      auto origin = rt->parity;
+      res = tools::ioctl_helper_set_param(&rt->parity, in_out, *in_out_len);
+      if (res) break;
+      res = api_.config_parity(rt);
+      if (res) rt->parity = origin;
+    } break;
+    case fcmds::FC_SET_STOP_BIT: {
+      if (!api_.config_stop_bit) return eno::ENO_NOTIMPL;
+      auto origin = rt->parity;
+      res = tools::ioctl_helper_set_param(&rt->stop_bits, in_out, *in_out_len);
+      if (res) break;
+      res = api_.config_stop_bit(rt);
+      if (res) rt->parity = origin;
+    } break;
     default:
-      return api_.ioctl ? api_.ioctl(rt, cmds, in_out, in_out_len, max) : eno::ENO_INVALID;
+      res = api_.ioctl ? api_.ioctl(rt, cmds, in_out, in_out_len, max) : eno::ENO_INVALID;
+  }
+  if (!res && IS_CONFIG_FCMDS(cmds)) {
+    devmgr_update();
   }
   return eno::ENO_OK;
 }
