@@ -41,7 +41,7 @@ extern "C" void* dummy_device_bind_test_it(void* p) {
   devmgr_update_device(device_id, str);
   platform::cJSON_free((char *)str);  // NOLINT
   
-  dev_bind(dummy_driver_id, device_id);
+  dev_bind(device_id, dummy_driver_id);
   os.os_exit(NULL);
   return NULL;
 }
