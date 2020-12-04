@@ -187,6 +187,7 @@ struct driver {
    * @return driver_id
    */
   driver_id get_id();
+  void set_id(driver_id id);
   // protected:
   /**
    * @brief devmanager's api
@@ -259,10 +260,9 @@ struct driver {
 
  protected:
   parameters config_;
-  runtime_ptr runtime_p_;
+  runtime_ptr runtime_;
 
  private:
-  driver_id id_;
   device_kv_list device_list_;
 };
 

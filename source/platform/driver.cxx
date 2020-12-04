@@ -11,7 +11,9 @@
 #include <platform-types.h>
 #include <platform.h>
 #include <requirements.h>
+
 #include <platform/alter/string.hxx>
+#include <platform/debug.hxx>
 #include <platform/driver.hxx>
 #include <platform/syscall.hxx>
 
@@ -20,9 +22,9 @@ namespace platform {
 using string = alter::string;
 
 driver::driver(parameters::initial_list config_list, runtime_ptr runtime)
-    : config_(config_list), runtime_p_(std::move(runtime)), id_(0), device_list_() {}
+    : config_(config_list), runtime_(std::move(runtime)), device_list_() {}
 
-driver::driver(const char *json) : config_({}), runtime_p_(), id_(0), device_list_() { from_json_str(json); }
+driver::driver(const char *json) : config_({}), runtime_(), device_list_() { from_json_str(json); }
 
 driver::~driver() {}
 
@@ -126,28 +128,20 @@ int driver::ioctl(device_id dev, int cmds, void *in_out, size_t *in_out_len, siz
 }
 
 cJSON *driver::to_json() {
-  cJSON *config = get_config().to_json();
-  cJSON *subdev = to_json_();
-
-  cJSON *root = cJSON_CreateObject();
-  cJSON_AddItemToObject(root, "config", config);
-  cJSON_AddItemToObject(root, "subdev", subdev);
-  if (id_) {
-    cJSON_AddNumberToObject(root, "id", id_);
+  cJSON *root = config_.to_json();
+  if (runtime_) {
+    cJSON_AddItemToObject(root, "runtime", runtime_->to_json());
   }
   return root;
 }
 
 void driver::from_json(cJSON *obj) {
-  if (cJSON_HasObjectItem(obj, "config")) {
-    get_config().from_json(cJSON_GetObjectItem(obj, "config"));
-  }
-  if (cJSON_HasObjectItem(obj, "subdev")) {
-    from_json_(cJSON_GetObjectItem(obj, "subdev"));
-  }
-  if (cJSON_HasObjectItem(obj, "id")) {
-    int id = cJSON_GetNumberValue(cJSON_GetObjectItem(obj, "id"));
-    id_ = id;
+  config_.from_json(obj);
+  if (cJSON_HasObjectItem(obj, "runtime")) {
+    cJSON *item = cJSON_GetObjectItem(obj, "runtime");
+    if (runtime_) {
+      runtime_->from_json(item);
+    }
   }
 }
 
@@ -164,7 +158,13 @@ void driver::from_json_str(const char *json) {
   cJSON_Delete(obj);
 }
 
-driver::driver_id driver::get_id() { return id_; }
+driver::driver_id driver::get_id() {
+  if (get_config().has("id")) {
+    return get_config().get<int>("id");
+  }
+  return 0;
+}
+void driver::set_id(driver_id id) { get_config().set("id", id); }
 
 driver::driver_id driver::devmgr_register() {
   const char *str = to_json_str();
@@ -172,30 +172,35 @@ driver::driver_id driver::devmgr_register() {
   driver_id id = devmgr_create_driver(str);
   cJSON_free((void *)str);  // NOLINT
   if (id) {
-    id_ = id;
+    set_id(id);
     devmgr_update();
     register_syscall();
   }
-  return id_;
+  return id;
 }
 
 void driver::devmgr_update() {
+  debug::assert(get_id());
   const char *str = to_json_str();
-  devmgr_update_driver(id_, str);
+  devmgr_update_driver(get_id(), str);
   cJSON_free((void *)str);  // NOLINT
 }
 
 void driver::devmgr_query() {
-  const char *str = devmgr_query_driver(id_);
+  debug::assert(get_id());
+  const char *str = devmgr_query_driver(get_id());
   from_json_str(str);
   cJSON_free((void *)str);  // NOLINT
 }
 
-void driver::devmgr_delete() { devmgr_remove_driver(id_); }
+void driver::devmgr_delete() {
+  debug::assert(get_id());
+  devmgr_remove_driver(get_id());
+}
 
 driver::parameters_ref driver::get_config() { return config_; }
 
-driver::runtime_ref driver::get_runtime() { return *runtime_p_; }
+driver::runtime_ref driver::get_runtime() { return *runtime_; }
 
 driver::device_ptr driver::query_device(device_id id) {
   auto dev = new device;
@@ -207,9 +212,9 @@ driver::device_ptr driver::query_device(device_id id) {
 
 bool driver::update_device(device_id id, device_ref dev) {
   dev.set_id(id);
-  const char * str = dev.to_json_str();
+  const char *str = dev.to_json_str();
   auto res = devmgr_update_device(id, str);
-  platform::cJSON_free((void*)str); // NOLINT
+  platform::cJSON_free((void *)str);  // NOLINT
   return res == 0;
 }
 
@@ -264,17 +269,17 @@ void driver::register_syscall() {
   syscall_handler->add(prefix + "deinit", static_cast<std::function<int(void)>>(std::bind(&driver::deinit, this)));
   syscall_handler->add(prefix + "bind", static_cast<std::function<int(int, int)>>(std::bind(&driver::bind, this, _1)));
   syscall_handler->add(prefix + "unbind", static_cast<std::function<int(int)>>(std::bind(&driver::unbind, this, _1)));
-  syscall_handler->add(prefix + "open", static_cast<std::function<int(int, int)>>(
-    std::bind(&driver::open, this, _1, _2)));
+  syscall_handler->add(prefix + "open",
+                       static_cast<std::function<int(int, int)>>(std::bind(&driver::open, this, _1, _2)));
   syscall_handler->add(prefix + "close", static_cast<std::function<int(int)>>(std::bind(&driver::close, this, _1)));
-  syscall_handler->add(prefix + "transfer", static_cast<std::function<int(int, const void*, size_t, void*, size_t)>>(
-    std::bind(&driver::transfer, this, _1, _2, _3, _4, _5)));
-  syscall_handler->add(prefix + "write", static_cast<std::function<int(int, void*, size_t)>>(
-    std::bind(&driver::write, this, _1, _2, _3)));
-  syscall_handler->add(prefix + "read", static_cast<std::function<int(int, void*, size_t)>>(
-    std::bind(&driver::read, this, _1, _2, _3)));
-  syscall_handler->add(prefix + "ioctl", static_cast<std::function<int(int, int, void*, size_t*, size_t)>>(
-    std::bind(&driver::ioctl, this, _1, _2, _3, _4, _5)));
+  syscall_handler->add(prefix + "transfer", static_cast<std::function<int(int, const void *, size_t, void *, size_t)>>(
+                                                std::bind(&driver::transfer, this, _1, _2, _3, _4, _5)));
+  syscall_handler->add(prefix + "write", static_cast<std::function<int(int, void *, size_t)>>(
+                                             std::bind(&driver::write, this, _1, _2, _3)));
+  syscall_handler->add(prefix + "read", static_cast<std::function<int(int, void *, size_t)>>(
+                                            std::bind(&driver::read, this, _1, _2, _3)));
+  syscall_handler->add(prefix + "ioctl", static_cast<std::function<int(int, int, void *, size_t *, size_t)>>(
+                                             std::bind(&driver::ioctl, this, _1, _2, _3, _4, _5)));
 
   register_internal_syscall_();
 }

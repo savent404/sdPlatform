@@ -22,6 +22,7 @@
 #include <platform/alter/map.hxx>
 #include <platform/alter/string.hxx>
 #include <platform/cJSON.hxx>
+#include <platform/debug.hxx>
 
 /**
  * @brief duplicate a string
@@ -70,9 +71,15 @@ struct parameters {
   }
 
   template<typename T>
-  T get(const string& key) { return std::get<T>(maps_[key]); }
+  T get(const string& key) {
+    debug::assert(has(key));
+    return std::get<T>(maps_[key]);
+  }
   template<typename T>
-  T get(const char *key) { return std::get<T>(maps_[string(key)]); }
+  T get(const char *key) {
+    debug::assert(has(key));
+    return std::get<T>(maps_[string(key)]);
+  }
 
   value_type get(const string& key) { return maps_[key]; }
   value_type get(const char* key) { return maps_[string(key)]; }
