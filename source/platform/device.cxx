@@ -72,7 +72,7 @@ void device::set_bind_id(driver_id id) {
 
 device::device_id device::devmgr_register() {
   const char* str = to_json_str();
-  int id = devmgr_create_device(str, get_id());
+  int id = devmgr_create_device(str);
   cJSON_free((void*)str);  // NOLINT
   if (id != 0) {
     id_ = id;

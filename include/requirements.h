@@ -11,11 +11,10 @@ extern "C" {
  * @brief 向devmgr申请创建设备
  * 
  * @param json_str json 字符串
- * @param id       预申请id(非0) 若需要设备管理器分配则填0
  * @return int 0  创建失败
  *         int !0 创建成功，为设备的id值
  */
-int devmgr_create_device(const char *json_str, int id);
+int devmgr_create_device(const char *json_str);
 /**
  * @brief 向devmgr申请更新设备信息
  * 

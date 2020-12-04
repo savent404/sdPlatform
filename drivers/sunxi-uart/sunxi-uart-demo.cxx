@@ -47,7 +47,7 @@ extern "C" int sunxi_uart_test_bind(void) {
                            {"config/stop_bits", 0},
                            {"config/uart_idx", 2}});
   auto str = uart_1.to_json_str();
-  auto id = devmgr_create_device(str, uart_1.get_id());
+  auto id = devmgr_create_device(str);
   platform::cJSON_free((void *)str);  //  NOLINT
   uart_1.set_id(id);
 
