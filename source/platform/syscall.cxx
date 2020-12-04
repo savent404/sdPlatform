@@ -15,6 +15,7 @@
 
 // clang-format off
 #include <consthash/all.hxx>
+#include <platform/bits.hxx>
 #include <platform/syscall.hxx>
 // clang-format on
 
@@ -28,8 +29,16 @@ int syscall::call_p(hash_id id, Args &... args) const {
   func_t f = find(id);
   return syscall_dtl::call_fn_from_param(f, args...);
 }
+
 int syscall::call(hash_id id, void *buf, size_t len) const {
   func_t f = find(id);
+  return syscall_dtl::call_fn_from_buffer(f, buf, len);
+}
+
+int syscall::call(void* buf, size_t len) const {
+  hash_id id = *reinterpret_cast<hash_id*>(buf);
+  func_t f = find(id);
+  bits::shift_addr(buf, sizeof(id));
   return syscall_dtl::call_fn_from_buffer(f, buf, len);
 }
 
@@ -56,5 +65,14 @@ syscall::func_t syscall::find(hash_id id) const {
   auto iter = kv_.find(id);
   return iter == kv_.end() ? dummy_syscall : iter->second;
 }
+
+syscall::_msg_buf_t::_msg_buf_t() : buffer(nullptr) {}
+syscall::_msg_buf_t::_msg_buf_t(_msg_buf_t&& other) : buffer(std::move(other.buffer)) {}
+syscall::_msg_buf_t::~_msg_buf_t() {free_buffer(); }
+
+void* syscall::_msg_buf_t::get() { return buffer.get(); }
+void syscall::_msg_buf_t::set(char* ptr) { free_buffer(); buffer = std::unique_ptr<char[]>(ptr); }
+void syscall::_msg_buf_t::free_buffer() { buffer = nullptr; }
+
 
 }  // namespace platform

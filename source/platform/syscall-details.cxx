@@ -10,6 +10,7 @@
  *
  */
 #include <platform-types.h>
+#include <cstring>
 
 #include <platform/bits.hxx>
 #include <platform/syscall-details.hxx>
@@ -155,4 +156,5 @@ int call_fn_from_buffer(func_t func, void* buf, size_t len) {
   }
   return res;
 }
+
 }  // namespace platform::syscall_dtl
