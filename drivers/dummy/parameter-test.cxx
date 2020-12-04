@@ -10,8 +10,11 @@
  */
 #include <platform/entry.hxx>
 #include <platform/parameter.hxx>
+#include <platform/entry.hxx>
 
 extern "C" int test_case_parameter() {
+
+  platform::entry::platform_init(nullptr);
   platform::parameters param({
       {"config/a", "foo"},
       {"config/b", "boo"},

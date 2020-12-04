@@ -59,6 +59,12 @@ extern "C" __attribute__((noreturn)) void* driver_platform_ipc_handler(void*) {
 int entry::platform_init(void* ipc_ch) {
   static bool inited = false;
 
+  // update ipc desc every time
+  if (ipc_ch) {
+    auto syscall = syscall::get_instance();
+    syscall->set_ipc_description(ipc_ch);
+  }
+
   if (inited) return 0;
 
   smem_config_t config;
@@ -78,9 +84,6 @@ int entry::platform_init(void* ipc_ch) {
       .free_fn = smem_free,
   };
   platform::cJSON_InitHooks(&hooks);
-
-  auto syscall = syscall::get_instance();
-  syscall->set_ipc_description(ipc_ch);
 
   os.os_thread_create(driver_platform_ipc_handler, ipc_ch);
 

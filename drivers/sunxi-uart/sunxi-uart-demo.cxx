@@ -35,6 +35,7 @@ extern "C" void *sunxi_uart_echo_test(void *ptr) {
 }
 
 extern "C" int sunxi_uart_test_bind(void) {
+  platform::entry::platform_init(nullptr);
   platform::device uart_1({{"name", "uart-1"},
                            {"compat", "arm,uart-sunxi,t3"},
                            {"config/base", (int)0x38000000 + 0x800},
@@ -63,4 +64,4 @@ extern "C" int sunxi_uart_test_bind(void) {
   return 0;
 }
 
-func_entry_level_untest(sunxi_uart_test_bind);
+// func_entry_level_untest(sunxi_uart_test_bind);
