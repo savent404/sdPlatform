@@ -11,13 +11,11 @@
 
 #include <platform-types.h>
 #include <platform.h>
-#include <platform/cJSON.hxx>
-#include <platform/driver-dummy.hxx>
-#include <platform/entry.hxx>
-
 #include <requirements.h>
 
 #include <platform/alter/string.hxx>
+#include <platform/cJSON.hxx>
+#include <platform/driver-dummy.hxx>
 #include <platform/entry.hxx>
 
 struct driver_dummy : public platform::driver_dummy {
@@ -26,7 +24,9 @@ struct driver_dummy : public platform::driver_dummy {
   ~driver_dummy() = default;
 };
 
-extern "C" int dummy_entry(void* env) {
+int dummy_driver_id = 0;
+
+extern "C" int dummy_entry(void *env) {
   platform::entry::platform_init(env);
 
   // register a driver
@@ -35,21 +35,8 @@ extern "C" int dummy_entry(void* env) {
   if (res != eno::ENO_OK) {
     return res;
   }
+  dummy_driver_id = driver->get_id();
   return eno::ENO_OK;
-  // auto driver_id = driver->get_id();
-
-  // // register a device
-  // auto device = new platform::device({{"name", "dummy-device"}, {"compat", "dummy"}});
-  // auto str = device->to_json_str();
-  // auto device_id = devmgr_create_device(str, device->get_id());
-  // device->set_id(device_id);
-  // platform::cJSON_free((char *)(str));
-  // str = device->to_json_str();
-  // devmgr_update_device(device_id, str);
-  // platform::cJSON_free((char *)str);
-
-  // return dev_bind(device_id, driver_id);
 }
 
 driver_entry(dummy_entry, "dummy-device", "dummy");
-// func_entry_level_default(dummy_entry);
