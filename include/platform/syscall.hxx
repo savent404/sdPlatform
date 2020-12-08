@@ -36,12 +36,14 @@ struct syscall {
     _msg_buf_t(_msg_buf_t&& other);
     ~_msg_buf_t();
     void* get();
+    size_t size();
 
    private:
     friend class syscall;
-    void set(char* ptr);
+    void set(char* ptr, size_t sz);
     void free_buffer();
     std::unique_ptr<char[]> buffer;
+    size_t sz_;
   };
   using msg_buf_t = std::unique_ptr<_msg_buf_t>;
 
@@ -74,10 +76,11 @@ struct syscall {
     return std::unique_ptr<_msg_buf_t>(buf);
   }
   template <typename... Args>
-  static msg_buf_t package_msg(size_t* out_size, Args... args) {
+  static msg_buf_t package_msg(Args... args) {
     auto buf = new _msg_buf_t;
-    auto res = syscall_dtl::package_param_to_buffer(out_size, args...);
-    buf->set(res);
+    size_t sz;
+    auto res = syscall_dtl::package_param_to_buffer(&sz, args...);
+    buf->set(res, sz);
     return std::unique_ptr<_msg_buf_t>(buf);
   }
 

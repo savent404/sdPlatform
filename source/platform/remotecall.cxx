@@ -10,7 +10,7 @@
  */
 #include <rpc_api.h>
 
-#include <remotecall.hxx>
+#include <platform/remotecall.hxx>
 
 namespace platform {
 

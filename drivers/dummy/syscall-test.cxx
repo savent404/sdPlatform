@@ -25,30 +25,30 @@ static void test_cast_syscall_package_msg() {
   size_t v3 = 4;
   int v4 = 1028;
 
-  auto buf = platform::syscall::package_msg(&sz, 0, v1);
+  auto buf = platform::syscall::package_msg(0, v1);
   // cmd(size_t) | buffer_len(size_t) | v1(char*) | v2(size_t) = 12
   void* mem = (*buf).get();
-  debug::assert(sz == 12);
+  debug::assert((*buf).size() == 12);
   debug::assert(*(reinterpret_cast<platform::syscall::hash_id*>(mem)) == 0);
   debug::assert(*(reinterpret_cast<size_t*>(bits::shift_addr(mem, sizeof(size_t)))) == 4);
   debug::assert(!strcmp(
       reinterpret_cast<const char*>(bits::shift_addr(mem, sizeof(size_t) + sizeof(platform::syscall::hash_id))), v1));
 
   // as a smart pointer, buf can relase memory automatically
-  buf = platform::syscall::package_msg(&sz, 100, v2, v3);
+  buf = platform::syscall::package_msg(100, v2, v3);
   mem = (*buf).get();
   // cmd(size_t) | v3(size_t) | v2(void*)
-  debug::assert(sz == 12);
+  debug::assert((*buf).size() == 12);
   debug::assert(*(reinterpret_cast<platform::syscall::hash_id*>(mem)) == 100);
   debug::assert(*(reinterpret_cast<size_t*>(bits::shift_addr(mem, sizeof(size_t)))) == 4);
   debug::assert(!strcmp(
       reinterpret_cast<const char*>(bits::shift_addr(mem, sizeof(size_t) + sizeof(platform::syscall::hash_id))), v1));
 
-  buf = platform::syscall::package_msg(&sz, 120, v1, v4);
+  buf = platform::syscall::package_msg(120, v1, v4);
   // cmd(size_t) | strlen(size_t) | v1(char*) | v4(int)
   platform::debug::assert(16);
 
-  buf = platform::syscall::package_msg(&sz, 120, v1, v2, v3, v4);
+  buf = platform::syscall::package_msg(120, v1, v2, v3, v4);
   // cmd(size_t) | strlen(size_t) | v1(char*) | v3(size_t) | v2(void*) | v4(int)
   platform::debug::assert(24);
 }
@@ -67,7 +67,7 @@ static void test_case_syscall_echo() {
   const char* a2 = "Hello,World\r\n";
   size_t a3 = 256;
   size_t sz;
-  auto msg_buf = platform::syscall::package_msg(&sz, a1, a2, a3);
+  auto msg_buf = platform::syscall::package_msg(a1, a2, a3);
 
   inst->call(platform::syscall::hash("test-case-echo"), (*msg_buf).get(), sz);
 }
