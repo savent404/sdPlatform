@@ -21,6 +21,7 @@
 #include <platform/device.hxx>
 #include <platform/driver-dummy.hxx>
 #include <platform/driver.hxx>
+#include <platform/syscall.hxx>
 // clang-format on
 
 #ifndef __weak
@@ -109,6 +110,19 @@ bool platform::_register_driver_hook_(platform::driver *ptr) {
   return true;
 }
 
+using syscall = platform::syscall;
+
+// NOTE(savent): IPC方式的hash值不需要获取驱动的name，
+//  而是根据ipc handle的不同直接向对应的ipc handle发送相同hash的消息
+// TODO(savent): 此方法仅用于ipc未实现的调试环境，后期删除
+static auto gen_hash(const char *method, const char *driver_name) {
+  platform::alter::string s;
+  s.append(driver_name);
+  s.append("-");
+  s.append(method);
+  return syscall::hash(s);
+}
+
 extern "C" {
 
 int dev_bind(int device_id, int driver_id) {
@@ -117,7 +131,9 @@ int dev_bind(int device_id, int driver_id) {
   if (res) return res;
 
   // TODO(savent): call this using ipc method
-  return iter->second->bind(device_id);
+  auto hash = gen_hash("bind", iter->second->get_name());
+  auto msgbuf = syscall::package_msg(hash, device_id);
+  return syscall::get_instance()->call((*msgbuf).get(), (*msgbuf).size());
 }
 
 int dev_unbind(int device_id) {
@@ -127,7 +143,9 @@ int dev_unbind(int device_id) {
   int res = search_driver(driver_id, &iter);
   if (res) return res;
   update_device_info(device_id);
-  return iter->second->unbind(device_id);
+  auto hash = gen_hash("unbind", iter->second->get_name());
+  auto msgbuf = syscall::package_msg(hash, device_id);
+  return syscall::get_instance()->call((*msgbuf).get(), (*msgbuf).size());
 }
 
 int dev_open(int device_id, int flags) {
@@ -135,7 +153,9 @@ int dev_open(int device_id, int flags) {
   auto iter = get_driver_map().end();
   int res = search_driver(driver_id, &iter);
   if (res) return res;
-  return iter->second->open(device_id, flags);
+  auto hash = gen_hash("open", iter->second->get_name());
+  auto msgbuf = syscall::package_msg(hash, device_id, flags);
+  return syscall::get_instance()->call((*msgbuf).get(), (*msgbuf).size());
 }
 
 int dev_close(int device_id) {
@@ -143,7 +163,9 @@ int dev_close(int device_id) {
   auto iter = get_driver_map().end();
   int res = search_driver(driver_id, &iter);
   if (res) return res;
-  return iter->second->close(device_id);
+  auto hash = gen_hash("close", iter->second->get_name());
+  auto msgbuf = syscall::package_msg(hash, device_id, driver_id);
+  return syscall::get_instance()->call((*msgbuf).get(), (*msgbuf).size());
 }
 
 int dev_transfer(int device_id, const void *in, size_t in_len, void *out, size_t out_len) {
@@ -151,21 +173,27 @@ int dev_transfer(int device_id, const void *in, size_t in_len, void *out, size_t
   auto iter = get_driver_map().end();
   int res = search_driver(driver_id, &iter);
   if (res) return res;
-  return iter->second->transfer(device_id, in, in_len, out, out_len);
+  auto hash = gen_hash("transfer", iter->second->get_name());
+  auto msgbuf = syscall::package_msg(hash, device_id, in, in_len, out, out_len);
+  return syscall::get_instance()->call((*msgbuf).get(), (*msgbuf).size());
 }
 int dev_write(int device_id, const void *in, size_t len) {
   int driver_id = get_driver_id(device_id);
   auto iter = get_driver_map().end();
   int res = search_driver(driver_id, &iter);
   if (res) return res;
-  return iter->second->write(device_id, in, len);
+  auto hash = gen_hash("write", iter->second->get_name());
+  auto msgbuf = syscall::package_msg(hash, device_id, in, len);
+  return syscall::get_instance()->call((*msgbuf).get(), (*msgbuf).size());
 }
 int dev_read(int device_id, void *out, size_t len) {
   int driver_id = get_driver_id(device_id);
   auto iter = get_driver_map().end();
   int res = search_driver(driver_id, &iter);
   if (res) return res;
-  return iter->second->read(device_id, out, len);
+  auto hash = gen_hash("read", iter->second->get_name());
+  auto msgbuf = syscall::package_msg(hash, device_id, out, len);
+  return syscall::get_instance()->call((*msgbuf).get(), (*msgbuf).size());
 }
 
 int dev_ioctl(int device_id, int cmds, void *in_out, size_t *in_out_len, size_t buffer_max_len) {
@@ -173,6 +201,8 @@ int dev_ioctl(int device_id, int cmds, void *in_out, size_t *in_out_len, size_t 
   auto iter = get_driver_map().end();
   int res = search_driver(driver_id, &iter);
   if (res) return res;
-  return iter->second->ioctl(device_id, cmds, in_out, in_out_len, buffer_max_len);
+  auto hash = gen_hash("ioctl", iter->second->get_name());
+  auto msgbuf = syscall::package_msg(hash, device_id, cmds, in_out, in_out_len, buffer_max_len);
+  return syscall::get_instance()->call((*msgbuf).get(), (*msgbuf).size());
 }
 }

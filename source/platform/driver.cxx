@@ -158,6 +158,20 @@ void driver::from_json_str(const char *json) {
   cJSON_Delete(obj);
 }
 
+const char *driver::get_name() {
+  if (get_config().has("name")) {
+    return get_config().get<const char*>("name");
+  }
+  return nullptr;
+}
+
+const char *driver::get_compat() {
+  if (get_config().has("compat")) {
+    return get_config().get<const char*>("compat");
+  }
+  return 0;
+}
+
 driver::driver_id driver::get_id() {
   if (get_config().has("id")) {
     return get_config().get<int>("id");
@@ -267,7 +281,7 @@ void driver::register_syscall() {
   auto syscall_handler = syscall::get_instance();
 
   syscall_handler->add(prefix + "deinit", static_cast<std::function<int(void)>>(std::bind(&driver::deinit, this)));
-  syscall_handler->add(prefix + "bind", static_cast<std::function<int(int, int)>>(std::bind(&driver::bind, this, _1)));
+  syscall_handler->add(prefix + "bind", static_cast<std::function<int(int)>>(std::bind(&driver::bind, this, _1)));
   syscall_handler->add(prefix + "unbind", static_cast<std::function<int(int)>>(std::bind(&driver::unbind, this, _1)));
   syscall_handler->add(prefix + "open",
                        static_cast<std::function<int(int, int)>>(std::bind(&driver::open, this, _1, _2)));

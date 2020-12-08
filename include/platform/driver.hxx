@@ -182,6 +182,18 @@ struct driver {
    */
   void from_json_str(const char* json);
   /**
+   * @brief 获取driver name字段
+   * 
+   * @return const char*
+   */
+  const char *get_name();
+  /**
+   * @brief 获取driver compat字段
+   * 
+   * @return const char*
+   */
+  const char *get_compat();
+  /**
    * @brief 获取driver id
    *
    * @return driver_id
