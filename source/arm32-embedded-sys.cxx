@@ -57,8 +57,9 @@ extern "C" __attribute__((weak)) char* strcpy(char* dest, const char* src) {  //
 }
 
 extern "C" __attribute__((weak)) char* strdup(const char* str) {
-  char* ptr = (char*)smem_alloc(strlen(str) + 1);  // NOLINT
-  strcpy(ptr, str);                                // NOLINT
+  size_t sz = strlen(str) + 1;
+  char* ptr = (char*)smem_alloc(sz);  // NOLINT
+  memcpy(ptr, str, sz);
   return ptr;
 }
 
