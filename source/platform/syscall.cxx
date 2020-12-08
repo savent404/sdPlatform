@@ -38,7 +38,7 @@ int syscall::call(hash_id id, void *buf, size_t len) const {
 int syscall::call(void *buf, size_t len) const {
   hash_id id = *reinterpret_cast<hash_id *>(buf);
   func_t f = find(id);
-  bits::shift_addr(buf, sizeof(id));
+  buf = bits::shift_addr(buf, sizeof(id));
   return syscall_dtl::call_fn_from_buffer(f, buf, len);
 }
 
