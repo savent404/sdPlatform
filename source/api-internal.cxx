@@ -45,8 +45,7 @@ static auto &get_device_map() {
 
 static int search_driver(int driver_id, std::map<int, platform::driver::driver_ptr>::iterator *item_iter) {
   auto iter = get_driver_map().find(driver_id);
-  // if (iter == get_driver_map().end() || !(iter->second)) {
-  if (1) {
+  if (iter == get_driver_map().end() || !(iter->second)) {
     auto drv_str = devmgr_query_driver(driver_id);
     if (!drv_str) {
       return eno::ENO_NOTEXIST;

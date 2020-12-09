@@ -66,10 +66,9 @@ static void test_case_syscall_echo() {
   int a1 = 128;
   const char* a2 = "Hello,World\r\n";
   size_t a3 = 256;
-  size_t sz;
   auto msg_buf = platform::syscall::package_msg(a1, a2, a3);
 
-  inst->call(platform::syscall::hash("test-case-echo"), (*msg_buf).get(), sz);
+  inst->call(platform::syscall::hash("test-case-echo"), (*msg_buf).get(), (*msg_buf).size());
 }
 extern "C" int test_case_syscall() {
   platform::entry::platform_init(nullptr);
