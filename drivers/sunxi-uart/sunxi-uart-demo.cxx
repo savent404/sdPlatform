@@ -64,4 +64,4 @@ extern "C" int sunxi_uart_test_bind(void) {
   return 0;
 }
 
-// func_entry_level_untest(sunxi_uart_test_bind);
+func_entry_level_untest(sunxi_uart_test_bind);
