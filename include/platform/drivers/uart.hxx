@@ -120,7 +120,7 @@ struct driver : public platform::driver {
   int write_(device_ref dev, const void* out, size_t len) override;
   int read_(device_ref dev, void* out, size_t len) override;
   int ioctl_(device_ref, int cmds, void* in_out, size_t* in_out_len, size_t buffer_max) override;
-  platform::cJSON* to_json_() override;
+  void to_json_(cJSON*) override;
   void from_json_(platform::cJSON*) override;
   void register_internal_syscall_() override;
 

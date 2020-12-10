@@ -39,6 +39,22 @@ extern "C" __weak void heap_free(void* p) {
 
 namespace platform {
 
+entry::ipc_desc::ipc_desc() : ch(nullptr) {}
+entry::ipc_desc::ipc_desc(const ipc_desc& other) : ch(other.ch) {}
+cJSON* entry::ipc_desc::to_json() const {
+  int pointer = reinterpret_cast<int>(ch);
+  auto root = cJSON_CreateObject();
+  cJSON_AddNumberToObject(root, "pointer", pointer);
+  return root;
+}
+void entry::ipc_desc::from_json(cJSON* obj) {
+  if (cJSON_HasObjectItem(obj, "pointer")) {
+    int pointer = cJSON_GetNumberValue(cJSON_GetObjectItem(obj, "pointer"));
+    ch = reinterpret_cast<decltype(ch)>(pointer);
+  }
+}
+static entry::ipc_desc ipc_desc_;
+
 extern "C" s32 driver_platform_ipc_handler_cb(mx_channel_t* ch, void* data, u32 len) {
   int syscall_id = *(reinterpret_cast<int*>(data));
 
@@ -48,13 +64,17 @@ extern "C" s32 driver_platform_ipc_handler_cb(mx_channel_t* ch, void* data, u32 
   int res = syscall->call(syscall_id, data, len);
   return rpc_reply_data(ch, res, reinterpret_cast<u8*>(data), len);
 }
+
 extern "C" __attribute__((noreturn)) void* driver_platform_ipc_handler(void*) {
   auto loop = loop_new();
+  ipc_desc_.ch = loop_get_remote_channel(loop_get_master(loop));
   debug::assert(loop);
   debug::assert(!loop_msg_register(loop_get_master(loop), 0, driver_platform_ipc_handler_cb, 0));
   loop_run(loop);
   return NULL;
 }
+
+const entry::ipc_desc entry::get_ipc_description() { return ipc_desc_; }
 
 int entry::platform_init(void* ipc_ch) {
   static bool inited = false;

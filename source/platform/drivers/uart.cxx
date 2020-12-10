@@ -185,7 +185,7 @@ int driver::ioctl_(device_ref dev, int cmds, void* in_out, size_t* in_out_len, s
   return eno::ENO_OK;
 }
 
-cJSON* driver::to_json_() { return nullptr; }
+void driver::to_json_(cJSON* obj) { }
 void driver::from_json_(cJSON*) {}
 void driver::register_internal_syscall_() {}
 

@@ -16,6 +16,7 @@
 #include <platform/debug.hxx>
 #include <platform/driver.hxx>
 #include <platform/syscall.hxx>
+#include <platform/entry.hxx>
 
 namespace platform {
 
@@ -33,7 +34,7 @@ int driver::init(int argc, char **argv) {
   if (!id) {
     // TODO(savent): warning if register no registed
   }
-  _register_driver_hook_(this);
+  // _register_driver_hook_(this);
   return init_(argc, argv);
 }
 
@@ -132,6 +133,10 @@ cJSON *driver::to_json() {
   if (runtime_) {
     cJSON_AddItemToObject(root, "runtime", runtime_->to_json());
   }
+  auto ipc_obj = entry::get_ipc_description();
+  auto ipc_json = ipc_obj.to_json();
+  cJSON_AddItemToObject(root, "ipc", ipc_json);
+  to_json_(root);
   return root;
 }
 
@@ -143,11 +148,13 @@ void driver::from_json(cJSON *obj) {
       runtime_->from_json(item);
     }
   }
+  from_json_(obj);
+  // NOTE(savent): attribute 'ipc' only used in driver-dummy
 }
 
 const char *driver::to_json_str() {
   cJSON *obj = to_json();
-  const char *out = cJSON_Print(obj);
+  const char *out = cJSON_PrintUnformatted(obj);
   cJSON_Delete(obj);
   return out;
 }

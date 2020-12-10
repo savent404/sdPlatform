@@ -140,9 +140,14 @@ struct parameters {
     }
   }
   void recurse_parse(cJSON* obj, string prefix = "") {
+    const char *black_list[] = {"runtime", "ipc"};
     while (obj) {
       // const char* key = obj->string;
       string key = prefix + obj->string;
+      // match black list
+      for (auto& item : black_list) {
+        if (!strcmp(item, key.c_str())) return;
+      }
       switch (obj->type & 0xFF) {
         case cJSON_True:
         case cJSON_False:

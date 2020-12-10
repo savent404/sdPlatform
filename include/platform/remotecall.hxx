@@ -37,7 +37,7 @@ struct rcall_client {
   int _call(int msg_id, const void* tx_data, size_t tx_len, void* rx_data, size_t* rx_len);
 
  private:
-  std::unique_ptr<val_t> ch_;
+  val_t *ch_;
 };
 
 }  // namespace platform

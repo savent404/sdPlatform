@@ -246,7 +246,7 @@ struct driver {
   virtual int write_(device_ref dev, const void* in, size_t len) = 0;
   virtual int read_(device_ref dev, void* out, size_t len) = 0;
   virtual int ioctl_(device_ref dev, int cmds, void* in_out, size_t* in_out_len, size_t buffer_max) = 0;
-  virtual cJSON* to_json_() = 0;
+  virtual void to_json_(cJSON* obj) = 0;
   virtual void from_json_(cJSON* obj) = 0;
   virtual void register_internal_syscall_() = 0;
 

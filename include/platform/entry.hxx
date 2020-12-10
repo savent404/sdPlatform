@@ -11,6 +11,9 @@
 
 #pragma once
 
+#include <loop.h>
+#include <platform/cJSON.hxx>
+
 extern "C" {
 typedef int (*_func_entry_t)(void);
 typedef int (*_driver_entry_t)(void*);
@@ -49,6 +52,16 @@ struct entry {
    * @return 0 初始化成功
    */
   static int platform_init(void* ipc_ch);
+
+  struct ipc_desc {
+    ipc_desc();
+    ipc_desc(const ipc_desc& other);
+    cJSON* to_json() const;
+    void from_json(cJSON* obj);
+    mx_channel_t* ch;
+  };
+
+  static const ipc_desc get_ipc_description();
 };
 
 }  // namespace platform
