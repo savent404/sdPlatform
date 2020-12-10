@@ -486,9 +486,11 @@ extern "C" int sunxi_uart_entry(void* env) {
       .config_baud_rate = platform::drivers::uart::sunxi_t3::api_config_baud_rate,
       .ioctl = nullptr,
   };
-  sunxi_uart_driver =
-      new platform::drivers::uart::driver({{"name", "sunxi-uart"}, {"compat", "arm,uart-sunxi,t3"}}, sunxi_uart_api);
-  return sunxi_uart_driver->init(0, nullptr);
+  if (!sunxi_uart_driver) {
+    sunxi_uart_driver = new platform::drivers::uart::driver({{"name", "sunxi-uart"}, {"compat", "arm,uart-sunxi,t3"}}, sunxi_uart_api);
+    return sunxi_uart_driver->init(0, nullptr);
+  }
+  return 0;
 }
 
 driver_entry(sunxi_uart_entry, "sunxi-uart", "arm,uart-sunxi,t3");

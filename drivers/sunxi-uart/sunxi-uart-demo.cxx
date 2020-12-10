@@ -57,6 +57,10 @@ extern "C" int sunxi_uart_test_bind(void) {
 
   extern platform::drivers::uart::driver *sunxi_uart_driver;
 
+  // 等待驱动线程完成注册
+  while (!sunxi_uart_driver || !sunxi_uart_driver->get_id()) {
+    os.os_msleep(100);
+  }
   dev_bind(id, sunxi_uart_driver->get_id());
 
   // start a thread to handle uart echo
