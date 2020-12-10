@@ -57,8 +57,8 @@ struct syscall {
   static hash_id hash(const string& func_name) { return consthash::crc32(func_name.data(), func_name.length()); }
   constexpr static hash_id hash(const char* func_name) { return consthash::crc32(func_name, _strlen(func_name)); }
 
-  int call(hash_id id, void* buf, size_t len) const;
-  int call(void* buf, size_t len) const;
+  int call(hash_id id, void* buf, size_t len, msg* out = nullptr) const;
+  int call(void* buf, size_t len, msg* out = nullptr) const;
 
   template <typename... Args>
   int call_p(hash_id id, Args&... args) const;

@@ -23,6 +23,7 @@
 #include <platform/driver.hxx>
 #include <platform/syscall.hxx>
 #include <platform/msg.hxx>
+#include <platform/msg_wrapper.hxx>
 #include <platform/remotecall.hxx>
 // clang-format on
 
@@ -69,7 +70,7 @@ static int search_device(int device_id, std::map<int, platform::device::device_p
   auto iter = get_device_map().find(device_id);
   if (iter == get_device_map().end() || !(iter->second)) {
     // need query device manager
-    auto dev_str = devmgr_query_driver(device_id);
+    auto dev_str = devmgr_query_device(device_id);
     if (!dev_str) {
       return eno::ENO_NOTEXIST;
     }
@@ -115,6 +116,7 @@ static int get_driver_id(int device_id) {
 using syscall = platform::syscall;
 using msg_wrapper = platform::msg_wrapper;
 using msg = platform::msg;
+using msg_ref = platform::msg_ref;
 
 // NOTE(savent): IPC方式的hash值不需要获取驱动的name，
 //  而是根据ipc handle的不同直接向对应的ipc handle发送相同hash的消息
@@ -175,14 +177,16 @@ int dev_close(int device_id) {
 }
 
 int dev_transfer(int device_id, const void *in, size_t in_len, void *out, size_t out_len) {
-  // int driver_id = get_driver_id(device_id);
-  // auto iter = get_driver_map().end();
-  // int res = search_driver(driver_id, &iter);
-  // if (res) return res;
-  // auto hash = gen_hash("transfer", iter->second->get_name());
-  // auto msgbuf = msg_wrapper::package(hash, device_id, in, in_len, out, out_len);
-  // return syscall::get_instance()->call(msgbuf.get(), msgbuf.size());
-  return eno::ENO_NOTIMPL;
+  int driver_id = get_driver_id(device_id);
+  auto iter = get_driver_map().end();
+  int res = search_driver(driver_id, &iter);
+  if (res) return res;
+  auto hash = gen_hash("transfer", iter->second->get_name());
+  msg_ref refmsg(out, out_len);
+  auto msgbuf = msg_wrapper::package(hash, device_id, in, in_len, &refmsg);
+  platform::rcall_client client(iter->second->get_ipc_remote_channel());
+  size_t sz = refmsg.size();
+  return client._call(0, msgbuf.get(), msgbuf.size(), refmsg.get(), &sz);
 }
 int dev_write(int device_id, const void *in, size_t len) {
   int driver_id = get_driver_id(device_id);
@@ -200,18 +204,23 @@ int dev_read(int device_id, void *out, size_t len) {
   int res = search_driver(driver_id, &iter);
   if (res) return res;
   auto hash = gen_hash("read", iter->second->get_name());
-  auto msgbuf = msg_wrapper::package(hash, device_id, out, len);
+  msg_ref refmsg(out, len);
+  auto msgbuf = msg_wrapper::package(hash, device_id, &refmsg);
   platform::rcall_client client(iter->second->get_ipc_remote_channel());
-  size_t sz = msgbuf.size();
+  size_t sz = refmsg.size();
+  return client._call(0, msgbuf.get(), msgbuf.size(), refmsg.get(), &sz);
 }
 
-int dev_ioctl(int device_id, int cmds, void *in_out, size_t *in_out_len, size_t buffer_max_len) {
+int dev_ioctl(int device_id, int cmds, void *in_out, size_t in_len, size_t buffer_max_len) {
   int driver_id = get_driver_id(device_id);
   auto iter = get_driver_map().end();
   int res = search_driver(driver_id, &iter);
   if (res) return res;
   auto hash = gen_hash("ioctl", iter->second->get_name());
-  auto msgbuf = msg_wrapper::package(hash, device_id, cmds, in_out, in_out_len, buffer_max_len);
-  return syscall::get_instance()->call(msgbuf.get(), msgbuf.size());
+  msg_ref refmsg(in_out, buffer_max_len);
+  auto msgbuf = msg_wrapper::package(hash, device_id, cmds, in_out, in_len, &refmsg);
+  platform::rcall_client client(iter->second->get_ipc_remote_channel());
+  size_t sz = refmsg.size();
+  return client._call(0, msgbuf.get(), msgbuf.size(), refmsg.get(), &sz);
 }
 }

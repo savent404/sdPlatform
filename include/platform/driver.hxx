@@ -15,13 +15,13 @@
 
 #include <list>
 #include <memory>
-#include <utility>
-
 #include <platform/cJSON.hxx>
 #include <platform/device.hxx>
+#include <platform/msg.hxx>
 #include <platform/parameter.hxx>
 #include <platform/runtime.hxx>
 #include <platform/utils.hxx>
+#include <utility>
 /**
  * @brief platform API
  * @defgroup platform_api
@@ -114,15 +114,8 @@ struct driver {
   int close(device_id dev);
   /**
    * @brief 读写设备
-   *
-   * @param dev device_id
-   * @param[in] in 需要写入设备的数据指针
-   * @param in_len 需要写入的字节数
-   * @param[out] out 存储从设备读取到的数据的指针
-   * @param out_len 从设备读取的字节数
-   * @return int (enum eno)
    */
-  int transfer(device_id dev, const void* in, size_t in_len, void* out, size_t out_len);
+  int transfer(device_id dev, const void* in, size_t in_len, msg* out);
   /**
    * @brief 写设备
    *
@@ -134,26 +127,12 @@ struct driver {
   int write(device_id dev, const void* in, size_t len);
   /**
    * @brief 读设备
-   *
-   * @param dev device_id
-   * @param[out] out 存储从设备读取到的数据的指针
-   * @param len 读取的字节数
-   * @return int (enum eno)
    */
-  int read(device_id dev, void* out, size_t len);
+  int read(device_id dev, msg* out);
   /**
    * @brief 控制接口
-   *
-   * @param dev device_id
-   * @param cmds  see enum fcmds
-   * @param[out] in_out 即作为写入数据buffer，也作为读取数据的buffer
-   * @param in_out_len 写入/读取的字节数
-   * @param buffer_max buffer的最大长度
-   * @note ioctl提供的buffer即作为写入也作为输出buffer，需要设备返回的结果会写入到in_out buffer中.
-   * @note 需要确保buffer提供足够的大小返回数据
-   * @return int
    */
-  int ioctl(device_id dev, int cmds, void* in_out, size_t* in_out_len, size_t buffer_max);
+  int ioctl(device_id dev, int cmds, const void* in, size_t in_len, msg* out);
 
   /**
    * @brief 将数据转换为json对象
@@ -183,16 +162,16 @@ struct driver {
   void from_json_str(const char* json);
   /**
    * @brief 获取driver name字段
-   * 
+   *
    * @return const char*
    */
-  const char *get_name();
+  const char* get_name();
   /**
    * @brief 获取driver compat字段
-   * 
+   *
    * @return const char*
    */
-  const char *get_compat();
+  const char* get_compat();
   /**
    * @brief 获取driver id
    *
@@ -245,7 +224,8 @@ struct driver {
   virtual int transfer_(device_ref dev, const void* in, size_t in_len, void* out, size_t out_len) = 0;
   virtual int write_(device_ref dev, const void* in, size_t len) = 0;
   virtual int read_(device_ref dev, void* out, size_t len) = 0;
-  virtual int ioctl_(device_ref dev, int cmds, void* in_out, size_t* in_out_len, size_t buffer_max) = 0;
+  virtual int ioctl_(device_ref dev, int cmds, const void* in, size_t in_len, void* out, size_t* out_len,
+                     size_t buffer_max) = 0;
   virtual void to_json_(cJSON* obj) = 0;
   virtual void from_json_(cJSON* obj) = 0;
   virtual void register_internal_syscall_() = 0;
@@ -253,9 +233,9 @@ struct driver {
   parameters_ref get_config();
   runtime_ref get_runtime();
 
-  template<typename T>
-  static int ioctl_helper_get_param(const T& val, void* buf, size_t *sz, size_t max_sz);
-  template<typename T>
+  template <typename T>
+  static int ioctl_helper_get_param(const T& val, void* buf, size_t* sz, size_t max_sz);
+  template <typename T>
   static int ioctl_helper_set_param(T& out, const void* buf, size_t sz);
 
  private:
@@ -278,7 +258,7 @@ struct driver {
   device_kv_list device_list_;
 };
 
-bool _register_driver_hook_(driver *ptr);
+bool _register_driver_hook_(driver* ptr);
 }  // namespace platform
 /**
  * @}

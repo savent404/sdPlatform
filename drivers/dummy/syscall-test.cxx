@@ -11,6 +11,7 @@
 #include <platform/bits.hxx>
 #include <platform/debug.hxx>
 #include <platform/entry.hxx>
+#include <platform/msg_wrapper.hxx>
 #include <platform/syscall.hxx>
 
 static int foo(int id, const char* str, size_t len) { return 1; }
@@ -24,6 +25,12 @@ static void test_cast_syscall_package_msg() {
   void* v2 = v1;
   size_t v3 = 4;
   int v4 = 1028;
+
+  // void* ptr = nullptr;
+  // platform::msg_ref ref(ptr, 10);
+  // auto tbuf = platform::msg_wrapper::package(&ref);
+  // auto tf = platform::msg_wrapper::unpackage<platform::msg*>(tbuf);
+  // auto m = std::move(std::get<0>(tf));
 
   auto buf = platform::syscall::package_msg(0, v1);
   // cmd(size_t) | buffer_len(size_t) | v1(char*) | v2(size_t) = 12

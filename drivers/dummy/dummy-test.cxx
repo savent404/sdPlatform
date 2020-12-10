@@ -11,6 +11,7 @@
 
 #include <platform-types.h>
 #include <platform.h>
+#include "../../../include/platform.h"
 #include <requirements.h>
 #include <osal.h>
 
@@ -18,12 +19,9 @@
 #include <platform/cJSON.hxx>
 #include <platform/driver-dummy.hxx>
 #include <platform/entry.hxx>
+#include <platform/debug.hxx>
 
-struct driver_dummy : public platform::driver_dummy {
- public:
-  driver_dummy() : platform::driver_dummy() {}
-  ~driver_dummy() = default;
-};
+using debug = platform::debug;
 
 extern int dummy_driver_id;
 
@@ -40,8 +38,20 @@ extern "C" void* dummy_device_bind_test_it(void* p) {
   str = device->to_json_str();
   devmgr_update_device(device_id, str);
   platform::cJSON_free((char *)str);  // NOLINT
-  
+
   dev_bind(device_id, dummy_driver_id);
+  debug::assert(dev_open(device_id, fflag::FF_READ | fflag::FF_WRITE) == eno::ENO_OK);
+  char recv[6];
+  debug::assert(dev_read(device_id, recv, sizeof(recv)) == eno::ENO_OK);
+  debug::assert(!strcmp("world", recv));
+  debug::assert(dev_write(device_id, "Hello", 6) == eno::ENO_OK);
+  memset(recv, 0, sizeof(recv));
+  debug::assert(dev_transfer(device_id, "Hello", 6, recv, sizeof(recv)) == eno::ENO_OK);
+  char msg[] = "Hello";
+  debug::assert(dev_ioctl(device_id, 0, msg, 6, 6) == eno::ENO_OK);
+  debug::assert(!strcmp(msg, "world"));
+  debug::assert(dev_close(device_id) == eno::ENO_OK);
+  debug::assert(dev_unbind(device_id) == eno::ENO_OK);
   os.os_exit(0);
   return NULL;
 }
@@ -51,4 +61,3 @@ extern "C" int dummy_device_bind_test(void) {
 }
 
 func_entry_level_untest(dummy_device_bind_test);
-

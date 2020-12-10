@@ -30,16 +30,16 @@ int syscall::call_p(hash_id id, Args &... args) const {
   return syscall_dtl::call_fn_from_param(f, args...);
 }
 
-int syscall::call(hash_id id, void *buf, size_t len) const {
+int syscall::call(hash_id id, void *buf, size_t len, msg* out) const {
   func_t f = find(id);
-  return syscall_dtl::call_fn_from_buffer(f, buf, len);
+  return syscall_dtl::call_fn_from_buffer(f, buf, len, out);
 }
 
-int syscall::call(void *buf, size_t len) const {
+int syscall::call(void *buf, size_t len, msg* out) const {
   hash_id id = *reinterpret_cast<hash_id *>(buf);
   func_t f = find(id);
   buf = bits::shift_addr(buf, sizeof(id));
-  return syscall_dtl::call_fn_from_buffer(f, buf, len);
+  return syscall_dtl::call_fn_from_buffer(f, buf, len, out);
 }
 
 syscall *syscall::get_instance() {

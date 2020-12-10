@@ -22,6 +22,7 @@ struct driver_dummy : public platform::driver_dummy {
  public:
   driver_dummy() : platform::driver_dummy() {}
   ~driver_dummy() = default;
+ protected:
 };
 
 int dummy_driver_id = 0;

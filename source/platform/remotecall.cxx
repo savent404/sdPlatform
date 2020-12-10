@@ -50,7 +50,7 @@ int rcall_client::_call(int msg_id, const void* tx_data, size_t tx_len, void* rx
   int res = 0;
 
   if (hasTx && hasRx) {
-    res = rpc_call(ch_, msg_id, rxdata, txlen, rxdata, &rxlen);
+    res = rpc_call(ch_, msg_id, txdata, txlen, rxdata, &rxlen);
     *rx_len = rxlen;
   } else if (hasTx && !hasRx) {
     res = rpc_call_no_rx(ch_, msg_id, txdata, txlen);

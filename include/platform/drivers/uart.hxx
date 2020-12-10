@@ -100,7 +100,7 @@ struct api {
   int (*config_stop_bit)(runtime_ptr ptr);
   int (*config_baud_rate)(runtime_ptr ptr);
 
-  int (*ioctl)(runtime_ptr, int cmds, void* in_out, size_t* in_out_len,
+  int (*ioctl)(runtime_ptr, int cmds, const void* in, size_t in_len, void* out, size_t* out_len,
                size_t buffer_max);  // 硬件提供的额外的ioctl功能
 };
 
@@ -119,7 +119,7 @@ struct driver : public platform::driver {
   int transfer_(device_ref dev, const void* in, size_t in_len, void* out, size_t out_len) override;
   int write_(device_ref dev, const void* out, size_t len) override;
   int read_(device_ref dev, void* out, size_t len) override;
-  int ioctl_(device_ref, int cmds, void* in_out, size_t* in_out_len, size_t buffer_max) override;
+  int ioctl_(device_ref, int cmds, const void* in, size_t in_len, void* out, size_t* out_len, size_t buffer_max) override;
   void to_json_(cJSON*) override;
   void from_json_(platform::cJSON*) override;
   void register_internal_syscall_() override;

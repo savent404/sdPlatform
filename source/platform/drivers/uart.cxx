@@ -139,23 +139,23 @@ int driver::read_(device_ref dev, void* in, size_t len) {
   }
 }
 
-int driver::ioctl_(device_ref dev, int cmds, void* in_out, size_t* in_out_len, size_t max) {
+int driver::ioctl_(device_ref dev, int cmds, const void* in, size_t in_len, void* out, size_t* out_len, size_t max) {
   runtime* rt = dev.get_runtime().promote<runtime>();
   int res = eno::ENO_OK;
   switch (cmds) {
     case fcmds::FC_GET_BAUD_RATE: {
-      res = tools::ioctl_helper_get_param(rt->baudrate, in_out, in_out_len, max);
+      res = tools::ioctl_helper_get_param(rt->baudrate, out, out_len, max);
     } break;
     case fcmds::FC_GET_PARITY_MODE: {
-      res = tools::ioctl_helper_get_param(rt->parity, in_out, in_out_len, max);
+      res = tools::ioctl_helper_get_param(rt->parity, out, out_len, max);
     } break;
     case fcmds::FC_GET_STOP_BIT: {
-      res = tools::ioctl_helper_get_param(rt->stop_bits, in_out, in_out_len, max);
+      res = tools::ioctl_helper_get_param(rt->stop_bits, out, out_len, max);
     } break;
     case fcmds::FC_SET_BAUD_RATE: {
       if (!api_.config_baud_rate) return eno::ENO_NOTIMPL;
       auto origin = rt->baudrate;
-      res = tools::ioctl_helper_set_param(&rt->baudrate, in_out, *in_out_len);
+      res = tools::ioctl_helper_set_param(&rt->baudrate, in, in_len);
       if (res) break;
       res = api_.config_baud_rate(rt);
       if (res) rt->baudrate = origin;
@@ -163,7 +163,7 @@ int driver::ioctl_(device_ref dev, int cmds, void* in_out, size_t* in_out_len, s
     case fcmds::FC_SET_PARITY_MODE: {
       if (!api_.config_parity) return eno::ENO_NOTIMPL;
       auto origin = rt->parity;
-      res = tools::ioctl_helper_set_param(&rt->parity, in_out, *in_out_len);
+      res = tools::ioctl_helper_set_param(&rt->parity, in, in_len);
       if (res) break;
       res = api_.config_parity(rt);
       if (res) rt->parity = origin;
@@ -171,13 +171,13 @@ int driver::ioctl_(device_ref dev, int cmds, void* in_out, size_t* in_out_len, s
     case fcmds::FC_SET_STOP_BIT: {
       if (!api_.config_stop_bit) return eno::ENO_NOTIMPL;
       auto origin = rt->parity;
-      res = tools::ioctl_helper_set_param(&rt->stop_bits, in_out, *in_out_len);
+      res = tools::ioctl_helper_set_param(&rt->stop_bits, in, in_len);
       if (res) break;
       res = api_.config_stop_bit(rt);
       if (res) rt->parity = origin;
     } break;
     default:
-      res = api_.ioctl ? api_.ioctl(rt, cmds, in_out, in_out_len, max) : eno::ENO_INVALID;
+      res = api_.ioctl ? api_.ioctl(rt, cmds, in, in_len, out, out_len, max) : eno::ENO_INVALID;
   }
   if (!res && IS_CONFIG_FCMDS(cmds)) {
     devmgr_update();

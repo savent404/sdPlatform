@@ -15,8 +15,8 @@
 #include <platform/alter/string.hxx>
 #include <platform/debug.hxx>
 #include <platform/driver.hxx>
-#include <platform/syscall.hxx>
 #include <platform/entry.hxx>
+#include <platform/syscall.hxx>
 
 namespace platform {
 
@@ -96,10 +96,10 @@ int driver::close(device_id dev) {
   return res;
 }
 
-int driver::transfer(device_id dev, const void *in, size_t in_len, void *out, size_t out_len) {
+int driver::transfer(device_id dev, const void *in, size_t in_len, msg *msgbuf) {
   auto ptr = get_device(dev);
   if (!ptr) return eno::ENO_NOTEXIST;
-  auto res = transfer_(*ptr, in, in_len, out, out_len);
+  auto res = transfer_(*ptr, in, in_len, msgbuf->get(), msgbuf->size());
   put_device(dev, std::move(ptr));
   return res;
 }
@@ -112,18 +112,20 @@ int driver::write(device_id dev, const void *in, size_t len) {
   return res;
 }
 
-int driver::read(device_id dev, void *out, size_t len) {
+int driver::read(device_id dev, msg *msgbuf) {
   auto ptr = get_device(dev);
   if (!ptr) return eno::ENO_NOTEXIST;
-  auto res = read_(*ptr, out, len);
+  auto res = read_(*ptr, msgbuf->get(), msgbuf->size());
   put_device(dev, std::move(ptr));
   return res;
 }
 
-int driver::ioctl(device_id dev, int cmds, void *in_out, size_t *in_out_len, size_t max_len) {
+int driver::ioctl(device_id dev, int cmds, const void *in, size_t in_len, msg *msgbuf) {
   auto ptr = get_device(dev);
   if (!ptr) return eno::ENO_NOTEXIST;
-  auto res = ioctl_(*ptr, cmds, in_out, in_out_len, max_len);
+  size_t sz = msgbuf->size();
+  auto res = ioctl_(*ptr, cmds, in, in_len, msgbuf->get(), &sz, msgbuf->size());
+  if (!msgbuf->resize(sz, false)) return eno::ENO_NOMEM;
   put_device(dev, std::move(ptr));
   return res;
 }
@@ -167,14 +169,14 @@ void driver::from_json_str(const char *json) {
 
 const char *driver::get_name() {
   if (get_config().has("name")) {
-    return get_config().get<const char*>("name");
+    return get_config().get<const char *>("name");
   }
   return nullptr;
 }
 
 const char *driver::get_compat() {
   if (get_config().has("compat")) {
-    return get_config().get<const char*>("compat");
+    return get_config().get<const char *>("compat");
   }
   return 0;
 }
@@ -293,15 +295,15 @@ void driver::register_syscall() {
   syscall_handler->add(prefix + "open",
                        static_cast<std::function<int(int, int)>>(std::bind(&driver::open, this, _1, _2)));
   syscall_handler->add(prefix + "close", static_cast<std::function<int(int)>>(std::bind(&driver::close, this, _1)));
-  syscall_handler->add(prefix + "transfer", static_cast<std::function<int(int, const void *, size_t, void *, size_t)>>(
-                                                std::bind(&driver::transfer, this, _1, _2, _3, _4, _5)));
+  syscall_handler->add(prefix + "transfer", static_cast<std::function<int(int, void *, size_t, msg *)>>(
+                                                std::bind(&driver::transfer, this, _1, _2, _3, _4)));
   syscall_handler->add(prefix + "write", static_cast<std::function<int(int, void *, size_t)>>(
                                              std::bind(&driver::write, this, _1, _2, _3)));
-  syscall_handler->add(prefix + "read", static_cast<std::function<int(int, void *, size_t)>>(
-                                            std::bind(&driver::read, this, _1, _2, _3)));
-  syscall_handler->add(prefix + "ioctl", static_cast<std::function<int(int, int, void *, size_t *, size_t)>>(
-                                             std::bind(&driver::ioctl, this, _1, _2, _3, _4, _5)));
-
+  syscall_handler->add(prefix + "read",
+                       static_cast<std::function<int(int, msg *)>>(std::bind(&driver::read, this, _1, _2)));
+  syscall_handler->add(prefix + "ioctl",
+                       static_cast<std::function<int(int, int, void *, size_t, msg*)>>(
+                           std::bind(&driver::ioctl, this, _1, _2, _3, _4, _5)));
   register_internal_syscall_();
 }
 

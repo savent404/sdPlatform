@@ -18,7 +18,7 @@
 namespace platform::syscall_dtl {
 
 
-int call_fn_from_buffer(func_t func, void* buf, size_t len) {
+int call_fn_from_buffer(func_t func, void* buf, size_t len, msg* out) {
   // as default, any error as syscall error
   int res = eno::ENO_SYSCALL_ERR;
   switch (func.index()) {
@@ -44,7 +44,7 @@ int call_fn_from_buffer(func_t func, void* buf, size_t len) {
       res = f(std::get<0>(ts), std::get<1>(ts));
     } break;
 
-    // f -> std::function<int, const char*, size_t)
+    // f -> std::function<int, const char*, size_t)>
     case 3: {
       auto f = std::get<3>(func);
       param_t<int, const char*, size_t> ts;
@@ -52,13 +52,62 @@ int call_fn_from_buffer(func_t func, void* buf, size_t len) {
       res = f(std::get<0>(ts), std::get<1>(ts), std::get<2>(ts));
     } break;
 
-    // f -> std::function<int(int, void*, size_t)
+    // f -> std::function<int(int, void*, size_t)>
     case 4: {
       auto f = std::get<4>(func);
       param_t<int, void*, size_t> ts;
       if (!do_parse(ts, buf, len)) break;
-      // if (!do_parse<int, void*, char*, size_t>(ts, buf, len)) break;
       res = f(std::get<0>(ts), std::get<1>(ts), std::get<2>(ts));
+    } break;
+    // f -> std::function<int(int, void*, size_t void*, size_t)>
+    case 5: {
+      auto f = std::get<5>(func);
+      param_t<int, void*, size_t, void*, size_t> ts;
+      if (!do_parse(ts, buf, len)) break;
+      res = f(std::get<0>(ts), std::get<1>(ts), std::get<2>(ts), std::get<3>(ts), std::get<4>(ts));
+    } break;
+    // f -> std::function<int(int, int, void*, size_t, size_t*)>
+    case 6: {
+      auto f = std::get<6>(func);
+      param_t<int, int, void*, size_t, size_t *> ts;
+      if (!do_parse(ts, buf, len)) break;
+      res = f(std::get<0>(ts), std::get<1>(ts), std::get<2>(ts), std::get<3>(ts), std::get<4>(ts));
+    } break;
+    // f -> std::function<int(int, void*, size_t, msg*)>
+    case 7: {
+      auto f = std::get<7>(func);
+      param_t<int, void*, size_t, msg*> ts;
+      if (!do_parse(ts, buf, len)) break;
+      res = f(std::get<0>(ts), std::get<1>(ts), std::get<2>(ts), std::get<3>(ts));
+      if (out) {
+        msg* pt = std::get<3>(ts);
+        *out = std::move(*pt);
+        delete pt;
+      }
+    } break;
+    // f -> std::function<int(int, msg*)>
+    case 8: {
+      auto f = std::get<8>(func);
+      param_t<int, msg*>ts;
+      if (!do_parse(ts, buf, len)) break;
+      res = f(std::get<0>(ts), std::get<1>(ts));
+      if (out) {
+        msg* pt = std::get<1>(ts);
+        *out = std::move(*pt);
+        delete pt;
+      }
+    } break;
+    // f -> std::function<int(int, int, void*, size_t, msg*)>
+    case 9: {
+      auto f = std::get<9>(func);
+      param_t<int, int, void*, size_t, msg*> ts;
+      if (!do_parse(ts, buf, len)) break;
+      res = f(std::get<0>(ts), std::get<1>(ts), std::get<2>(ts), std::get<3>(ts), std::get<4>(ts));
+      if (out) {
+        msg* pt = std::get<4>(ts);
+        *out = std::move(*pt);
+        delete pt;
+      }
     } break;
 
     default:

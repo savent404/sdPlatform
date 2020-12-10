@@ -15,11 +15,11 @@
 
 #include <cstddef>
 #include <tuple>
+#include <memory>
 #include <utility>
 
 // clang-format off
 #include <platform/debug.hxx>
-#include <platform/syscall-details.hxx>
 // clang-format on
 
 namespace platform {
@@ -28,25 +28,26 @@ struct msg_wrapper;
 struct msg {
  public:
   msg() : buffer_(nullptr), sz_(0) {}
+  msg(void* base_addr, size_t sz) : buffer_(static_cast<char*>(base_addr)), sz_(sz) {}
   explicit msg(size_t sz) : buffer_(new char[sz]), sz_(sz) {}
   msg(const msg &other) : buffer_(new char[other.sz_]), sz_(other.sz_) { memcpy(buffer_, other.buffer_, sz_); }
   msg(msg &&other) : buffer_(std::move(other.buffer_)), sz_(other.sz_) {
     other.buffer_ = nullptr;
     other.sz_ = 0;
   }
-  msg& operator=(msg&& other) {
+  msg &operator=(msg &&other) {
     if (buffer_) {
       delete[] buffer_;
       buffer_ = nullptr;
       sz_ = 0;
     }
-    buffer_  = other.buffer_;
+    buffer_ = other.buffer_;
     sz_ = other.sz_;
     other.buffer_ = nullptr;
     other.sz_ = 0;
     return *this;
   }
-  ~msg() {
+  virtual ~msg() {
     if (buffer_) {
       delete[] buffer_;
     }
@@ -55,34 +56,42 @@ struct msg {
   T get() {
     return static_cast<T>(buffer_);
   }
-  size_t size() { return sz_; }
+  template <typename T = void *>
+  const T get() const {
+    return static_cast<T>(buffer_);
+  }
+  size_t size() const { return sz_; }
+  bool resize(size_t new_sz, bool realloc = true) {
+    size_t min_sz = new_sz > sz_ ? sz_ : new_sz;
+    if (realloc) {
+      auto p = new char[new_sz];
+      if (!p) return false;
+      memcpy(p, buffer_, min_sz);
+      delete[] buffer_;
+      buffer_ = p;
+    }
+    sz_ = new_sz;
+    return true;
+  }
 
- private:
+ protected:
   friend struct msg_wrapper;
   char *buffer_;
   size_t sz_;
 };
 
-struct msg_wrapper {
- public:
-  template <typename... Args>
-  static msg package(Args... args) {
-    size_t sz = syscall_dtl::calculate_size<Args...>::get(args...);
-    msg buff(sz);
-    size_t sz1 = syscall_dtl::package_obj<Args...>::set(buff.get(), args...);
-    debug::assert(sz == sz1);
-    return std::move(buff);
+struct msg_ref : public msg {
+  msg_ref(void* base, size_t sz) : msg(0) {
+    buffer_ = static_cast<char*>(base);
+    sz_ = sz;
   }
-  template <typename... Args>
-  static auto &unpackage(const msg &buff) {
-    std::tuple<Args...> ts;
-    void *ptr = buff.buffer_;
-    size_t sz = buff.sz_;
-    debug::assert(syscall_dtl::do_parse<Args...>(ts, ptr, sz));
-    return ts;
+  virtual ~msg_ref() {
+    buffer_ = nullptr;
+    sz_ = 0;
   }
-
- private:
 };
+
+using msg_ptr = std::unique_ptr<msg>;
+using mst_ref_ptr = std::unique_ptr<msg_ref>;
 
 }  // namespace platform

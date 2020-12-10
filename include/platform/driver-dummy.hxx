@@ -11,6 +11,7 @@
 #pragma once
 
 #include <platform-types.h>
+#include <string.h>
 
 #include <platform/driver.hxx>
 #include <platform/entry.hxx>
@@ -26,20 +27,43 @@ struct driver_dummy : public driver {
   ~driver_dummy() = default;
 
   mx_channel_t* get_ipc_remote_channel() { return ipc_desc_.ch; }
+
  protected:
   virtual int init_(int argc, char** argv) { return eno::ENO_OK; }
-  virtual int deinit_() { return eno::ENO_NOPERMIT; }
+  virtual int deinit_() { return eno::ENO_OK; }
   virtual int bind_(device_ref dev) { return eno::ENO_OK; }
-  virtual int unbind_(device_ref dev) { return eno::ENO_NOPERMIT; }
-  virtual int open_(device_ref dev, int flags) { return eno::ENO_NOPERMIT; }
-  virtual int close_(device_ref dev) { return eno::ENO_NOPERMIT; }
+  virtual int unbind_(device_ref dev) { return eno::ENO_OK; }
+  virtual int open_(device_ref dev, int flags) { return eno::ENO_OK; }
+  virtual int close_(device_ref dev) { return eno::ENO_OK; }
   virtual int transfer_(device_ref dev, const void* in, size_t in_len, void* out, size_t out_len) {
-    return eno::ENO_NOPERMIT;
+    memcpy(out, "world", out_len > 6 ? 6 : out_len);
+    char* p = (char*)out;  // NOLINT
+    p[out_len] = '\0';
+    return eno::ENO_OK;
   }
-  virtual int write_(device_ref dev, const void* in, size_t len) { return eno::ENO_NOPERMIT; }
-  virtual int read_(device_ref dev, void* out, size_t len) { return eno::ENO_NOPERMIT; }
-  virtual int ioctl_(device_ref dev, int cmds, void* in_out, size_t* in_out_len, size_t buffer_max) {
-    return eno::ENO_NOPERMIT;
+  virtual int write_(device_ref dev, const void* in, size_t len) { return eno::ENO_OK; }
+  virtual int read_(device_ref dev, void* out, size_t len) {
+    memcpy(out, "world", len > 6 ? 6 : len);
+    char* p = (char*)out;  // NOLINT
+    p[len] = '\0';
+    return eno::ENO_OK;
+  }
+  virtual int ioctl_(device_ref dev, int cmds, const void* in, size_t in_len, void* out, size_t* out_len,
+                     size_t buffer_max) {
+    int res = eno::ENO_INVALID;
+    switch (cmds) {
+      case 0:
+        if (!strcmp((const char*)in, "Hello")) {
+          memcpy(out, "world", buffer_max > 6 ? 6 : buffer_max);
+          char* p = (char*)out;  // NOLINT
+          p[buffer_max] = '\0';
+          res = eno::ENO_OK;
+        }
+        break;
+      default:
+        res = eno::ENO_INVALID;
+    }
+    return res;
   }
   virtual void to_json_(cJSON* obj) {}
   virtual void from_json_(cJSON* obj) {
@@ -48,7 +72,6 @@ struct driver_dummy : public driver {
     }
   }
   virtual void register_internal_syscall_() { ; }
-
 
  private:
   entry::ipc_desc ipc_desc_;

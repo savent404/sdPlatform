@@ -61,8 +61,14 @@ extern "C" s32 driver_platform_ipc_handler_cb(mx_channel_t* ch, void* data, u32 
   auto syscall = syscall::get_instance();
   data = bits::shift_addr(data, sizeof(syscall_id));
   len -= sizeof(syscall_id);
-  int res = syscall->call(syscall_id, data, len);
-  return rpc_reply_data(ch, res, reinterpret_cast<u8*>(data), len);
+  msg reply_buf;
+  int res = syscall->call(syscall_id, data, len, &reply_buf);
+  if (reply_buf.size()) {
+    rpc_reply_data(ch, res, reinterpret_cast<u8*>(reply_buf.get()), reply_buf.size());
+  } else {
+    rpc_reply(ch, res);
+  }
+  return 0;
 }
 
 extern "C" __attribute__((noreturn)) void* driver_platform_ipc_handler(void*) {
