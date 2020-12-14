@@ -31,21 +31,53 @@
 #define __weak __attribute__((weak))
 #endif
 
+using syscall = platform::syscall;
+using msg_wrapper = platform::msg_wrapper;
+using msg = platform::msg;
+using msg_ref = platform::msg_ref;
+
+// 导入操作系统提供的free函数(用于free_devmgr_string函数)
+extern "C" void heap_free(void *);
+/**
+ * @brief 释放由 devmgr 返回的字符串内存
+ * 
+ * @param str 字符串指针
+ */
+static void free_devmgr_string(const char *str) { heap_free(const_cast<char *>(str)); }
+
+/**
+ * @brief 获取驱动的缓存集
+ * 
+ * @note 使用缓存的意义在于每次系统调用到来不需要通过devmgr api查询相关信息
+ * @return std::map<int, platform::driver_dummy::driver_ptr> &
+ */
 static auto &get_driver_map() {
   static platform::alter::map<int, platform::driver_dummy::driver_ptr> *driver_map;
   if (!driver_map) driver_map = new platform::alter::map<int, platform::driver_dummy::driver_ptr>;
   return *driver_map;
 }
 
-extern "C" void heap_free(void *);
-static void free_devmgrs_string(const char *str) { heap_free(const_cast<char *>(str)); }
-
+/**
+ * @brief 获取设备的缓存集
+ * 
+ * @note 使用缓存的意义在于每次系统调用到来不需要通过devmgr api查询相关信息
+ * @return std::map<int, platform::device::device_ptr> &
+ */
 static auto &get_device_map() {
   static platform::alter::map<int, platform::device::device_ptr> *device_map;
   if (!device_map) device_map = new platform::alter::map<int, platform::device::device_ptr>;
   return *device_map;
 }
 
+/**
+ * @brief 查找合适的驱动
+ * 
+ * @note 优先从驱动缓存集中查询，查找不到则调用devmgr api
+ * @param driver_id 驱动的id
+ * @param item_iter 查找到的结果
+ * @return int 0  成功
+ *             !0 失败
+ */
 static int search_driver(int driver_id, std::map<int, platform::driver_dummy::driver_ptr>::iterator *item_iter) {
   auto iter = get_driver_map().find(driver_id);
   if (iter == get_driver_map().end() || !(iter->second)) {
@@ -58,7 +90,7 @@ static int search_driver(int driver_id, std::map<int, platform::driver_dummy::dr
       return eno::ENO_NOMEM;
     }
     drv_ptr->from_json_str(drv_str);
-    free_devmgrs_string(drv_str);
+    free_devmgr_string(drv_str);
     get_driver_map()[driver_id] = platform::driver_dummy::driver_ptr(drv_ptr);
     iter = get_driver_map().find(driver_id);
   }
@@ -66,6 +98,15 @@ static int search_driver(int driver_id, std::map<int, platform::driver_dummy::dr
   return eno::ENO_OK;
 }
 
+/**
+ * @brief 查找合适的设备
+ * 
+ * @note 优先从驱动缓存集中查询，查找不到则调用devmgr api
+ * @param device_id 设备id
+ * @param item_iter  查找到的结果
+ * @return int 0  成功
+ *             !0 失败
+ */
 static int search_device(int device_id, std::map<int, platform::device::device_ptr>::iterator *item_iter) {
   auto iter = get_device_map().find(device_id);
   if (iter == get_device_map().end() || !(iter->second)) {
@@ -79,7 +120,7 @@ static int search_device(int device_id, std::map<int, platform::device::device_p
       return eno::ENO_NOMEM;
     }
     dev_ptr->from_json_str(dev_str);
-    free_devmgrs_string(dev_str);
+    free_devmgr_string(dev_str);
     get_device_map()[device_id] = platform::device::device_ptr(dev_ptr);
     iter = get_device_map().find(device_id);
   }
@@ -87,6 +128,12 @@ static int search_device(int device_id, std::map<int, platform::device::device_p
   return eno::ENO_OK;
 }
 
+/**
+ * @brief 通过devmgr更新device相关信息
+ * 
+ * @param device_id 设备id
+ * @return int 0 成功
+ */
 static int update_device_info(int device_id) {
   const char *dev_str = devmgr_query_device(device_id);
   if (!dev_str) return eno::ENO_NOTEXIST;
@@ -97,6 +144,12 @@ static int update_device_info(int device_id) {
   return eno::ENO_OK;
 }
 
+/**
+ * @brief 通过设备id获取该设备已绑定的驱动id
+ * 
+ * @param device_id 设备id
+ * @return int id
+ */
 static int get_driver_id(int device_id) {
   auto iter = get_device_map().end();
   int res = search_device(device_id, &iter);
@@ -106,21 +159,13 @@ static int get_driver_id(int device_id) {
   return iter->second->get_bind_id();
 }
 
-// bool platform::_register_driver_hook_(platform::driver *ptr) {
-//   if (ptr && ptr->get_id()) {
-//     get_driver_map()[ptr->get_id()] = platform::driver::driver_ptr(ptr);
-//   }
-//   return true;
-// }
-
-using syscall = platform::syscall;
-using msg_wrapper = platform::msg_wrapper;
-using msg = platform::msg;
-using msg_ref = platform::msg_ref;
-
-// NOTE(savent): IPC方式的hash值不需要获取驱动的name，
-//  而是根据ipc handle的不同直接向对应的ipc handle发送相同hash的消息
-// TODO(savent): 此方法仅用于ipc未实现的调试环境，后期删除
+/**
+ * @brief 生成函数的hash id
+ *
+ * @param method 调用方法的名称(与注册时保持一致即可, 如'open', 'close'等)
+ * @param driver_name 驱动名称，用于区分各个驱动
+ * @return hash_id
+ */
 static auto gen_hash(const char *method, const char *driver_name) {
   platform::alter::string s;
   s.append(driver_name);
