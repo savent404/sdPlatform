@@ -1,7 +1,8 @@
 /**
  * @file requirements.cxx
  * @author savent (savent_gate@outlook.com)
- * @brief
+ * @brief 对于requirements.h中需要函数的空实现，用于内部测试
+ * @note 函数已标及为weak,实际链接时使用外部提供的符号
  * @version 0.1
  * @date 2020-11-23
  *
@@ -24,11 +25,6 @@
 #define __weak __attribute__((weak))
 #endif
 
-// __attribute__((constructor)) void devmanager_init(void)
-// {
-
-// }
-
 std::map<int, platform::device *> &device_queue() {
   static std::map<int, platform::device *> *instance;
   if (!instance) instance = new std::map<int, platform::device *>;
@@ -42,15 +38,6 @@ std::map<int, platform::driver_dummy *> &driver_queue() {
 }
 
 extern "C" {
-
-// static bool device_exist(int id) {
-//   auto iter = device_queue().find(id);
-//   return iter != device_queue().end();
-// }
-// static bool driver_exist(int id) {
-//   auto iter = driver_queue().find(id);
-//   return iter != driver_queue().end();
-// }
 
 __weak int devmgr_create_device(const char *json_str, int i) {
   auto dev = new platform::device;
@@ -78,11 +65,9 @@ __weak const char *devmgr_query_device(int device_id) {
 }
 
 __weak int devmgr_create_driver(const char *json_str) {
-  // auto dri = new platform::driver(json_str);
   auto dir = new platform::driver_dummy;
   dir->from_json_str(json_str);
   int id = rand();  // NOLINT
-  // driver_queue[id] = dri;
   driver_queue()[id] = dir;
   return id;
 }
