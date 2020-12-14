@@ -154,7 +154,7 @@ struct driver_dummy : public driver, public dev_api {
   virtual void register_internal_syscall_() { ; }
 
  private:
-  entry::ipc_desc ipc_desc_;
+  syscall::ipc_desc ipc_desc_;
 };
 
 }  // namespace platform

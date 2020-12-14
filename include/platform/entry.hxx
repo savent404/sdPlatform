@@ -67,21 +67,6 @@ struct entry {
    * @return 0 初始化成功
    */
   static int platform_init(void* ipc_ch);
-
-  struct ipc_desc {
-    ipc_desc();
-    ipc_desc(const ipc_desc& other);
-    cJSON* to_json() const;
-    void from_json(cJSON* obj);
-    mx_channel_t* ch;
-  };
-
-  /**
-   * @brief 获取外部进程与本进程（驱动进程）通讯的ipc句柄
-   * 
-   * @return const ipc_desc 
-   */
-  static const ipc_desc get_ipc_description();
 };
 
 }  // namespace platform

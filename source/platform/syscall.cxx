@@ -9,6 +9,9 @@
  *
  */
 #include <platform-types.h>
+#include <osal.h>
+#include <rpc_api.h>
+#include <loop.h>
 
 #include <cstddef>
 #include <tuple>
@@ -17,7 +20,42 @@
 #include <consthash/all.hxx>
 #include <platform/bits.hxx>
 #include <platform/syscall.hxx>
+#include <platform/msg.hxx>
+#include <platform/debug.hxx>
 // clang-format on
+
+// 回调函数定义
+extern "C" s32 syscall_ipc_handler_cb(mx_channel_t* ch, void* data, u32 len) {
+  int syscall_id = *(reinterpret_cast<int*>(data));
+
+  auto syscall = platform::syscall::get_instance();
+  data = platform::bits::shift_addr(data, sizeof(syscall_id));
+  len -= sizeof(syscall_id);
+  platform::msg reply_buf;
+  int res = syscall->call(syscall_id, data, len, &reply_buf);
+  if (reply_buf.size()) {
+    rpc_reply_data(ch, res, reinterpret_cast<u8*>(reply_buf.get()), reply_buf.size());
+  } else {
+    rpc_reply(ch, res);
+  }
+  return 0;
+}
+
+static loop_t *loop_;
+extern "C" __attribute__((noreturn)) void* syscall_ipc_handler(void*) {
+  loop_ = loop_new();
+  auto instance = platform::syscall::get_instance();
+
+  platform::syscall::ipc_desc des;
+  des.ch = loop_get_remote_channel(loop_get_master(loop_));
+  instance->set_local_ipc(des);
+
+  // ch = loop_get_remote_channel(loop_get_master(loop_));
+  platform::debug::assert(loop_);
+  platform::debug::assert(!loop_msg_register(loop_get_master(loop_), 0, syscall_ipc_handler_cb, 0));
+  loop_run(loop_);
+  return NULL;
+}
 
 namespace platform {
 
@@ -48,8 +86,10 @@ syscall *syscall::get_instance() {
   return c;
 }
 
-cJSON *syscall::get_ipc_description() { return nullptr; }
-void syscall::set_ipc_description(const void *) {}
+syscall::ipc_desc syscall::get_local_ipc() {  return local_ipc_; }
+void syscall::set_local_ipc(ipc_desc param) { local_ipc_ = param; }
+syscall::ipc_desc syscall::get_devmgr_ipc() { return devmgr_ipc_; }
+void syscall::set_devmgr_ipc(ipc_desc param) { devmgr_ipc_ = param;}
 
 bool syscall::add(string func_name, func_t func) { return add(hash(func_name), func); }
 bool syscall::del(string func_name) { return del(hash(func_name)); }
@@ -78,5 +118,19 @@ void syscall::_msg_buf_t::set(char *ptr, size_t sz) {
   sz_ = sz;
 }
 void syscall::_msg_buf_t::free_buffer() { buffer = nullptr; }
+
+
+cJSON* syscall::ipc_desc::to_json() const {
+  int pointer = reinterpret_cast<int>(ch);
+  auto root = cJSON_CreateObject();
+  cJSON_AddNumberToObject(root, "pointer", pointer);
+  return root;
+}
+void syscall::ipc_desc::from_json(cJSON* obj) {
+  if (cJSON_HasObjectItem(obj, "pointer")) {
+    int pointer = cJSON_GetNumberValue(cJSON_GetObjectItem(obj, "pointer"));
+    ch = reinterpret_cast<decltype(ch)>(pointer);
+  }
+}
 
 }  // namespace platform

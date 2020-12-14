@@ -10,6 +10,8 @@
  */
 #pragma once
 
+#include <loop.h>
+
 #include <cstddef>
 #include <functional>
 #include <memory>
@@ -45,11 +47,22 @@ struct syscall {
     std::unique_ptr<char[]> buffer;
     size_t sz_;
   };
+
+  struct ipc_desc {
+    ipc_desc() = default;
+    ipc_desc(const ipc_desc& other) = default;
+    cJSON* to_json() const;
+    void from_json(cJSON* obj);
+    mx_channel_t* ch;
+  };
   using msg_buf_t = std::unique_ptr<_msg_buf_t>;
 
  public:
   syscall() = default;
   ~syscall() = delete;
+
+  bool init();
+  bool deinit();
 
   /**
    * @brief 注册驱动调用
@@ -109,25 +122,38 @@ struct syscall {
   static syscall* get_instance();
 
   /**
-   * @brief 提供本地方法的ipc handle的json版本
-   * 
-   * @return cJSON* 
+   * @brief 获取外部进程与本进程（驱动进程）通讯的ipc句柄
+   *
+   * @return const ipc_desc
    */
-  cJSON* get_ipc_description();
-  /**
-   * @brief 通过json字符串设置本地方法的ipc handle
-   * 
-   */
-  void set_ipc_description(const void*);
+  ipc_desc get_local_ipc();
 
   /**
+   * @brief 设置本地方法的ipc handle
+   *
+   * @param param ipc_desc
+   */
+  void set_local_ipc(ipc_desc param);
+  /**
+   * @brief 获取devmgr的ipc句柄
+   *
+   * @return const ipc_desc
+   */
+  ipc_desc get_devmgr_ipc();
+  /**
+   * @brief 设置devmgr的ipc handle
+   *
+   * @param param ipc_desc
+   */
+  void set_devmgr_ipc(ipc_desc param);
+  /**
    * @brief 打包消息为msg_buf_t
-   * 
+   *
    * @tparam Args
    * @param[out] out_size 打包数据的大小
    * @param cmd ipc 调用 id
    * @param args 参数信息
-   * @return msg_buf_t 
+   * @return msg_buf_t
    */
   template <typename... Args>
   static msg_buf_t package_msg(size_t* out_size, hash_id cmd, Args... args) {
@@ -138,11 +164,11 @@ struct syscall {
   }
   /**
    * @brief 打包消息为msg_buf_t
-   * 
-   * @tparam Args 
+   *
+   * @tparam Args
    * @param args
    * @note args中第一个默认为 cmd 参数
-   * @return msg_buf_t 
+   * @return msg_buf_t
    */
   template <typename... Args>
   static msg_buf_t package_msg(Args... args) {
@@ -158,6 +184,8 @@ struct syscall {
   bool add(hash_id func_id, func_t func);
   bool del(hash_id func_id);
   constexpr static int _strlen(const char* name) { return *name ? _strlen(name + 1) + 1 : 0; }
+  ipc_desc local_ipc_;
+  ipc_desc devmgr_ipc_;
 
   using kv_t = alter::map<hash_id, func_t>;
   kv_t kv_;

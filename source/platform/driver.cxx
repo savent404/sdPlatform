@@ -135,7 +135,7 @@ cJSON *driver::to_json() {
   if (runtime_) {
     cJSON_AddItemToObject(root, "runtime", runtime_->to_json());
   }
-  auto ipc_obj = entry::get_ipc_description();
+  auto ipc_obj = syscall::get_instance()->get_local_ipc();
   auto ipc_json = ipc_obj.to_json();
   cJSON_AddItemToObject(root, "ipc", ipc_json);
   to_json_(root);
