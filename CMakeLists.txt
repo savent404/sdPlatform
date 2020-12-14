@@ -14,7 +14,7 @@ else()
 endif(USE_TEST)
 
 if (${CMAKE_SYSTEM_PROCESSOR} STREQUAL arm)
-    set(sdp_src "${sd_src};source/arm32-embedded-sys.cxx")
+    set(sdp_src "${sd_src};source/libc.cxx")
     add_definitions("-D__PLATFORM_EMBEDDED__=1")
 else()
     add_definitions("-D__PLATFORM_EMBEDDED__=0")

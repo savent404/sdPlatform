@@ -1,16 +1,15 @@
 /**
  * @file arm32-embedded-sys.cxx
  * @author savent (savent_gate@outlook.com)
- * @brief for nonsys target
+ * @brief 针对裸机环境的部分libc, libstdc++实现
  * @version 0.1
  * @date 2020-11-19
  *
  * Copyright 2020 jrlc
  *
  */
-#include <stddef.h>
-
 #include <smempool.h>
+#include <stddef.h>
 
 extern "C" void* heap_alloc(size_t n);
 extern "C" void heap_free(void*);
@@ -159,12 +158,6 @@ extern "C" __attribute__((weak)) double strtod(const char* str, char** endptr) {
   if (signedResult == '-' && result != 0) result = -result;
   return result;
 }
-// extern "C" __attribute__((weak)) void* __dso_handle __attribute__((__visibility__("hidden"))) = nullptr;
-// extern "C" __attribute__((weak)) int __cxa_atexit(void (*)(void*), void*, void*) { return 0; }
-//
-// extern "C" __attribute__((weak)) int __aeabi_atexit(void* arg, void (*func)(void*), void* d) {
-// return __cxa_atexit(func, arg, d);
-// }
 
 #if __cplusplus < 201103L
 #error "placeholders.cc must be compiled with -std=gnu++0x"
@@ -206,6 +199,5 @@ namespace std _GLIBCXX_VISIBILITY(default) {
   extern const _Placeholder<28> _28{};
   extern const _Placeholder<29> _29{};
   }  // namespace placeholders
-  // namespace std_GLIBCXX_VISIBILITY(default)
   _GLIBCXX_END_NAMESPACE_VERSION
-}  // namespace std_GLIBCXX_VISIBILITY(default)
+} // namespace std_GLIBCXX_VISIBILITY(default)
