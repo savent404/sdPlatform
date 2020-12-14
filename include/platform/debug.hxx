@@ -13,6 +13,11 @@
 namespace platform {
 
 struct debug {
+  /**
+   * @brief 内部断言
+   * 
+   * @param val 
+   */
   static void assert(bool val) {
     while (!val) {
     }

@@ -1,7 +1,7 @@
 /**
  * @file bits.hxx
  * @author savent (savent_gate@outlook.com)
- * @brief
+ * @brief 提供位操作以及io操作
  * @version 0.1
  * @date 2020-11-26
  *

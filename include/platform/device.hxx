@@ -1,14 +1,13 @@
 /**
  * @file device.hxx
  * @author savent (savent_gate@outlook.com)
- * @brief
+ * @brief 描述设备
  * @version 0.1
  * @date 2020-11-17
  *
  * Copyright 2020 jrlc
  *
  */
-
 #pragma once
 
 #include <stddef.h>
@@ -19,12 +18,12 @@
 #include <platform/runtime.hxx>
 #include <platform/utils.hxx>
 
-/**
- * @brief platform API
- * @defgroup platform_api
- * @{
- */
 namespace platform {
+/**
+ * @brief 设备类
+ * @note 可将对外可见的数据序列化为json并上报给devmgr
+ * @note 对外不可见的数据通常存储在其私有变量 runtime_中，仅由驱动进程维护
+ */
 struct device {
  public:
   using device_id = int;
@@ -42,7 +41,6 @@ struct device {
 
   virtual cJSON* to_json();
   virtual void from_json(cJSON* obj);
-
   const char* to_json_str();
   void from_json_str(const char*);
 
@@ -61,13 +59,14 @@ struct device {
 
   runtime_ref get_runtime();
   void set_runtime(runtime_ptr ptr);
+
   parameters_ref get_config();
+
   device_id get_id();
   void set_id(device_id);
+
   driver_id get_bind_id();
   void set_bind_id(driver_id id);
-  // cJSON* gen_patch(cJSON* from);
-  // cJSON* apply_patch(cJSON* from);
 
  private:
   device_id id_;
@@ -75,6 +74,3 @@ struct device {
   parameters config_;
 };
 }  // namespace platform
-/**
- * @}
- */

@@ -1,7 +1,7 @@
 /**
  * @file entry.hxx
  * @author savent (savent_gate@outlook.com)
- * @brief entry of drivers
+ * @brief 提供驱动进程的启动方法
  * @version 0.1
  * @date 2020-11-23
  *
@@ -28,13 +28,28 @@ using func_entry_t = _func_entry_t;
 using driver_entry_t = _driver_entry_t;
 using driver_init_t = _driver_init_t;
 
+/**
+ * @brief 自启动函数入口
+ * 
+ * @param fn 函数指针 func_entry_t
+ * @param level 启动优先级， 0为最高优先级， 3为最低
+ * 
+ */
 #define func_entry(fn, level)                                         \
   static func_entry_t __func_entry_##level_##fn __attribute__((used)) \
       __attribute__((section(".initcall" #level ".init"))) = fn
+/**
+ * @brief 驱动进程初始化入口
+ * 
+ * @param fn 驱动进程初始化函数 driver_entry_t
+ * @param _name 驱动名称
+ * @param _compat compat字段
+ */
 #define driver_entry(fn, _name, _compat)                         \
   static driver_init_t __driver_entry_##fn __attribute__((used)) \
       __attribute__((section(".driverinit"))) = {.entry = (fn), .name = (_name), .compat = (_compat)}
 
+// 自启动函数入口
 #define func_entry_level_high(fn) func_entry(fn, 0)
 #define func_entry_level_default(fn) func_entry(fn, 1)
 #define func_entry_level_low(fn) func_entry(fn, 2)
@@ -61,6 +76,11 @@ struct entry {
     mx_channel_t* ch;
   };
 
+  /**
+   * @brief 获取外部进程与本进程（驱动进程）通讯的ipc句柄
+   * 
+   * @return const ipc_desc 
+   */
   static const ipc_desc get_ipc_description();
 };
 

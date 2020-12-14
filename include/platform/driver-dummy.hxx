@@ -13,11 +13,16 @@
 #include <platform-types.h>
 #include <string.h>
 
+#include <memory>
 #include <platform/driver.hxx>
 #include <platform/entry.hxx>
 
 namespace platform {
 
+/**
+ * @brief dummy驱动类型，用于序列号driver信息无实际的驱动功能
+ *
+ */
 struct driver_dummy : public driver {
  public:
   using driver_ptr = std::unique_ptr<driver_dummy>;
@@ -26,6 +31,11 @@ struct driver_dummy : public driver {
   driver_dummy() : driver({{"name", "dummy"}, {"compat", "dummy"}}, nullptr) {}
   ~driver_dummy() = default;
 
+  /**
+   * @brief 获取ipc通讯句柄
+   * 
+   * @return mx_channel_t* 
+   */
   mx_channel_t* get_ipc_remote_channel() { return ipc_desc_.ch; }
 
  protected:

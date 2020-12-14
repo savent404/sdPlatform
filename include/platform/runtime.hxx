@@ -1,7 +1,7 @@
 /**
  * @file runtime.hxx
  * @author savent (savent_gate@outlook.com)
- * @brief
+ * @brief 提供运行时参数管理方法
  * @version 0.1
  * @date 2020-11-17
  *

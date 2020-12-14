@@ -1,7 +1,7 @@
 /**
  * @file syscall.hxx
  * @author savent (savent_gate@outlook.com)
- * @brief
+ * @brief 提供内部系统调用方法
  * @version 0.1
  * @date 2020-11-20
  *
@@ -51,23 +51,84 @@ struct syscall {
   syscall() = default;
   ~syscall() = delete;
 
+  /**
+   * @brief 注册驱动调用
+   *
+   * @param func_name 驱动调用的名称, 如'open', 'close'
+   * @param func func_t
+   * @return true
+   * @return false
+   */
   bool add(string func_name, func_t func);
+  /**
+   * @brief 注销驱动调用
+   *
+   * @param func_name 驱动调用的名称, 如'open', 'close'
+   * @return true
+   * @return false
+   */
   bool del(string func_name);
 
+  /**
+   * @brief 计算驱动调用的hash值
+   *
+   * @param func_name 驱动调用的名称, 如'open', 'close'
+   * @return hash_id
+   */
   static hash_id hash(const string& func_name) { return consthash::crc32(func_name.data(), func_name.length()); }
   constexpr static hash_id hash(const char* func_name) { return consthash::crc32(func_name, _strlen(func_name)); }
 
+  /**
+   * @brief 调用驱动调用
+   *
+   * @param id 驱动调用的hash值
+   * @param buf 消息
+   * @param len 消息长度
+   * @param out 返回的消息 nullptr则不需要返回
+   * @return int
+   */
   int call(hash_id id, void* buf, size_t len, msg* out = nullptr) const;
+  /**
+   * @brief 调用驱动调用
+   *
+   * @param buf 消息(已包含驱动调用的hash值)
+   * @param len 消息长度
+   * @param out 返回的消息 nullptr则不需要返回
+   * @return int
+   */
   int call(void* buf, size_t len, msg* out = nullptr) const;
 
   template <typename... Args>
   int call_p(hash_id id, Args&... args) const;
 
+  /**
+   * @brief 获取syscall的单实例
+   *
+   * @return syscall*
+   */
   static syscall* get_instance();
 
+  /**
+   * @brief 提供本地方法的ipc handle的json版本
+   * 
+   * @return cJSON* 
+   */
   cJSON* get_ipc_description();
+  /**
+   * @brief 通过json字符串设置本地方法的ipc handle
+   * 
+   */
   void set_ipc_description(const void*);
 
+  /**
+   * @brief 打包消息为msg_buf_t
+   * 
+   * @tparam Args
+   * @param[out] out_size 打包数据的大小
+   * @param cmd ipc 调用 id
+   * @param args 参数信息
+   * @return msg_buf_t 
+   */
   template <typename... Args>
   static msg_buf_t package_msg(size_t* out_size, hash_id cmd, Args... args) {
     auto buf = new _msg_buf_t;
@@ -75,6 +136,14 @@ struct syscall {
     buf->set(res);
     return std::unique_ptr<_msg_buf_t>(buf);
   }
+  /**
+   * @brief 打包消息为msg_buf_t
+   * 
+   * @tparam Args 
+   * @param args
+   * @note args中第一个默认为 cmd 参数
+   * @return msg_buf_t 
+   */
   template <typename... Args>
   static msg_buf_t package_msg(Args... args) {
     auto buf = new _msg_buf_t;

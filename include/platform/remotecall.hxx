@@ -1,7 +1,7 @@
 /**
  * @file remotecall.hxx
  * @author savent (savent_gate@outlook.com)
- * @brief
+ * @brief 远程调用驱动进程的函数
  * @version 0.1
  * @date 2020-12-07
  *
