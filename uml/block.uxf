@@ -1,117 +1,38 @@
-<diagram program="umletino" version="14.4.0-SNAPSHOT"><zoom_level>10</zoom_level><help_text>Space for diagram notes</help_text><element><id>UMLClass</id><coordinates><x>400</x><y>278</y><w>390</w><h>300</h></coordinates><panel_attributes>&lt;&lt; Abstract &gt;&gt;
-driver
+<diagram program="umletino" version="14.4.0-SNAPSHOT"><zoom_level>10</zoom_level><help_text>Space for diagram notes</help_text><element><id>UMLClass</id><coordinates><x>410</x><y>430</y><w>100</w><h>30</h></coordinates><panel_attributes>/driver/
+</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>500</x><y>520</y><w>100</w><h>30</h></coordinates><panel_attributes>driver-dummy</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>500</x><y>450</y><w>70</w><h>90</h></coordinates><panel_attributes>lt=&lt;&lt;-
+实现</panel_attributes><additional_attributes>10;10;50;70</additional_attributes></element><element><id>UMLClass</id><coordinates><x>380</x><y>580</y><w>100</w><h>30</h></coordinates><panel_attributes>uart</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>420</x><y>450</y><w>50</w><h>150</h></coordinates><panel_attributes>lt=&lt;&lt;-
+实现</panel_attributes><additional_attributes>10;10;10;130</additional_attributes></element><element><id>UMLClass</id><coordinates><x>230</x><y>450</y><w>100</w><h>30</h></coordinates><panel_attributes>parameters</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>230</x><y>410</y><w>100</w><h>30</h></coordinates><panel_attributes>runtime</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>320</x><y>430</y><w>110</w><h>50</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-
+包含</panel_attributes><additional_attributes>90;20;10;30</additional_attributes></element><element><id>Relation</id><coordinates><x>320</x><y>410</y><w>110</w><h>50</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-
+包含</panel_attributes><additional_attributes>90;30;10;10</additional_attributes></element><element><id>UMLClass</id><coordinates><x>610</x><y>430</y><w>100</w><h>30</h></coordinates><panel_attributes>device</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>560</x><y>450</y><w>90</w><h>90</h></coordinates><panel_attributes>lt=&lt;..
+调用</panel_attributes><additional_attributes>10;70;70;10</additional_attributes></element><element><id>UMLClass</id><coordinates><x>180</x><y>580</y><w>100</w><h>30</h></coordinates><panel_attributes>device*</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>270</x><y>570</y><w>130</w><h>50</h></coordinates><panel_attributes>lt=-
+m1=n
+m2=1
+&lt; 管理</panel_attributes><additional_attributes>10;20;110;20</additional_attributes></element><element><id>UMLClass</id><coordinates><x>40</x><y>560</y><w>100</w><h>30</h></coordinates><panel_attributes>runtime</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>40</x><y>600</y><w>100</w><h>30</h></coordinates><panel_attributes>parameters</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>130</x><y>580</y><w>70</w><h>50</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-
+</panel_attributes><additional_attributes>50;20;10;30</additional_attributes></element><element><id>Relation</id><coordinates><x>130</x><y>560</y><w>70</w><h>50</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-
+</panel_attributes><additional_attributes>50;30;10;10</additional_attributes></element><element><id>UMLClass</id><coordinates><x>740</x><y>410</y><w>100</w><h>30</h></coordinates><panel_attributes>runtime</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>700</x><y>410</y><w>60</w><h>50</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-
+</panel_attributes><additional_attributes>10;30;40;10</additional_attributes></element><element><id>Relation</id><coordinates><x>700</x><y>430</y><w>60</w><h>50</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-
+</panel_attributes><additional_attributes>10;20;40;30</additional_attributes></element><element><id>UMLClass</id><coordinates><x>740</x><y>450</y><w>100</w><h>30</h></coordinates><panel_attributes>parameters</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>610</x><y>160</y><w>230</w><h>170</h></coordinates><panel_attributes>&lt;&lt; interface &gt;&gt;
+一致性API
 --
-+ driver(...)
-+ ~driver()
-+ open(device_id, int flags):int
-+ close(device_id):int
-+ transfer(device_id, const char *, size_t, char *, size_t):int
-+ read(device_id, char *, size_t):int
-+ write(device_id, const char *, size_t):int
-+ ioctl(device_id, void *in_out, size_t *out, size_t maxium_len):int
-+ bind(device_id, driver_id)
-+ unbind(device_id):int
-+ fromJson(const char *): driver *
-+ toJson(driver *): const char *
++ dev_bind(int dev_id, int drv_id) : int
++ dev_unbind(int dev_id) : int
++ dev_open(int dev_id, int flags) : int
++ dev_close(int dev_id) : int
++ dev_transfer(...) : int
++ dev_write(int dev_id, ....) : int
++ dev_read(int dev_id, ...) : int
++ dev_ioctl(int dev_id, ...) : int</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>50</x><y>160</y><w>380</w><h>170</h></coordinates><panel_attributes>&lt;&lt; interface &gt;&gt;
+devmgr API
 --
-# conf: parameters
-# runtime: driver_runtime
-# api: internal_api
---
-- binded_device: device *</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>960</x><y>58</y><w>380</w><h>170</h></coordinates><panel_attributes>&lt;&lt; Interface &gt;&gt;
-f_ops
---
-+ bind(device_id, driver_id)
---
-+ open(device_id, int flags):int
-+ close(device_id):int
-+ transfer(device_id, const char *, size_t, char *, size_t):int
-+ read(device_id, char *, size_t):int
-+ write(device_id, const char *, size_t):int
-+ ioctl(device_id, void *in_out, size_t *out, size_t maxium_len):int
-+ unbind(device_id):int</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>1050</x><y>278</y><w>210</w><h>260</h></coordinates><panel_attributes>&lt;&lt; Abstract &gt;&gt;
-device
---
-+ open()
-+ close()
-+ transfer()
-+ write()
-+ read()
-+ ioctl()
-+ bind()
-+ fromJson(const char*): device *
-+ toJson(device *): const char *
---
-# binded_driver_id : driver_id
-# conf: device_conf
-# data: device_data
---
-- binded_driver_instance: driver *
-</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>1140</x><y>218</y><w>30</w><h>80</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;-</panel_attributes><additional_attributes>10;10;10;60</additional_attributes></element><element><id>UMLClass</id><coordinates><x>400</x><y>58</y><w>380</w><h>170</h></coordinates><panel_attributes>&lt;&lt; Interface &gt;&gt;
-driver_ops
---
-+ bind(device_id, driver_id)
---
-+ open(device_id, int flags):int
-+ close(device_id):int
-+ transfer(device_id, const char *, size_t, char *, size_t):int
-+ read(device_id, char *, size_t):int
-+ write(device_id, const char *, size_t):int
-+ ioctl(device_id, void *in_out, size_t *out, size_t maxium_len):int
-+ unbind(device_id):int</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>580</x><y>218</y><w>90</w><h>80</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;-
-implement</panel_attributes><additional_attributes>10;10;10;60</additional_attributes></element><element><id>Relation</id><coordinates><x>780</x><y>388</y><w>290</w><h>40</h></coordinates><panel_attributes>lt=&lt;&lt;-
-driver_id2instance</panel_attributes><additional_attributes>10;20;270;20</additional_attributes></element><element><id>UMLClass</id><coordinates><x>1450</x><y>58</y><w>280</w><h>110</h></coordinates><panel_attributes>&lt;&lt;single&gt;&gt;
-devmanager
---
-+ register_device(const char *json): bool
-+ register_driver(const char *json): bool
-+ unregister_device(const char *json): bool
-+ unregister_driver(const char *json): bool</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>50</x><y>258</y><w>230</w><h>120</h></coordinates><panel_attributes>&lt;&lt;single&gt;&gt;
-syscall
---
-+ register_syscall(int id, callback)
-+ unregister_syscall(int id)
---
-# handle()
---
-- callbacks</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>60</x><y>438</y><w>230</w><h>140</h></coordinates><panel_attributes>&lt;&lt;Abstrace&gt;&gt;
-parameters
---
-+ driver_env(std::initialzer_list&lt;iter&gt;)
-+ vister(const char * key)
-+ addKey(const char *key)
-+ toJson() : const char *
-+ fromJson(const char *)
---
-- map
-
-
-</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>280</x><y>488</y><w>140</w><h>40</h></coordinates><panel_attributes>lt=&lt;.
-&lt;&lt;instanceOf&gt;&gt;</panel_attributes><additional_attributes>120;20;10;20</additional_attributes></element><element><id>UMLClass</id><coordinates><x>400</x><y>646</y><w>390</w><h>270</h></coordinates><panel_attributes>&lt;&lt; Abstract &gt;&gt;
-driver_specific_platform
---
-+ open(device_id, int flags):int
-+ close(device_id):int
-+ transfer(device_id, const char *, size_t, char *, size_t):int
-+ read(device_id, char *, size_t):int
-+ write(device_id, const char *, size_t):int
-+ ioctl(device_id, void *in_out, size_t *out, size_t maxium_len):int
-+ bind(device_id, driver_id)
-+ unbind(device_id):int
-+ fromJson(const char *): driver *
-+ toJson(driver *): const char *
---
-# conf: parameters
-# runtime: driver_runtime
-# api: internal_api
---
-- binded_device: device *</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>0</x><y>818</y><w>280</w><h>110</h></coordinates><panel_attributes>&lt;&lt; Interface&gt;&gt;
-driver_specific_platform_api
---
-+ setup(driver_runtime*, device* ): int
-+ teardown(driver_runtime *, device_runtime*)
-+ transfer...
-....
-</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>270</x><y>858</y><w>150</w><h>40</h></coordinates><panel_attributes>lt=&lt;.
-&lt;&lt;instanceOf&gt;&gt;</panel_attributes><additional_attributes>130;20;10;20</additional_attributes></element><element><id>Relation</id><coordinates><x>580</x><y>570</y><w>90</w><h>90</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;-
-implement</panel_attributes><additional_attributes>10;10;10;70</additional_attributes></element><element><id>Relation</id><coordinates><x>276</x><y>317</y><w>140</w><h>40</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>10;10;120;11</additional_attributes></element><element><id>Relation</id><coordinates><x>271</x><y>334</y><w>150</w><h>40</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>10;10;130;11</additional_attributes></element></diagram>
++ devmgr_create_device(const char *json_str) : int
++ devmgr_update_device(int dev_id, const char *json_str) : int
++ devmgr_query_device(int dev_id) : int
++ devmgr_remove_device(int dev_id) : int
++ devmgr_create_driver(const char *json_str) : int
++ devmgr_update_driver(int dev_id, const char *json_str) : int
++ devmgr_query_driver(int dev_id) : int
++ devmgr_remove_driver(int dev_id) : int</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>420</x><y>240</y><w>210</w><h>40</h></coordinates><panel_attributes>lt=&lt;..
+调用</panel_attributes><additional_attributes>10;20;190;20</additional_attributes></element><element><id>Relation</id><coordinates><x>400</x><y>320</y><w>80</w><h>130</h></coordinates><panel_attributes>lt=&lt;..
+调用</panel_attributes><additional_attributes>10;10;60;110</additional_attributes></element><element><id>Relation</id><coordinates><x>500</x><y>320</y><w>160</w><h>130</h></coordinates><panel_attributes>lt=&lt;..
+调用</panel_attributes><additional_attributes>10;110;140;10</additional_attributes></element><element><id>Relation</id><coordinates><x>660</x><y>320</y><w>60</w><h>130</h></coordinates><panel_attributes>lt=&lt;..
+调用</panel_attributes><additional_attributes>10;110;30;10</additional_attributes></element></diagram>
