@@ -1,17 +1,42 @@
-<diagram program="umletino" version="14.4.0-SNAPSHOT"><zoom_level>10</zoom_level><help_text>Space for diagram notes</help_text><element><id>UMLClass</id><coordinates><x>410</x><y>430</y><w>100</w><h>30</h></coordinates><panel_attributes>/driver/
-</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>500</x><y>520</y><w>100</w><h>30</h></coordinates><panel_attributes>driver-dummy</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>500</x><y>450</y><w>70</w><h>90</h></coordinates><panel_attributes>lt=&lt;&lt;-
-实现</panel_attributes><additional_attributes>10;10;50;70</additional_attributes></element><element><id>UMLClass</id><coordinates><x>380</x><y>580</y><w>100</w><h>30</h></coordinates><panel_attributes>uart</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>420</x><y>450</y><w>50</w><h>150</h></coordinates><panel_attributes>lt=&lt;&lt;-
-实现</panel_attributes><additional_attributes>10;10;10;130</additional_attributes></element><element><id>UMLClass</id><coordinates><x>230</x><y>450</y><w>100</w><h>30</h></coordinates><panel_attributes>parameters</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>230</x><y>410</y><w>100</w><h>30</h></coordinates><panel_attributes>runtime</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>320</x><y>430</y><w>110</w><h>50</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-
-包含</panel_attributes><additional_attributes>90;20;10;30</additional_attributes></element><element><id>Relation</id><coordinates><x>320</x><y>410</y><w>110</w><h>50</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-
-包含</panel_attributes><additional_attributes>90;30;10;10</additional_attributes></element><element><id>UMLClass</id><coordinates><x>610</x><y>430</y><w>100</w><h>30</h></coordinates><panel_attributes>device</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>560</x><y>450</y><w>90</w><h>90</h></coordinates><panel_attributes>lt=&lt;..
-调用</panel_attributes><additional_attributes>10;70;70;10</additional_attributes></element><element><id>UMLClass</id><coordinates><x>180</x><y>580</y><w>100</w><h>30</h></coordinates><panel_attributes>device*</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>270</x><y>570</y><w>130</w><h>50</h></coordinates><panel_attributes>lt=-
+<diagram program="umletino" version="14.4.0-SNAPSHOT"><zoom_level>10</zoom_level><help_text>Space for diagram notes</help_text><element><id>UMLClass</id><coordinates><x>524</x><y>982</y><w>100</w><h>30</h></coordinates><panel_attributes>/driver/
+
+bg=red
+layer=1</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>774</x><y>902</y><w>100</w><h>30</h></coordinates><panel_attributes>driver::dummy
+bg=green
+layer=3
+group=1</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>594</x><y>912</y><w>200</w><h>90</h></coordinates><panel_attributes>lt=&lt;&lt;-
+实现</panel_attributes><additional_attributes>10;70;10;10;180;10</additional_attributes></element><element><id>UMLClass</id><coordinates><x>524</x><y>1062</y><w>100</w><h>30</h></coordinates><panel_attributes>driver::uart
+bg=green
+layer=1</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>564</x><y>1002</y><w>50</w><h>80</h></coordinates><panel_attributes>lt=&lt;&lt;-
+实现</panel_attributes><additional_attributes>10;10;10;60</additional_attributes></element><element><id>UMLClass</id><coordinates><x>384</x><y>1002</y><w>100</w><h>30</h></coordinates><panel_attributes>runtime
+bg=red
+layer=1</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>384</x><y>962</y><w>100</w><h>30</h></coordinates><panel_attributes>parameter
+layer=1</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>474</x><y>982</y><w>70</w><h>50</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-
+</panel_attributes><additional_attributes>50;20;10;30</additional_attributes></element><element><id>Relation</id><coordinates><x>474</x><y>962</y><w>70</w><h>50</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-
+</panel_attributes><additional_attributes>50;30;10;10</additional_attributes></element><element><id>UMLClass</id><coordinates><x>774</x><y>842</y><w>100</w><h>30</h></coordinates><panel_attributes>device
+
+layer=3
+group=1</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>814</x><y>862</y><w>40</w><h>60</h></coordinates><panel_attributes>lt=&lt;..
+③</panel_attributes><additional_attributes>10;40;10;10</additional_attributes></element><element><id>UMLClass</id><coordinates><x>324</x><y>1062</y><w>100</w><h>30</h></coordinates><panel_attributes>type=actclass
+device*
+layer=1</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>414</x><y>1052</y><w>130</w><h>50</h></coordinates><panel_attributes>lt=-
 m1=n
 m2=1
-&lt; 管理</panel_attributes><additional_attributes>10;20;110;20</additional_attributes></element><element><id>UMLClass</id><coordinates><x>40</x><y>560</y><w>100</w><h>30</h></coordinates><panel_attributes>runtime</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>40</x><y>600</y><w>100</w><h>30</h></coordinates><panel_attributes>parameters</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>130</x><y>580</y><w>70</w><h>50</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-
-</panel_attributes><additional_attributes>50;20;10;30</additional_attributes></element><element><id>Relation</id><coordinates><x>130</x><y>560</y><w>70</w><h>50</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-
-</panel_attributes><additional_attributes>50;30;10;10</additional_attributes></element><element><id>UMLClass</id><coordinates><x>740</x><y>410</y><w>100</w><h>30</h></coordinates><panel_attributes>runtime</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>700</x><y>410</y><w>60</w><h>50</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-
-</panel_attributes><additional_attributes>10;30;40;10</additional_attributes></element><element><id>Relation</id><coordinates><x>700</x><y>430</y><w>60</w><h>50</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-
-</panel_attributes><additional_attributes>10;20;40;30</additional_attributes></element><element><id>UMLClass</id><coordinates><x>740</x><y>450</y><w>100</w><h>30</h></coordinates><panel_attributes>parameters</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>610</x><y>160</y><w>230</w><h>170</h></coordinates><panel_attributes>&lt;&lt; interface &gt;&gt;
+&lt; 管理</panel_attributes><additional_attributes>10;20;110;20</additional_attributes></element><element><id>UMLClass</id><coordinates><x>184</x><y>1042</y><w>100</w><h>30</h></coordinates><panel_attributes>parameters
+layer=1</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>184</x><y>1082</y><w>100</w><h>30</h></coordinates><panel_attributes>uart-runtime
+bg=green
+layer=1</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>274</x><y>1072</y><w>70</w><h>50</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-
+</panel_attributes><additional_attributes>50;10;10;30</additional_attributes></element><element><id>Relation</id><coordinates><x>274</x><y>1042</y><w>70</w><h>50</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-
+</panel_attributes><additional_attributes>50;30;10;10</additional_attributes></element><element><id>UMLClass</id><coordinates><x>904</x><y>822</y><w>100</w><h>30</h></coordinates><panel_attributes>runtime
+
+layer=3
+group=1</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>864</x><y>822</y><w>60</w><h>50</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-
+</panel_attributes><additional_attributes>10;30;40;10</additional_attributes></element><element><id>Relation</id><coordinates><x>864</x><y>842</y><w>60</w><h>50</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-
+</panel_attributes><additional_attributes>10;20;40;30</additional_attributes></element><element><id>UMLClass</id><coordinates><x>904</x><y>862</y><w>100</w><h>30</h></coordinates><panel_attributes>parameters
+
+layer=3
+group=1
+</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>724</x><y>632</y><w>230</w><h>170</h></coordinates><panel_attributes>&lt;&lt; interface &gt;&gt;
 一致性API
 --
 + dev_bind(int dev_id, int drv_id) : int
@@ -21,7 +46,10 @@ m2=1
 + dev_transfer(...) : int
 + dev_write(int dev_id, ....) : int
 + dev_read(int dev_id, ...) : int
-+ dev_ioctl(int dev_id, ...) : int</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>50</x><y>160</y><w>380</w><h>170</h></coordinates><panel_attributes>&lt;&lt; interface &gt;&gt;
++ dev_ioctl(int dev_id, ...) : int
+
+layer=3
+group=1</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>134</x><y>712</y><w>380</w><h>170</h></coordinates><panel_attributes>&lt;&lt; interface &gt;&gt;
 devmgr API
 --
 + devmgr_create_device(const char *json_str) : int
@@ -31,8 +59,83 @@ devmgr API
 + devmgr_create_driver(const char *json_str) : int
 + devmgr_update_driver(int dev_id, const char *json_str) : int
 + devmgr_query_driver(int dev_id) : int
-+ devmgr_remove_driver(int dev_id) : int</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>420</x><y>240</y><w>210</w><h>40</h></coordinates><panel_attributes>lt=&lt;..
-调用</panel_attributes><additional_attributes>10;20;190;20</additional_attributes></element><element><id>Relation</id><coordinates><x>400</x><y>320</y><w>80</w><h>130</h></coordinates><panel_attributes>lt=&lt;..
-调用</panel_attributes><additional_attributes>10;10;60;110</additional_attributes></element><element><id>Relation</id><coordinates><x>500</x><y>320</y><w>160</w><h>130</h></coordinates><panel_attributes>lt=&lt;..
-调用</panel_attributes><additional_attributes>10;110;140;10</additional_attributes></element><element><id>Relation</id><coordinates><x>660</x><y>320</y><w>60</w><h>130</h></coordinates><panel_attributes>lt=&lt;..
-调用</panel_attributes><additional_attributes>10;110;30;10</additional_attributes></element></diagram>
++ devmgr_remove_driver(int dev_id) : int
+layer=1
+group=3</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>504</x><y>712</y><w>240</w><h>40</h></coordinates><panel_attributes>lt=&lt;..
+①</panel_attributes><additional_attributes>10;20;220;18</additional_attributes></element><element><id>Relation</id><coordinates><x>504</x><y>842</y><w>90</w><h>160</h></coordinates><panel_attributes>lt=&lt;..
+
+</panel_attributes><additional_attributes>10;20;70;20;70;140</additional_attributes></element><element><id>Relation</id><coordinates><x>814</x><y>792</y><w>40</w><h>70</h></coordinates><panel_attributes>lt=&lt;..
+②</panel_attributes><additional_attributes>10;50;10;10</additional_attributes></element><element><id>UMLClass</id><coordinates><x>524</x><y>1122</y><w>100</w><h>40</h></coordinates><panel_attributes>&lt;&lt; interface &gt;&gt;
+uart_api
+layer=1</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>564</x><y>1082</y><w>50</w><h>60</h></coordinates><panel_attributes>lt=&lt;..
+调用</panel_attributes><additional_attributes>10;40;10;10</additional_attributes></element><element><id>UMLClass</id><coordinates><x>524</x><y>1202</y><w>100</w><h>30</h></coordinates><panel_attributes>sunxi-uart-t3
+layer=1
+</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>564</x><y>1152</y><w>50</w><h>70</h></coordinates><panel_attributes>lt=&lt;&lt;-
+实现</panel_attributes><additional_attributes>10;10;10;50</additional_attributes></element><element><id>Relation</id><coordinates><x>294</x><y>1202</y><w>250</w><h>40</h></coordinates><panel_attributes>lt=&lt;..
+调用</panel_attributes><additional_attributes>10;20;230;20</additional_attributes></element><element><id>UMLClass</id><coordinates><x>174</x><y>1212</y><w>130</w><h>30</h></coordinates><panel_attributes>sunxi-uart-runtime
+bg=green
+layer=1</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLActor</id><coordinates><x>134</x><y>120</y><w>60</w><h>110</h></coordinates><panel_attributes>用户</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLActor</id><coordinates><x>136</x><y>235</y><w>60</w><h>110</h></coordinates><panel_attributes>devmgr</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLUseCase</id><coordinates><x>466</x><y>185</y><w>120</w><h>40</h></coordinates><panel_attributes>查询驱动信息</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>356</x><y>175</y><w>130</w><h>50</h></coordinates><panel_attributes>lt=.&gt;
+&lt;&lt;includes&gt;&gt;</panel_attributes><additional_attributes>10;10;110;30</additional_attributes></element><element><id>UMLUseCase</id><coordinates><x>246</x><y>255</y><w>120</w><h>40</h></coordinates><panel_attributes>提供查询服务</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>356</x><y>145</y><w>130</w><h>60</h></coordinates><panel_attributes>lt=.&gt;
+&lt;&lt;includes&gt;&gt;</panel_attributes><additional_attributes>10;40;110;10</additional_attributes></element><element><id>UMLUseCase</id><coordinates><x>466</x><y>135</y><w>120</w><h>40</h></coordinates><panel_attributes>查询设备信息</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLUseCase</id><coordinates><x>246</x><y>165</y><w>120</w><h>40</h></coordinates><panel_attributes>打开串口</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>166</x><y>155</y><w>100</w><h>50</h></coordinates><panel_attributes>lt=-&gt;&gt;</panel_attributes><additional_attributes>10;10;80;30</additional_attributes></element><element><id>UMLUseCase</id><coordinates><x>466</x><y>235</y><w>120</w><h>40</h></coordinates><panel_attributes>发送请求</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>356</x><y>175</y><w>130</w><h>100</h></coordinates><panel_attributes>lt=.&gt;
+&lt;&lt;includes&gt;&gt;</panel_attributes><additional_attributes>10;10;110;80</additional_attributes></element><element><id>UMLActor</id><coordinates><x>136</x><y>345</y><w>60</w><h>110</h></coordinates><panel_attributes>驱动进程</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLUseCase</id><coordinates><x>246</x><y>345</y><w>120</w><h>40</h></coordinates><panel_attributes>上传驱动信息</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLUseCase</id><coordinates><x>246</x><y>395</y><w>120</w><h>40</h></coordinates><panel_attributes>响应请求</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>186</x><y>355</y><w>80</w><h>50</h></coordinates><panel_attributes>lt=-&gt;&gt;</panel_attributes><additional_attributes>10;30;60;10</additional_attributes></element><element><id>Relation</id><coordinates><x>186</x><y>375</y><w>80</w><h>60</h></coordinates><panel_attributes>lt=-&gt;&gt;</panel_attributes><additional_attributes>10;10;60;40</additional_attributes></element><element><id>UMLSequenceAllInOne</id><coordinates><x>724</x><y>0</y><w>1530</w><h>480</h></coordinates><panel_attributes>title=打开串口
+obj=用户~a 
+obj=设备管理器~b 
+obj=驱动进程~c
+
+on=a;
+on=b; a-&gt;b: 查询device_id对应的device信息
+off=b; b-&gt;a;
+
+a-&gt;a+: 根据driver_id查询驱动详细信息
+on=a;
+on=b; a-&gt;b: 查询driver_id对应的driver信息
+off=a, b; b-&gt;a;
+
+a-&gt;a+: 查询驱动进程的ipc句柄
+on=a;
+on=c; a-&gt;c: 请求打开串口
+c-&gt;c+ : 响应请求
+off=a, c; c-&gt;a;
+
+</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>774</x><y>1060</y><w>100</w><h>30</h></coordinates><panel_attributes>syscall
+layer=1</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>614</x><y>1045</y><w>180</w><h>40</h></coordinates><panel_attributes>lt=&lt;..
+注册</panel_attributes><additional_attributes>160;20;10;20</additional_attributes></element><element><id>Relation</id><coordinates><x>614</x><y>1064</y><w>180</w><h>40</h></coordinates><panel_attributes>lt=&lt;..
+调用</panel_attributes><additional_attributes>10;20;160;20</additional_attributes></element><element><id>UMLPackage</id><coordinates><x>934</x><y>940</y><w>140</w><h>70</h></coordinates><panel_attributes>ipc调用(发送)
+--
++ funcid
++ Args...
+bg=blue
+
+group=2</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLPackage</id><coordinates><x>934</x><y>1014</y><w>140</w><h>50</h></coordinates><panel_attributes>ipc调用（接收)
+--
++ Args...
+bg=blue
+
+group=2</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLNote</id><coordinates><x>639</x><y>1150</y><w>280</w><h>110</h></coordinates><panel_attributes>调用
+
+继承/实现
+
+包含/拥有
+
+layer=1
+</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>699</x><y>1145</y><w>90</w><h>40</h></coordinates><panel_attributes>lt=&lt;..
+调用</panel_attributes><additional_attributes>10;20;70;20</additional_attributes></element><element><id>Relation</id><coordinates><x>699</x><y>1175</y><w>90</w><h>40</h></coordinates><panel_attributes>lt=&lt;&lt;-
+实现</panel_attributes><additional_attributes>10;20;70;20</additional_attributes></element><element><id>Relation</id><coordinates><x>699</x><y>1205</y><w>90</w><h>40</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-
+</panel_attributes><additional_attributes>10;20;70;20</additional_attributes></element><element><id>UMLClass</id><coordinates><x>799</x><y>1159</y><w>100</w><h>30</h></coordinates><panel_attributes>基类
+layer=1
+bg=red</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>799</x><y>1205</y><w>100</w><h>30</h></coordinates><panel_attributes>子类
+layer=1
+bg=green</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>709</x><y>600</y><w>310</w><h>340</h></coordinates><panel_attributes>用户进程
+bg=blue
+layer=0
+
+</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>809</x><y>916</y><w>90</w><h>160</h></coordinates><panel_attributes>lt=&lt;..
+④ Ipc通讯</panel_attributes><additional_attributes>10;140;10;17</additional_attributes></element><element><id>UMLClass</id><coordinates><x>104</x><y>670</y><w>440</w><h>230</h></coordinates><panel_attributes>devmgr进程
+bg=gray
+layer=0
+group=3</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>169</x><y>943</y><w>760</w><h>330</h></coordinates><panel_attributes>驱动进程
+bg=#005500
+layer=0</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>176</x><y>260</y><w>90</w><h>30</h></coordinates><panel_attributes>lt=-&gt;&gt;</panel_attributes><additional_attributes>10;10;70;10</additional_attributes></element><element><id>Relation</id><coordinates><x>270</x><y>1008</y><w>140</w><h>100</h></coordinates><panel_attributes>lt=&lt;&lt;-
+继承</panel_attributes><additional_attributes>120;10;10;80</additional_attributes></element><element><id>Relation</id><coordinates><x>200</x><y>1098</y><w>30</w><h>130</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-
+</panel_attributes><additional_attributes>10;10;10;110</additional_attributes></element><element><id>Relation</id><coordinates><x>280</x><y>1018</y><w>190</w><h>210</h></coordinates><panel_attributes>lt=&lt;&lt;-
+继承</panel_attributes><additional_attributes>150;10;150;150;10;190</additional_attributes></element></diagram>
