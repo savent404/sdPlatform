@@ -175,31 +175,13 @@ struct internal_query {
   }
 };
 
-/**
- * @brief 生成函数的hash id
- *
- * @param method 调用方法的名称(与注册时保持一致即可, 如'open', 'close'等)
- * @param driver_name 驱动名称，用于区分各个驱动
- * @return hash_id
- */
-static auto gen_hash(const char *method, const char *driver_name) {
-  platform::alter::string s;
-  s.append(driver_name);
-  s.append("-");
-  s.append(method);
-  return syscall::hash(s);
-}
-
 extern "C" {
 
 int dev_bind(int device_id, int driver_id) {
   internal_query::driver_map_iter iter;
   int res = internal_query::search_driver(driver_id, &iter);
   if (res) return res;
-  auto hash = gen_hash("bind", iter->second->get_name());
-  msg msgbuf = msg_wrapper::package(hash, device_id);
-  platform::rcall_client client(iter->second->get_ipc_remote_channel());
-  return client._call(0, msgbuf.get(), msgbuf.size(), nullptr, nullptr);
+  return iter->second->dev_bind(device_id, driver_id);
 }
 
 int dev_unbind(int device_id) {
@@ -208,11 +190,8 @@ int dev_unbind(int device_id) {
   internal_query::driver_map_iter iter;
   int res = internal_query::search_driver(driver_id, &iter);
   if (res) return res;
-  internal_query::update_device_info(device_id);
-  auto hash = gen_hash("unbind", iter->second->get_name());
-  auto msgbuf = msg_wrapper::package(hash, device_id);
-  platform::rcall_client client(iter->second->get_ipc_remote_channel());
-  return client._call(0, msgbuf.get(), msgbuf.size(), nullptr, nullptr);
+  // internal_query::update_device_info(device_id);
+  return iter->second->dev_unbind(device_id);
 }
 
 int dev_open(int device_id, int flags) {
@@ -220,10 +199,7 @@ int dev_open(int device_id, int flags) {
   internal_query::driver_map_iter iter;
   int res = internal_query::search_driver(driver_id, &iter);
   if (res) return res;
-  auto hash = gen_hash("open", iter->second->get_name());
-  auto msgbuf = msg_wrapper::package(hash, device_id, flags);
-  platform::rcall_client client(iter->second->get_ipc_remote_channel());
-  return client._call(0, msgbuf.get(), msgbuf.size(), nullptr, nullptr);
+  return iter->second->dev_open(device_id, flags);
 }
 
 int dev_close(int device_id) {
@@ -231,10 +207,7 @@ int dev_close(int device_id) {
   internal_query::driver_map_iter iter;
   int res = internal_query::search_driver(driver_id, &iter);
   if (res) return res;
-  auto hash = gen_hash("close", iter->second->get_name());
-  auto msgbuf = msg_wrapper::package(hash, device_id, driver_id);
-  platform::rcall_client client(iter->second->get_ipc_remote_channel());
-  return client._call(0, msgbuf.get(), msgbuf.size(), nullptr, nullptr);
+  return iter->second->dev_close(device_id);
 }
 
 int dev_transfer(int device_id, const void *in, size_t in_len, void *out, size_t out_len) {
@@ -242,34 +215,21 @@ int dev_transfer(int device_id, const void *in, size_t in_len, void *out, size_t
   internal_query::driver_map_iter iter;
   int res = internal_query::search_driver(driver_id, &iter);
   if (res) return res;
-  auto hash = gen_hash("transfer", iter->second->get_name());
-  msg_ref refmsg(out, out_len);
-  auto msgbuf = msg_wrapper::package(hash, device_id, in, in_len, &refmsg);
-  platform::rcall_client client(iter->second->get_ipc_remote_channel());
-  size_t sz = refmsg.size();
-  return client._call(0, msgbuf.get(), msgbuf.size(), refmsg.get(), &sz);
+  return iter->second->dev_transfer(device_id, in, in_len, out, out_len);
 }
 int dev_write(int device_id, const void *in, size_t len) {
   int driver_id = internal_query::get_driver_id(device_id);
   internal_query::driver_map_iter iter;
   int res = internal_query::search_driver(driver_id, &iter);
   if (res) return res;
-  auto hash = gen_hash("write", iter->second->get_name());
-  auto msgbuf = msg_wrapper::package(hash, device_id, in, len);
-  platform::rcall_client client(iter->second->get_ipc_remote_channel());
-  return client._call(0, msgbuf.get(), msgbuf.size(), nullptr, nullptr);
+  return iter->second->dev_write(device_id, in, len);
 }
 int dev_read(int device_id, void *out, size_t len) {
   int driver_id = internal_query::get_driver_id(device_id);
   internal_query::driver_map_iter iter;
   int res = internal_query::search_driver(driver_id, &iter);
   if (res) return res;
-  auto hash = gen_hash("read", iter->second->get_name());
-  msg_ref refmsg(out, len);
-  auto msgbuf = msg_wrapper::package(hash, device_id, &refmsg);
-  platform::rcall_client client(iter->second->get_ipc_remote_channel());
-  size_t sz = refmsg.size();
-  return client._call(0, msgbuf.get(), msgbuf.size(), refmsg.get(), &sz);
+  return iter->second->dev_read(device_id, out, len);
 }
 
 int dev_ioctl(int device_id, int cmds, void *in_out, size_t in_len, size_t buffer_max_len) {
@@ -277,11 +237,6 @@ int dev_ioctl(int device_id, int cmds, void *in_out, size_t in_len, size_t buffe
   internal_query::driver_map_iter iter;
   int res = internal_query::search_driver(driver_id, &iter);
   if (res) return res;
-  auto hash = gen_hash("ioctl", iter->second->get_name());
-  msg_ref refmsg(in_out, buffer_max_len);
-  auto msgbuf = msg_wrapper::package(hash, device_id, cmds, in_out, in_len, &refmsg);
-  platform::rcall_client client(iter->second->get_ipc_remote_channel());
-  size_t sz = refmsg.size();
-  return client._call(0, msgbuf.get(), msgbuf.size(), refmsg.get(), &sz);
+  return iter->second->dev_ioctl(device_id, cmds, in_out, in_len, buffer_max_len);
 }
 }

@@ -14,8 +14,16 @@
 #include <string.h>
 
 #include <memory>
+#include <utility>
+
+// clang-format off
+#include <platform/api.hxx>
 #include <platform/driver.hxx>
 #include <platform/entry.hxx>
+#include <platform/remotecall.hxx>
+#include <platform/syscall.hxx>
+#include <platform/msg_wrapper.hxx>
+// clang-format on
 
 namespace platform {
 
@@ -23,7 +31,7 @@ namespace platform {
  * @brief dummy驱动类型，用于序列号driver信息无实际的驱动功能
  *
  */
-struct driver_dummy : public driver {
+struct driver_dummy : public driver, public dev_api {
  public:
   using driver_ptr = std::unique_ptr<driver_dummy>;
   using driver_ref = driver_dummy&;
@@ -31,12 +39,74 @@ struct driver_dummy : public driver {
   driver_dummy() : driver({{"name", "dummy"}, {"compat", "dummy"}}, nullptr) {}
   ~driver_dummy() = default;
 
+  virtual int dev_bind(int dev_id, int dri_id) {
+    auto hash = gen_hash("bind");
+    msg msgbuf = msg_wrapper::package(hash, dev_id);
+    auto client = get_rclient();
+    return client._call(0, msgbuf.get(), msgbuf.size(), nullptr, nullptr);
+  }
+  virtual int dev_unbind(int dev_id) {
+    auto hash = gen_hash("unbind");
+    msg msgbuf = msg_wrapper::package(hash, dev_id);
+    auto client = get_rclient();
+    return client._call(0, msgbuf.get(), msgbuf.size(), nullptr, nullptr);
+  }
+  virtual int dev_open(int dev_id, int flags) {
+    auto hash = gen_hash("open");
+    msg msgbuf = msg_wrapper::package(hash, dev_id, flags);
+    auto client = get_rclient();
+    return client._call(0, msgbuf.get(), msgbuf.size(), nullptr, nullptr);
+  }
+  virtual int dev_close(int dev_id) {
+    auto hash = gen_hash("close");
+    msg msgbuf = msg_wrapper::package(hash, dev_id);
+    auto client = get_rclient();
+    return client._call(0, msgbuf.get(), msgbuf.size(), nullptr, nullptr);
+  }
+  virtual int dev_transfer(int dev_id, const void* in, size_t in_len, void* out, size_t out_len) {
+    auto hash = gen_hash("close");
+    msg_ref refmsg(out, out_len);
+    auto msgbuf = msg_wrapper::package(hash, dev_id, in, in_len, &refmsg);
+    auto client = get_rclient();
+    size_t sz = refmsg.size();
+    return client._call(0, msgbuf.get(), msgbuf.size(), refmsg.get(), &sz);
+  }
+  virtual int dev_write(int dev_id, const void* in, size_t len) {
+    auto hash = gen_hash("write");
+    auto msgbuf = msg_wrapper::package(hash, dev_id, in, len);
+    auto client = get_rclient();
+    return client._call(0, msgbuf.get(), msgbuf.size(), nullptr, nullptr);
+  }
+  virtual int dev_read(int dev_id, void* in, size_t len) {
+    auto hash = gen_hash("read");
+    msg_ref refmsg(in, len);
+    auto msgbuf = msg_wrapper::package(hash, dev_id, &refmsg);
+    auto client = get_rclient();
+    size_t sz = refmsg.size();
+    return client._call(0, msgbuf.get(), msgbuf.size(), refmsg.get(), &sz);
+  }
+  virtual int dev_ioctl(int dev_id, int cmds, void* in_out, size_t in_len, size_t buffer_max_len) {
+    auto hash = gen_hash("ioctl");
+    msg_ref refmsg(in_out, buffer_max_len);
+    auto msgbuf = msg_wrapper::package(hash, dev_id, cmds, in_out, in_len, &refmsg);
+    auto client = get_rclient();
+    size_t sz = refmsg.size();
+    return client._call(0, msgbuf.get(), msgbuf.size(), refmsg.get(), &sz);
+  }
+
+  syscall::hash_id gen_hash(const char *method) {
+    platform::alter::string s;
+    s.append(get_name());
+    s.append("-");
+    s.append(method);
+    return syscall::hash(s);
+  }
   /**
-   * @brief 获取ipc通讯句柄
+   * @brief 获取rclient 实例
    * 
-   * @return mx_channel_t* 
+   * @return rcall_client&& 
    */
-  mx_channel_t* get_ipc_remote_channel() { return ipc_desc_.ch; }
+  rcall_client&& get_rclient() { return std::move(rcall_client(ipc_desc_.ch)); }
 
  protected:
   virtual int init_(int argc, char** argv) { return eno::ENO_OK; }
