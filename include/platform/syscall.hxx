@@ -49,7 +49,7 @@ struct syscall {
   };
 
   struct ipc_desc {
-    ipc_desc() = default;
+    ipc_desc();
     ipc_desc(const ipc_desc& other) = default;
     cJSON* to_json() const;
     void from_json(cJSON* obj);

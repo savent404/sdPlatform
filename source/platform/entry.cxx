@@ -66,7 +66,8 @@ int entry::platform_init(void* ipc_ch) {
   }
   // update ipc desc every time
   if (ipc_ch) {
-    syscall::ipc_desc desc = {.ch = (mx_channel_t*)ipc_ch};  // NOLINT
+    syscall::ipc_desc desc;
+    desc.ch = (mx_channel_t*)ipc_ch;  // NOLINT
     auto syscall = syscall::get_instance();
     syscall->set_devmgr_ipc(desc);
     if (firstInit)

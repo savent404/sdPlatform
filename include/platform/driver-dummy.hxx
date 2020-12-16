@@ -106,7 +106,7 @@ struct driver_dummy : public driver, public dev_api {
    * 
    * @return rcall_client&& 
    */
-  rcall_client&& get_rclient() { return std::move(rcall_client(ipc_desc_.ch)); }
+  rcall_client get_rclient() { return rcall_client(ipc_desc_.ch); }
 
  protected:
   virtual int init_(int argc, char** argv) { return eno::ENO_OK; }

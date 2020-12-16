@@ -86,7 +86,12 @@ syscall *syscall::get_instance() {
   return c;
 }
 
-syscall::ipc_desc syscall::get_local_ipc() {  return local_ipc_; }
+syscall::ipc_desc syscall::get_local_ipc() {
+  while (!local_ipc_.ch) {
+    os.os_msleep(100);
+  }
+  return local_ipc_;
+}
 void syscall::set_local_ipc(ipc_desc param) { local_ipc_ = param; }
 syscall::ipc_desc syscall::get_devmgr_ipc() { return devmgr_ipc_; }
 void syscall::set_devmgr_ipc(ipc_desc param) { devmgr_ipc_ = param;}
@@ -127,6 +132,7 @@ bool syscall::deinit() {
   return false;
 }
 
+syscall::ipc_desc::ipc_desc() : ch(nullptr) {}
 cJSON* syscall::ipc_desc::to_json() const {
   int pointer = reinterpret_cast<int>(ch);
   auto root = cJSON_CreateObject();
