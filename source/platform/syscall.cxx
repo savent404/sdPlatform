@@ -119,6 +119,13 @@ void syscall::_msg_buf_t::set(char *ptr, size_t sz) {
 }
 void syscall::_msg_buf_t::free_buffer() { buffer = nullptr; }
 
+bool syscall::init() {
+  os.os_thread_create(syscall_ipc_handler, nullptr);
+  return true;
+}
+bool syscall::deinit() {
+  return false;
+}
 
 cJSON* syscall::ipc_desc::to_json() const {
   int pointer = reinterpret_cast<int>(ch);
