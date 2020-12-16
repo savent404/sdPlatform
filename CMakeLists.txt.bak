@@ -1,0 +1,65 @@
+cmake_minimum_required(VERSION 3.14)
+project(SDPlatform)
+set(CMAKE_CXX_STANDARD 17)
+option(USE_TEST ON)
+option(EXT_DRIVER "path to external driver dir" OFF)
+if (USE_TEST)
+add_definitions("-D__USE_TEST__=1")
+else()
+add_definitions("-D__USE_TEST__=0")
+endif(USE_TEST)
+if (${CMAKE_SYSTEM_PROCESSOR} STREQUAL arm)
+set(sd_src "${sd_src};source/arm32-embedded-sys.cxx")
+add_definitions("-D__PLATFORM_EMBEDDED__=1")
+else()
+add_definitions("-D__PLATFORM_EMBEDDED__=0")
+endif()
+set(sd_src "")
+aux_source_directory(source source_src)
+aux_source_directory(source/platform platform_src)
+aux_source_directory(source/platform/drivers drivers_source)
+aux_source_directory(source/platform/alter alter_source)
+add_subdirectory(extern/smempool)
+set(sd_src "${sd_src};${source_src};${platform_src};${drivers_source};${alter_source}")
+include(CMakePackageConfigHelpers)
+add_library(platform-user ${sd_src} $<TARGET_OBJECTS:sMemPool>)
+target_include_directories(platform-user
+PUBLIC
+${CMAKE_CURRENT_SOURCE_DIR}/include
+${CMAKE_CURRENT_SOURCE_DIR}/extern/smempool/include
+PRIVATE
+extern/consthash/include
+PRIVATE ${CMAKE_INSTALL_PREFIX}/include)
+set_target_properties(platform-user PROPERTIES PUBLIC_HEADER "include/platform.h;include/platform-types.h")
+install(
+TARGETS platform-user
+LIBRARY DESTINATION lib
+ARCHIVE DESTINATION lib
+RUNTIME DESTINATION lib
+INCLUDES DESTINATION install
+)
+install(
+FILES
+"include/platform.h"
+"include/platform-types.h"
+DESTINATION include
+)
+
+include(cmake/add-driver.cmake)
+include_directories(
+include
+extern/smempool/include
+extern/consthash/include
+${CMAKE_INSTALL_PREFIX}/include)
+link_libraries(platform-user)
+ADD_DRIVERS(SUBDIRS ${CMAKE_CURRENT_SOURCE_DIR}/drivers)
+if (EXT_DRIVER)
+ADD_DRIVERS(SUBDIRS ${EXT_DRIVER})
+endif(EXT_DRIVER)
+set(search_dir ${CMAKE_BINARY_DIR}/drivers)
+set(out_dir ${CMAKE_INSTALL_PREFIX}/obj)
+add_custom_target(install_drivers
+COMMENT "installing drivers..."
+COMMAND /bin/bash extract-lib.sh ${search_dir} ${out_dir}
+WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/cmake
+)

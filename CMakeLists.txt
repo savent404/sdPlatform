@@ -1,58 +1,65 @@
-cmake_minimum_required(VERSION 3.10)
-project(driver_platform)
+cmake_minimum_required(VERSION 3.14)
+project(SDPlatform)
 
-option(USE_TEST OFF)
+set(CMAKE_CXX_STANDARD_REQUIRED 17)
+set(sdp_src "")
 
-set(CMAKE_CXX_STANDARD 17)
+option(USE_TEST "add unit test code" ON)
+option(EXT_DRIVER "path to locate external driver dir" OFF)
 
-include_directories(include
-                    extern/consthash/include
-                    extern/smempool/include
-                    ${CMAKE_INCLUDE_PATH}
-                    ${CMAKE_INSTALL_PREFIX}/include)
-link_directories(${CMAKE_LIBRARY_PATH})
-
-add_subdirectory(extern/smempool)
+if(USE_TEST)
+    add_definitions("-D__USE_TEST__=1")
+else()
+    add_definitions("-D__USE_TEST__=0")
+endif(USE_TEST)
 
 if (${CMAKE_SYSTEM_PROCESSOR} STREQUAL arm)
-    set(sys_source "source/arm32-embedded-sys.cxx")
+    set(sdp_src "${sd_src};source/arm32-embedded-sys.cxx")
     add_definitions("-D__PLATFORM_EMBEDDED__=1")
 else()
     add_definitions("-D__PLATFORM_EMBEDDED__=0")
 endif()
 
-aux_source_directory(source user_source)
-set(user_source source/api-internal.cxx source/requirements.cxx)
-aux_source_directory(source/platform platform_source)
-aux_source_directory(source/platform/drivers driver_source)
-add_library(platform-user ${sys_source} ${user_source} ${platform_source} ${driver_source})
-link_libraries(platform-user sMemPool)
+aux_source_directory(source source_src)
+aux_source_directory(source/platform platform_src)
+aux_source_directory(source/platform/drivers drivers_src)
+aux_source_directory(source/platform/alter alter_source)
+add_subdirectory(extern/smempool)
 
-aux_source_directory(source/platform/alter stl_alter_source)
-add_library(stl_alter ${stl_alter_source})
+set(sdp_src "${sd_src};${source_src};${platform_src};${drivers_src};${alter_source}")
 
-if (USE_TEST)
-add_executable(cxx-test tests/cxx-test.cc)
-# target_link_libraries(cxx-test cJSON platform-user)
-endif (USE_TEST)
-
-add_custom_target(doxygen
-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-    COMMAND doxygen
-    COMMENT "building api reference"
+add_library(sdp-user ${sdp_src} $<TARGET_OBJECTS:sMemPool>)
+target_include_directories(sdp-user
+    PUBLIC
+        include
+        extern/smempool/include
+        extern/consthash/include
+    PRIVATE
+        ${CMAKE_INSTALL_PREFIX}/include
 )
 
+include(cmake/add-driver.cmake)
+include_directories(include external/consthash/include external/smempool/include ${CMAKE_INSTALL_PREFIX}/include)
+link_libraries(sdp-user)
 
-set_target_properties(platform-user PROPERTIES PUBLIC_HEADER "include/platform.h")
-set_target_properties(platform-user PROPERTIES PUBLIC_HEADER "include/platform-types.h")
+ADD_DRIVERS(${CMAKE_CURRENT_SOURCE_DIR}/drivers)
+if (EXT_DRIVER)
+    ADD_DRIVERS(${EXT_DRIVER})
+endif(EXT_DRIVER)
 
-install(TARGETS platform-user stl_alter
-        LIBRARY DESTINATION lib
-        PUBLIC_HEADER DESTINATION include
-)
+install (TARGETS sdp-user
+    LIBRARY DESTINATION lib
+    ARCHIVE DESTINATION lib
+    RUNTIME DESTINATION bin
+    INCLUDES DESTINATION include)
+install (FILES
+    "include/platform.h"
+    "include/platform-types.h"
+    DESTINATION include)
 
-# include drivers
-add_custom_target(install_drivers)
-
-include(cmake/drivers/dummy.cmake)
-include(cmake/drivers/sunxi-uart.cmake)
+set(search_dir ${CMAKE_BINARY_DIR}/drivers)
+set(out_dir ${CMAKE_INSTALL_PREFIX}/obj)
+add_custom_target(install_drivers
+    COMMENT "installing drivers..."
+    COMMAND bash extract-lib.sh ${search_dir} ${out_dir}
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
