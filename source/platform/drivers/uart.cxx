@@ -76,7 +76,7 @@ int driver::open_(device_ref dev, int flags) {
   if (res) goto out;
 
   // enable recv in no-block mode
-  if ((rt->file_flag & fflag::FF_READ) && !(rt->file_flag & fflag::FF_POLL)) {
+  if ((flags & fflag::FF_READ) && !(flags & fflag::FF_POLL)) {
     res = api_.start_rx(rt);
     if (res) goto out;
   }
