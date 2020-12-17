@@ -20,6 +20,7 @@
 #include <platform/device.hxx>
 #include <platform/driver-dummy.hxx>
 #include <platform/driver.hxx>
+#include <platform/entry.hxx>
 
 #ifndef __weak
 #define __weak __attribute__((weak))
@@ -89,4 +90,20 @@ __weak const char *devmgr_query_driver(int driver_id) {
   if (dri_iter == driver_queue().end()) return nullptr;
   return dri_iter->second->to_json_str();
 }
+
+
+extern driver_init_t __driver_init_start;
+extern driver_init_t __driver_init_end;
+
+static int devmgr_entry() {
+  auto ptr = &__driver_init_start;
+  auto end = &__driver_init_end;
+  while (ptr != end) {
+    ptr->entry(nullptr);
+    ptr++;
+  }
+  return 0;
+}
+
+func_entry_level_high(devmgr_entry);
 }

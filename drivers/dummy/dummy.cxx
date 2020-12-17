@@ -40,4 +40,4 @@ extern "C" int dummy_entry(void *env) {
   return eno::ENO_OK;
 }
 
-driver_entry(dummy_entry, "dummy-device", "dummy");
+// driver_entry(dummy_entry, "dummy-device", "dummy");

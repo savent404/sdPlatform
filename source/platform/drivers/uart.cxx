@@ -107,7 +107,7 @@ int driver::write_(device_ref dev, const void* out, size_t len) {
   if (!bits::and_bits(rt->file_flag, fflag::FF_WRITE)) return eno::ENO_INVALID;
 
   for (size_t i = 0; i < len; i++) {
-    buf.push(*ptr++);
+    buf->push(*ptr++);
   }
   int res = 0;
   if (rt->file_flag & fflag::FF_POLL) {
@@ -129,11 +129,11 @@ int driver::read_(device_ref dev, void* in, size_t len) {
     return api_.poll_rx(rt, reinterpret_cast<char*>(in), len);
   } else {
     auto& rx_buf = rt->rx_buffer;
-    auto left = rx_buf.size();
+    auto left = rx_buf->size();
     auto cnt = left > len ? len : left;
     for (size_t i = 0; i < cnt; i++) {
-      *ptr++ = rx_buf.front();
-      rx_buf.pop();
+      *ptr++ = rx_buf->front();
+      rx_buf->pop();
     }
     return cnt;
   }

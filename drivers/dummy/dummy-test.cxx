@@ -60,4 +60,4 @@ extern "C" int dummy_device_bind_test(void) {
   return 0;
 }
 
-func_entry_level_untest(dummy_device_bind_test);
+// func_entry_level_untest(dummy_device_bind_test);

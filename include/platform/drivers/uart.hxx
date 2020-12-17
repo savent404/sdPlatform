@@ -52,7 +52,9 @@ using buffer_t = platform::alter::queue<char>;
 
 struct runtime : public platform::runtime {
   RUNTIME_INIT(uart - runtime - structure);
-  runtime() : pri_rt(nullptr) { __init(); }
+  runtime() : rx_buffer(std::make_unique<buffer_t>()), tx_buffer(std::make_unique<buffer_t>()), pri_rt(nullptr) {
+    __init();
+  }
   runtime(runtime&& other)
       : mem_base(other.mem_base),
         mem_range(other.mem_range),
@@ -61,6 +63,8 @@ struct runtime : public platform::runtime {
         data_bits(other.data_bits),
         stop_bits(other.stop_bits),
         uart_idx(other.uart_idx),
+        rx_buffer(std::move(other.rx_buffer)),
+        tx_buffer(std::move(other.tx_buffer)),
         pri_rt(std::move(other.pri_rt)) { __init(); }
 
   void* mem_base;
@@ -72,8 +76,8 @@ struct runtime : public platform::runtime {
   uint8_t uart_idx;   // 0~255
 
   int file_flag;
-  buffer_t rx_buffer;
-  buffer_t tx_buffer;
+  std::unique_ptr<buffer_t> rx_buffer;
+  std::unique_ptr<buffer_t> tx_buffer;
   platform::runtime::value_ptr pri_rt;
 };
 

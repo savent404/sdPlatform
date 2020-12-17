@@ -35,4 +35,4 @@ extern "C" int test_case_parameter() {
   return 0;
 }
 
-func_entry_level_untest(test_case_parameter);
+// func_entry_level_untest(test_case_parameter);

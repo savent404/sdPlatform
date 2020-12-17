@@ -100,7 +100,7 @@ void handle_irq_rx(runtime_ptr rt, uint32_t lsr) {
       // Do nothing
     } else if ((lsr & SUNXI_UART_LSR_DR)) {
       ch = bits::in(reg_rbr)&0xFF;
-      rt->rx_buffer.push(ch);
+      rt->rx_buffer->push(ch);
     }
 
     lsr = bits::in(reg_lsr);
@@ -135,7 +135,7 @@ void rx_switch(runtime_ptr rt, bool enable) {
 
 void handle_irq_tx(runtime_ptr rt, uint32_t lsr) {
   static const int fifo_left = 32;
-  size_t cnt = rt->tx_buffer.size();
+  size_t cnt = rt->tx_buffer->size();
   cnt = cnt > fifo_left ? fifo_left : cnt;
   auto reg_thr = bits::shift_addr<char*>(rt->mem_base, SUNXI_UART_THR);
   auto& buffer = rt->tx_buffer;
@@ -146,10 +146,10 @@ void handle_irq_tx(runtime_ptr rt, uint32_t lsr) {
     return;
   }
   while (cnt--) {
-    bits::out(reg_thr, buffer.front());
-    buffer.pop();
+    bits::out(reg_thr, buffer->front());
+    buffer->pop();
   }
-  if ((lsr & SUNXI_UART_LSR_TEMT) && !rt->tx_buffer.empty()) {
+  if ((lsr & SUNXI_UART_LSR_TEMT) && !buffer->empty()) {
     // enable tx interrupt
     tx_switch(rt, true);
   }
@@ -197,7 +197,7 @@ int handle_irq(runtime_ptr rt) {
       bits::in(reg_rbr);
     }
     handle_irq_modem_status(rt);
-    if (iir == SUNXI_UART_IIR_IID_THREMP || ((lsr & SUNXI_UART_LSR_TEMT) && !rt->tx_buffer.empty()))
+    if (iir == SUNXI_UART_IIR_IID_THREMP || ((lsr & SUNXI_UART_LSR_TEMT) && !rt->tx_buffer->empty()))
       handle_irq_tx(rt, lsr);
   }
 
@@ -384,12 +384,12 @@ int api_poll_tx(runtime_ptr rt) {
   auto reg_lsr = bits::shift_addr<uint32_t*>(rt->mem_base, SUNXI_UART_LSR);
   auto reg_thr = bits::shift_addr<char*>(rt->mem_base, SUNXI_UART_THR);
   uint32_t lsr;
-  while (!buff.empty()) {
+  while (!buff->empty()) {
     do {
       lsr = bits::in(reg_lsr);
     } while ((lsr & SUNXI_UART_LSR_TEMT) == 0);
-    bits::out(reg_thr, buff.front());
-    buff.pop();
+    bits::out(reg_thr, buff->front());
+    buff->pop();
   }
   return eno::ENO_OK;
 }
