@@ -129,18 +129,18 @@ __weak const char *devmgr_query_driver(int driver_id) {
 }
 
 
-extern driver_init_t __driver_init_start;
-extern driver_init_t __driver_init_end;
+// extern driver_init_t __driver_init_start;
+// extern driver_init_t __driver_init_end;
 
-static int devmgr_entry() {
-  auto ptr = &__driver_init_start;
-  auto end = &__driver_init_end;
-  while (ptr != end) {
-    ptr->entry(nullptr);
-    ptr++;
-  }
-  return 0;
-}
+// static int devmgr_entry() {
+//   auto ptr = &__driver_init_start;
+//   auto end = &__driver_init_end;
+//   while (ptr != end) {
+//     ptr->entry(nullptr);
+//     ptr++;
+//   }
+//   return 0;
+// }
 
-func_entry_level_high(devmgr_entry);
+// func_entry_level_high(devmgr_entry);
 }
