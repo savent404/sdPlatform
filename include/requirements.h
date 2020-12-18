@@ -33,14 +33,13 @@ int devmgr_update_device(int device_id, const char *json_str);
  */
 int devmgr_remove_device(int device_id);
 /**
- * @brief 向devmgr申请查询设备信息
+ * @brief 向devmgr申请查询驱动信息
  * 
- * @param driver_id 设备id值
+ * @param driver_id 驱动id值
  * @return const char* NULL  查询是被
  *                     !NULL 返回json字符串
  */
-const char *devmgr_query_driver(int driver_id);
-
+const char *devmgr_query_device(int device_id);
 /**
  * @brief 向devmgr申请创建驱动
  * 
@@ -67,13 +66,31 @@ int devmgr_update_driver(int driver_id, const char *json_str);
  */
 int devmgr_remove_driver(int driver_id);
 /**
- * @brief 向devmgr申请查询驱动信息
+ * @brief 向devmgr申请查询设备信息
  * 
- * @param driver_id 驱动id值
+ * @param driver_id 设备id值
  * @return const char* NULL  查询是被
  *                     !NULL 返回json字符串
  */
-const char *devmgr_query_device(int device_id);
+const char *devmgr_query_driver(int driver_id);
+
+// _devmgr_create_device
+int _devmgr_create_device(const char *json_str, void* ipc);
+// _devmgr_update_device
+int _devmgr_update_device(int device_id, const char *json_str, void* ipc);
+// _devmgr_remove_device
+int _devmgr_remove_device(int device_id, void* ipc);
+// _devmgr_query_device
+const char *_devmgr_query_device(int device_id, void* ipc);
+// _devmgr_create_driver
+int _devmgr_create_driver(const char *json_str, void* ipc);
+// `_devmgr_update_driver
+int _devmgr_update_driver(int driver_id, const char *json_str, void* ipc);
+// _devmgr_remove_driver
+int _devmgr_remove_driver(int driver_id, void* ipc);
+// _devmgr_query_driver
+const char *_devmgr_query_driver(int driver_id, void* ipc);
+
 
 #ifdef __cplusplus
 }
