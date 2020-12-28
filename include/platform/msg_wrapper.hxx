@@ -44,7 +44,9 @@ struct msg_wrapper {
     msg buff(sz);
     size_t sz1 = syscall_dtl::package_obj<Args...>::set(buff.get(), args...);
     debug::assert(sz == sz1);
-    return std::move(buff);
+    // return std::move(buff);
+    // seems like cpp treat it as a rvalue
+    return buff;
   }
   /**
    * @brief 拆包msg 为tuple类型

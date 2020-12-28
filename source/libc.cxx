@@ -35,7 +35,11 @@ __attribute__((weak)) void operator delete[](void* p) { return platform::ops::me
 #include <stdlib.h>
 #include <string.h>
 
-extern "C" __attribute__((weak)) void abort() { platform::debug::assert(false); }
+extern "C" __attribute__((weak)) void abort() {
+  platform::debug::assert(false);
+  while (1) {
+  }
+}
 extern "C" __attribute__((weak)) size_t strlen(const char* str) {
   size_t n = 0;
   while (*str++) {

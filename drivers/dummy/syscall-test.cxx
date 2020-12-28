@@ -20,7 +20,6 @@ using platform::bits;
 using platform::debug;
 
 static void test_cast_syscall_package_msg() {
-  size_t sz;
   char v1[] = "foo";
   void* v2 = v1;
   size_t v3 = 4;
