@@ -213,7 +213,8 @@ void driver::devmgr_query() {
   debug::assert(get_id());
   const char *str = devmgr_query_driver(get_id());
   from_json_str(str);
-  cJSON_free((void *)str);  // NOLINT
+  // TODO(savent): 确认是否需要释放devmgr_query_driver返回的字串
+  // cJSON_free((void *)str);  // NOLINT
 }
 
 void driver::devmgr_delete() {
@@ -229,7 +230,8 @@ driver::device_ptr driver::query_device(device_id id) {
   auto dev = new device;
   const char *json_str = devmgr_query_device(id);
   dev->from_json_str(json_str);
-  cJSON_free((void *)json_str);  // NOLINT
+  // TODO(savent): 确认返回的字符串是否需要free
+  // cJSON_free((void *)json_str);  // NOLINT
   return std::unique_ptr<device>(dev);
 }
 
