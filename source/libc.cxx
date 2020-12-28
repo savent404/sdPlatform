@@ -8,8 +8,10 @@
  * Copyright 2020 jrlc
  *
  */
-#include <smempool.h>
 #include <stddef.h>
+
+#include <platform/debug.hxx>
+#include <platform/os.hxx>
 
 extern "C" void* heap_alloc(size_t n);
 extern "C" void heap_free(void*);
@@ -22,21 +24,18 @@ __attribute__((weak)) void operator delete(void* p, size_t n) { heap_free(p); }
 __attribute__((weak)) void* operator new[](size_t n) { return heap_alloc(n); }
 __attribute__((weak)) void operator delete[](void* p) { return heap_free(p); }
 #else
-__attribute__((weak)) void* operator new(size_t n) { return smem_alloc(n); }
-__attribute__((weak)) void operator delete(void* p) { smem_free(p); }
-__attribute__((weak)) void operator delete(void* p, size_t n) { smem_free(p); }
+__attribute__((weak)) void* operator new(size_t n) { return platform::ops::memory::mem_alloc(n); }
+__attribute__((weak)) void operator delete(void* p) { platform::ops::memory::mem_free(p); }
+__attribute__((weak)) void operator delete(void* p, size_t n) { platform::ops::memory::mem_free(p); }
 
-__attribute__((weak)) void* operator new[](size_t n) { return smem_alloc(n); }
-__attribute__((weak)) void operator delete[](void* p) { return smem_free(p); }
+__attribute__((weak)) void* operator new[](size_t n) { return platform::ops::memory::mem_alloc(n); }
+__attribute__((weak)) void operator delete[](void* p) { return platform::ops::memory::mem_free(p); }
 #endif
 
 #include <stdlib.h>
 #include <string.h>
 
-extern "C" __attribute__((weak)) void abort() {
-  while (1) {
-  }
-}
+extern "C" __attribute__((weak)) void abort() { platform::debug::assert(false); }
 extern "C" __attribute__((weak)) size_t strlen(const char* str) {
   size_t n = 0;
   while (*str++) {
@@ -57,7 +56,7 @@ extern "C" __attribute__((weak)) char* strcpy(char* dest, const char* src) {  //
 
 extern "C" __attribute__((weak)) char* strdup(const char* str) {
   size_t sz = strlen(str) + 1;
-  char* ptr = (char*)smem_alloc(sz);  // NOLINT
+  char* ptr = (char*)platform::ops::memory::mem_alloc(sz);  // NOLINT
   memcpy(ptr, str, sz);
   return ptr;
 }
@@ -200,4 +199,4 @@ namespace std _GLIBCXX_VISIBILITY(default) {
   extern const _Placeholder<29> _29{};
   }  // namespace placeholders
   _GLIBCXX_END_NAMESPACE_VERSION
-} // namespace std_GLIBCXX_VISIBILITY(default)
+}  // namespace )

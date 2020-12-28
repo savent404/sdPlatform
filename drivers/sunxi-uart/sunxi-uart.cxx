@@ -9,7 +9,6 @@
  *
  */
 #include <loop.h>
-#include <osal.h>
 #include <sunxi-uart.h>
 
 #include <memory>
@@ -20,6 +19,7 @@
 #include <platform/debug.hxx>
 #include <platform/drivers/uart.hxx>
 #include <platform/entry.hxx>
+#include <platform/os.hxx>
 // clang-format on
 
 extern "C" void* sunxi_uart_irqipc_loop(void*);
@@ -29,10 +29,10 @@ namespace platform::drivers::uart::sunxi_t3 {
 
 struct runtime : public platform::runtime {
   RUNTIME_INIT(sunxi_t3_uart);
-  runtime() : platform::runtime(), irq(0), irq_handle(0) { __init(); }
+  runtime() : platform::runtime(), irq(0), irq_handle(nullptr) { __init(); }
 
   int irq;
-  ipc_handle_t irq_handle;
+  ops::thread::thread_t irq_handle;
 };
 
 using platform::bits;
@@ -456,7 +456,7 @@ int api_setup(runtime_ptr rt) {
   /* setup interrupt */
   {
     auto pri_rt = rt->pri_rt->promote<runtime>();
-    if (!pri_rt->irq_handle) pri_rt->irq_handle = os.os_thread_create(sunxi_uart_irqipc_loop, rt);
+    if (!pri_rt->irq_handle) pri_rt->irq_handle = ops::thread::thread_create(sunxi_uart_irqipc_loop, rt);
     if (!pri_rt->irq_handle) return eno::ENO_SYSCALL_ERR;
   }
 out:
@@ -487,7 +487,8 @@ extern "C" int sunxi_uart_entry(void* env) {
       .ioctl = nullptr,
   };
   if (!sunxi_uart_driver) {
-    sunxi_uart_driver = new platform::drivers::uart::driver({{"name", "sunxi-uart"}, {"compat", "arm,uart-sunxi,t3"}}, sunxi_uart_api);
+    sunxi_uart_driver =
+        new platform::drivers::uart::driver({{"name", "sunxi-uart"}, {"compat", "arm,uart-sunxi,t3"}}, sunxi_uart_api);
     return sunxi_uart_driver->init(0, nullptr);
   }
   return 0;

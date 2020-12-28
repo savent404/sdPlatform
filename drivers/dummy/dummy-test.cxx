@@ -11,15 +11,16 @@
 
 #include <platform-types.h>
 #include <platform.h>
-#include "../../../include/platform.h"
 #include <requirements.h>
-#include <osal.h>
 
 #include <platform/alter/string.hxx>
 #include <platform/cJSON.hxx>
+#include <platform/debug.hxx>
 #include <platform/driver-dummy.hxx>
 #include <platform/entry.hxx>
-#include <platform/debug.hxx>
+#include <platform/os.hxx>
+
+#include "../../../include/platform.h"
 
 using debug = platform::debug;
 
@@ -27,17 +28,17 @@ extern int dummy_driver_id;
 
 extern "C" void* dummy_device_bind_test_it(void* p) {
   while (dummy_driver_id == 0) {
-    os.os_msleep(100);
+    platform::ops::thread::thread_sleep(100);
   }
   // register a device
   auto device = new platform::device({{"name", "dummy-device"}, {"compat", "dummy"}});
   auto str = device->to_json_str();
   auto device_id = devmgr_create_device(str);
   device->set_id(device_id);
-  platform::cJSON_free((char *)(str)); // NOLINT
+  platform::cJSON_free((char*)(str));  // NOLINT
   str = device->to_json_str();
   devmgr_update_device(device_id, str);
-  platform::cJSON_free((char *)str);  // NOLINT
+  platform::cJSON_free((char*)str);  // NOLINT
 
   dev_bind(device_id, dummy_driver_id);
   debug::assert(dev_open(device_id, fflag::FF_READ | fflag::FF_WRITE) == eno::ENO_OK);
@@ -52,11 +53,11 @@ extern "C" void* dummy_device_bind_test_it(void* p) {
   debug::assert(!strcmp(msg, "world"));
   debug::assert(dev_close(device_id) == eno::ENO_OK);
   debug::assert(dev_unbind(device_id) == eno::ENO_OK);
-  os.os_exit(0);
+  platform::ops::thread::thread_exit(0);
   return NULL;
 }
 extern "C" int dummy_device_bind_test(void) {
-  os.os_thread_create(dummy_device_bind_test_it, nullptr);
+  platform::ops::thread::thread_create(dummy_device_bind_test_it, nullptr);
   return 0;
 }
 

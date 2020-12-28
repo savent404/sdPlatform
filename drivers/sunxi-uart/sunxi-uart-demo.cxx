@@ -8,7 +8,6 @@
  * Copyright 2020 jrlc
  *
  */
-#include <osal.h>
 #include <platform.h>
 #include <requirements.h>
 #include <sunxi-uart.h>
@@ -16,6 +15,7 @@
 #include <platform/device.hxx>
 #include <platform/drivers/uart.hxx>
 #include <platform/entry.hxx>
+#include <platform/os.hxx>
 
 extern "C" void *sunxi_uart_echo_test(void *ptr) {
   auto id = reinterpret_cast<int>(ptr);
@@ -25,7 +25,7 @@ extern "C" void *sunxi_uart_echo_test(void *ptr) {
   dev_write(id, msg, sizeof(msg));
   char ch[32];
   while (1) {
-    os.os_msleep(10);
+    platform::ops::thread::thread_sleep(10);
     auto cnt = dev_read(id, ch, 32);
     if (cnt > 0) {
       dev_write(id, ch, cnt);
@@ -59,12 +59,12 @@ extern "C" int sunxi_uart_test_bind(void) {
 
   // 等待驱动线程完成注册
   while (!sunxi_uart_driver || !sunxi_uart_driver->get_id()) {
-    os.os_msleep(100);
+    platform::ops::thread::thread_sleep(100);
   }
   dev_bind(id, sunxi_uart_driver->get_id());
 
   // start a thread to handle uart echo
-  os.os_thread_create(sunxi_uart_echo_test, reinterpret_cast<void*>(id));
+  platform::ops::thread::thread_create(sunxi_uart_echo_test, reinterpret_cast<void*>(id));
   return 0;
 }
 

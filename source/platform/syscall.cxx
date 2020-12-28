@@ -9,7 +9,6 @@
  *
  */
 #include <platform-types.h>
-#include <osal.h>
 #include <rpc_api.h>
 #include <loop.h>
 
@@ -22,6 +21,7 @@
 #include <platform/syscall.hxx>
 #include <platform/msg.hxx>
 #include <platform/debug.hxx>
+#include <platform/os.hxx>
 // clang-format on
 
 // 回调函数定义
@@ -88,7 +88,7 @@ syscall *syscall::get_instance() {
 
 syscall::ipc_desc syscall::get_local_ipc() {
   while (!local_ipc_.ch) {
-    os.os_msleep(100);
+    ops::thread::thread_sleep(100);
   }
   return local_ipc_;
 }
@@ -125,7 +125,7 @@ void syscall::_msg_buf_t::set(char *ptr, size_t sz) {
 void syscall::_msg_buf_t::free_buffer() { buffer = nullptr; }
 
 bool syscall::init() {
-  os.os_thread_create(syscall_ipc_handler, nullptr);
+  ops::thread::thread_create(syscall_ipc_handler, nullptr);
   return true;
 }
 bool syscall::deinit() {
