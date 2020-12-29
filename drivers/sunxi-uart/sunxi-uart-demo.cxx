@@ -36,6 +36,13 @@ extern "C" void *sunxi_uart_echo_test(void *ptr) {
 
 extern "C" int sunxi_uart_test_bind(void) {
   platform::entry::platform_init(nullptr);
+
+  extern platform::drivers::uart::driver *sunxi_uart_driver;
+  // 等待驱动线程完成注册
+  while (!sunxi_uart_driver || !sunxi_uart_driver->get_id()) {
+    platform::ops::thread::thread_sleep(100);
+  }
+
   platform::device uart_1({{"name", "uart-1"},
                            {"compat", "arm,uart-sunxi,t3"},
                            {"config/base", (int)0x38000000 + 0x800},
@@ -55,12 +62,6 @@ extern "C" int sunxi_uart_test_bind(void) {
   devmgr_update_device(id, str);
   platform::cJSON_free((void *)str);  //  NOLINT
 
-  extern platform::drivers::uart::driver *sunxi_uart_driver;
-
-  // 等待驱动线程完成注册
-  while (!sunxi_uart_driver || !sunxi_uart_driver->get_id()) {
-    platform::ops::thread::thread_sleep(100);
-  }
   dev_bind(id, sunxi_uart_driver->get_id());
 
   // start a thread to handle uart echo
