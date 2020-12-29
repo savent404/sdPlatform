@@ -129,6 +129,7 @@ __weak const char *devmgr_query_driver(int driver_id) {
 }
 
 
+#if __USE_DEVMGR__ == 0
 extern driver_init_t __driver_init_start;
 extern driver_init_t __driver_init_end;
 
@@ -143,4 +144,5 @@ static int devmgr_entry() {
 }
 
 func_entry_level_high(devmgr_entry);
+#endif
 }

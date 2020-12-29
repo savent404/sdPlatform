@@ -6,12 +6,19 @@ set(sdp_src "")
 
 option(USE_TEST "add unit test code" ON)
 option(EXT_DRIVER "path to locate external driver dir" OFF)
+option(USE_DEVMGR "use devmgr to start driver entry" ON)
 
 if(USE_TEST)
     add_definitions("-D__USE_TEST__=1")
 else()
     add_definitions("-D__USE_TEST__=0")
 endif(USE_TEST)
+
+if (USE_DEVMGR)
+    add_definitions("-D__USE_DEVMGR__=1")
+else ()
+    add_definitions("-D__USE_DEVMGR__=0")
+endif(USE_DEVMGR)
 
 if (${CMAKE_SYSTEM_PROCESSOR} STREQUAL arm)
     set(sdp_src "${sd_src};source/libc.cxx")
